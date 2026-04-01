@@ -31,7 +31,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --uoa-navy: #0c0c48;
+
+  /* UoA Brand Colours */
+  /* Primary */
+  --uoa-waitemata: #0c0c48;
+  --uoa-navy: #0c0c48; /* alias */
+
+  /* Secondary */
+  --uoa-azure: #1f2bd4;
+  --uoa-mahina: #00caef;
 }
 
 @theme inline {
