@@ -5,7 +5,7 @@ export default function MailingListSignup() {
       <input
         type="email"
         placeholder="Enter your email"
-        className="flex-1 px-3 py-2 rounded text-gray-900 text-sm focus:outline-none"
+        className="flex-1 px-3 py-2 rounded text-sm bg-white text-black focus:outline-none"
         aria-label="Email address for mailing list"
       />
       <button
