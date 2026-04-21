@@ -1,8 +1,9 @@
+import PageLayout from "@/components/layout/PageLayout";
 import AudiencePathway from "@/components/sections/AudiencePathway";
 
 export default function HomePage() {
   return (
-    <>
+    <PageLayout title="UoA Research" description="University of Auckland Research">
       <h1
         style={{
           position: "absolute",
@@ -19,6 +20,6 @@ export default function HomePage() {
         Home
       </h1>
       <AudiencePathway />
-    </>
+    </PageLayout>
   );
 }
