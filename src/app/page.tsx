@@ -1,3 +1,9 @@
+import AudiencePathway from "@/components/sections/AudiencePathway";
+
 export default function HomePage() {
-  return <h1>Home</h1>;
+  return (
+    <>
+      <AudiencePathway />
+    </>
+  );
 }
