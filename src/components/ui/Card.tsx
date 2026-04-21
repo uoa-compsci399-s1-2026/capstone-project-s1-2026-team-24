@@ -28,7 +28,7 @@ export default function Card({
   const cardClasses = [
     "bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col",
     href
-      ? "transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c0c48]"
+      ? "transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
       : "",
     className,
   ]
@@ -37,7 +37,8 @@ export default function Card({
 
   const normalizedImageAlt = imageAlt?.trim() ? imageAlt.trim() : title;
 
-  const content = (
+  // Non-interactive content only — safe to place inside an <a>
+  const bodyContent = (
     <>
       {imageSrc && (
         <div className="aspect-video overflow-hidden">
@@ -65,26 +66,38 @@ export default function Card({
             {description}
           </p>
         )}
-
-        {footer && (
-          <div className="mt-4 pt-4 border-t border-gray-100">{footer}</div>
-        )}
       </div>
     </>
   );
 
   if (href) {
     const external = isExternalHref(href);
+    // Render footer outside the <a> to prevent nesting interactive elements
+    // inside an anchor (invalid HTML / accessibility violation).
     return (
-      <a
-        href={href}
-        className={cardClasses}
-        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      >
-        {content}
-      </a>
+      <article className={cardClasses}>
+        <a
+          href={href}
+          className="flex flex-col flex-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c0c48]"
+          {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        >
+          {bodyContent}
+        </a>
+        {footer && (
+          <div className="px-5 pb-5 pt-4 border-t border-gray-100">{footer}</div>
+        )}
+      </article>
     );
   }
 
-  return <article className={cardClasses}>{content}</article>;
+  return (
+    <article className={cardClasses}>
+      <div className="flex flex-col flex-1">
+        {bodyContent}
+        {footer && (
+          <div className="mx-5 mb-5 pt-4 border-t border-gray-100">{footer}</div>
+        )}
+      </div>
+    </article>
+  );
 }
