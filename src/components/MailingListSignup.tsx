@@ -9,7 +9,11 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
-export default function MailingListSignup() {
+interface MailingListSignupProps {
+  description?: string;
+}
+
+export default function MailingListSignup({ description }: MailingListSignupProps) {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<FormState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -62,7 +66,9 @@ export default function MailingListSignup() {
 
   return (
     <div>
-      <p className="text-sm text-gray-300 mb-3">Stay updated with HNU research</p>
+      {description && (
+        <p className="text-sm text-gray-300 mb-3">{description}</p>
+      )}
       <form onSubmit={handleSubmit} noValidate>
         <div className="flex gap-2">
           <input
