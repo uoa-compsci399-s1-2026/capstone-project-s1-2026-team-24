@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type CSSProperties, type ReactNode } from 'react';
 
 type Padding = 'sm' | 'md' | 'lg';
 type Background = 'white' | 'light' | 'dark';
@@ -23,7 +23,7 @@ const backgroundClasses: Record<Background, string> = {
   dark: 'text-white',
 };
 
-const backgroundStyles: Partial<Record<Background, React.CSSProperties>> = {
+const backgroundStyles: Partial<Record<Background, CSSProperties>> = {
   dark: { backgroundColor: 'var(--uoa-navy)' },
 };
 
