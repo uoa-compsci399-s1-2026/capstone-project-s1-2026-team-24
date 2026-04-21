@@ -28,7 +28,7 @@ export default function Card({
   const cardClasses = [
     "bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col",
     href
-      ? "transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
+      ? "transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c0c48]"
       : "",
     className,
   ]
