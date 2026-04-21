@@ -35,13 +35,15 @@ export default function Card({
     .filter(Boolean)
     .join(" ");
 
+  const normalizedImageAlt = imageAlt?.trim() ? imageAlt.trim() : title;
+
   const content = (
     <>
       {imageSrc && (
         <div className="aspect-video overflow-hidden">
           <img
             src={imageSrc}
-            alt={imageAlt ?? title}
+            alt={normalizedImageAlt}
             className="w-full h-full object-cover"
           />
         </div>
