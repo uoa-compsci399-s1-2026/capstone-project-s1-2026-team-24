@@ -95,7 +95,7 @@ export default function Card({
       <div className="flex flex-col flex-1">
         {bodyContent}
         {footer && (
-          <div className="mx-5 mb-5 pt-4 border-t border-gray-100">{footer}</div>
+          <div className="px-5 pb-5 pt-4 border-t border-gray-100">{footer}</div>
         )}
       </div>
     </article>
