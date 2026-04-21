@@ -49,7 +49,12 @@ export default function MailingListSignup() {
 
   if (state === "success") {
     return (
-      <p className="text-sm text-green-400">
+      <p
+        className="text-sm text-green-400"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         Thanks for subscribing! You&apos;ll be the first to hear about our latest research.
       </p>
     );
