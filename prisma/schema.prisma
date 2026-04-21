@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum TeamSection {
+  BoardOfDirectors
+  ResearchTeam
+}
+
+model Study {
+  id               Int      @id @default(autoincrement())
+  slug             String   @unique
+  title            String
+  shortDescription String
+  fullDescriptionEn String
+  fullDescriptionZh String
+  eligibilityEn    String
+  eligibilityZh    String
+  compensationEn   String
+  compensationZh   String
+  redcapUrl        String
+  contactEmail     String
+  contactPhone     String
+  ethicsStatement  String
+  isActive         Boolean  @default(true)
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([isActive, order])
+}
+
+model TeamMember {
+  id        Int         @id @default(autoincrement())
+  name      String
+  title     String
+  section   TeamSection
+  bio       String
+  photoPath String
+  order     Int         @default(0)
+  isVisible Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([section, order])
+  @@index([isVisible, order])
+}
+
+model CaseStudy {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  pdfPath     String
+  uploadedAt  DateTime @default(now())
+}
+
+model ContactSubmission {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String
+  category    String
+  message     String
+  submittedAt DateTime @default(now())
+}
+
+model MailingListEntry {
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  joinedAt DateTime @default(now())
+}
+
+model PartnerLogo {
+  id            Int     @id @default(autoincrement())
+  name          String
+  logoPath      String
+  websiteUrl    String
+  isPlaceholder Boolean @default(false)
+  order         Int     @default(0)
+
+  @@index([order])
+}
