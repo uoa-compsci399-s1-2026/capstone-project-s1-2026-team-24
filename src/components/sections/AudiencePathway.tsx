@@ -1,4 +1,3 @@
-import React from "react";
 import Button from "@/components/ui/Button";
 
 export default function AudiencePathway() {
@@ -28,19 +27,27 @@ export default function AudiencePathway() {
             </p>
             <ul className="text-sm text-gray-400 mb-10 space-y-2 text-left">
               <li className="flex items-start gap-2">
-                <span className="text-[#00caef] mt-0.5">&#10003;</span>
+                <span aria-hidden="true" className="text-[#00caef] mt-0.5">
+                  &#10003;
+                </span>
                 Clinical trial design &amp; management
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[#00caef] mt-0.5">&#10003;</span>
+                <span aria-hidden="true" className="text-[#00caef] mt-0.5">
+                  &#10003;
+                </span>
                 Access to pre-screened participant pools
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[#00caef] mt-0.5">&#10003;</span>
+                <span aria-hidden="true" className="text-[#00caef] mt-0.5">
+                  &#10003;
+                </span>
                 Advanced on-site research facilities
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[#00caef] mt-0.5">&#10003;</span>
+                <span aria-hidden="true" className="text-[#00caef] mt-0.5">
+                  &#10003;
+                </span>
                 Regulatory &amp; ethics expertise
               </li>
             </ul>
