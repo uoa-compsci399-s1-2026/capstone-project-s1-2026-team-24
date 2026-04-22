@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "seed": "prisma db seed"
   },
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.7.0",
@@ -40,8 +41,12 @@
     "playwright": "^1.59.1",
     "storybook": "^10.3.5",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vite": "^8.0.8",
     "vitest": "^4.1.4"
+  },
+  "prisma": {
+  "seed": "tsx prisma/seed.ts"
   }
 }
