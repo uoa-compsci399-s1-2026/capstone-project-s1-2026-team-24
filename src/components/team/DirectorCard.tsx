@@ -47,8 +47,8 @@ export default function DirectorCard({
   email,
 }: DirectorCardProps) {
   return (
-    <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] flex flex-col items-center pt-[42px] pb-[67px] w-full max-w-[450px]">
-      <div className="w-[300px] h-[300px] rounded-full overflow-hidden flex-shrink-0">
+    <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] flex flex-col items-center pt-8 pb-12 lg:pt-[42px] lg:pb-[67px] w-full md:max-w-[350px] lg:max-w-[450px] mx-auto md:mx-0">
+      <div className="w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] lg:w-[300px] lg:h-[300px] rounded-full overflow-hidden flex-shrink-0">
         <Image
           src={imageSrc}
           alt={name}
@@ -58,14 +58,14 @@ export default function DirectorCard({
         />
       </div>
 
-      <div className="mt-[59px] flex flex-col items-center text-center px-8">
-        <h3 className="text-[32px] font-bold text-[#0c0c48] tracking-[0.64px] leading-normal">
+      <div className="mt-8 lg:mt-[59px] flex flex-col items-center text-center px-6 lg:px-8">
+        <h3 className="text-2xl lg:text-[32px] font-bold text-[#0c0c48] tracking-[0.64px] leading-normal">
           {name}
         </h3>
-        <p className="mt-[21px] text-[24px] text-black tracking-[0.48px] leading-normal">
+        <p className="mt-4 lg:mt-[21px] text-xl lg:text-[24px] text-black tracking-[0.48px] leading-normal">
           {role}
         </p>
-        <div className="mt-[47px] flex items-center gap-[28px] text-black opacity-50">
+        <div className="mt-8 lg:mt-[47px] flex items-center gap-[28px] text-black opacity-50">
           {linkedinUrl ? (
             <a
               href={linkedinUrl}

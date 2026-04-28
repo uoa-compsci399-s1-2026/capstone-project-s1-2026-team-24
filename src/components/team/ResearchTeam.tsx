@@ -66,18 +66,18 @@ const RESEARCH_TEAM: TeamMember[] = [
 
 export default function ResearchTeam() {
   return (
-    <section className="bg-[#eeeeee] py-20">
-      <div className="max-w-[1420px] mx-auto px-12">
-        <h2 className="text-[64px] font-extrabold text-[#0a4479] tracking-[1.28px] text-center mb-20">
+    <section className="bg-[#eeeeee] py-10 sm:py-16 lg:py-20">
+      <div className="max-w-[1420px] mx-auto px-4 sm:px-8 lg:px-12">
+        <h2 className="text-3xl sm:text-5xl lg:text-[64px] font-extrabold text-[#0a4479] tracking-[1.28px] text-center mb-12 sm:mb-16 lg:mb-20">
           Research Team
         </h2>
-        <div className="flex flex-wrap justify-center gap-x-[34px] gap-y-16">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-10 sm:gap-x-8 sm:gap-y-12 lg:gap-x-[34px] lg:gap-y-16">
           {RESEARCH_TEAM.map((member) => (
             <div
               key={member.name}
-              className="flex flex-col items-center text-center w-[300px]"
+              className="flex flex-col items-center text-center w-[160px] sm:w-[220px] lg:w-[300px]"
             >
-              <div className="w-[300px] h-[300px] rounded-full overflow-hidden flex-shrink-0">
+              <div className="w-[160px] h-[160px] sm:w-[220px] sm:h-[220px] lg:w-[300px] lg:h-[300px] rounded-full overflow-hidden flex-shrink-0">
                 <Image
                   src={member.imageSrc}
                   alt={member.name}
@@ -86,10 +86,10 @@ export default function ResearchTeam() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h3 className="mt-6 text-[32px] font-bold text-[#0c0c48] tracking-[0.64px] leading-normal">
+              <h3 className="mt-4 sm:mt-5 lg:mt-6 text-xl sm:text-2xl lg:text-[32px] font-bold text-[#0c0c48] tracking-[0.64px] leading-normal">
                 {member.name}
               </h3>
-              <p className="mt-2 text-[24px] text-black tracking-[0.48px] leading-normal">
+              <p className="mt-1 sm:mt-2 text-base sm:text-xl lg:text-[24px] text-black tracking-[0.48px] leading-normal">
                 {member.role}
               </p>
             </div>

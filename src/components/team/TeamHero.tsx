@@ -12,9 +12,8 @@ const UTILITY_BAR_HEIGHT = 110;
 export default function TeamHero() {
   return (
     <section
-      className="relative w-full overflow-hidden flex flex-col justify-center"
+      className="relative w-full overflow-hidden flex flex-col justify-center h-[420px] sm:h-[520px] lg:h-[674px]"
       style={{
-        height: '674px',
         marginTop: `-${NAVBAR_HEIGHT}px`,
         paddingTop: `${UTILITY_BAR_HEIGHT}px`,
         backgroundColor: '#0c0c48',
@@ -51,11 +50,11 @@ export default function TeamHero() {
       </div>
 
       {/* Content — vertically centred in the full visible blue area */}
-      <div className="relative px-[93px]">
-        <h1 className="text-[76px] font-extrabold text-white/75 tracking-[1.52px] leading-normal">
+      <div className="relative px-6 sm:px-12 lg:px-[93px]">
+        <h1 className="text-4xl sm:text-5xl lg:text-[76px] font-extrabold text-white/75 tracking-[1.52px] leading-normal">
           Our Team
         </h1>
-        <p className="text-[32px] text-white/75 tracking-[0.64px] leading-normal mt-4">
+        <p className="text-lg sm:text-2xl lg:text-[32px] text-white/75 tracking-[0.64px] leading-normal mt-4">
           We&apos;re passionate about what we do.
           <br />
           Find out more about the people behind

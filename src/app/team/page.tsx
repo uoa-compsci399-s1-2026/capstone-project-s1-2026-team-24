@@ -24,8 +24,8 @@ export default function TeamPage() {
       */}
       <TeamHero />
       <main id="main-content">
-        <div className="bg-white px-13 py-5">
-          <p className="text-[20px] text-black tracking-[0.4px]">
+        <div className="bg-white px-4 sm:px-8 lg:px-13 py-5">
+          <p className="text-sm sm:text-base lg:text-[20px] text-black tracking-[0.4px]">
             <Link href="/about" className="hover:underline">
               About
             </Link>
