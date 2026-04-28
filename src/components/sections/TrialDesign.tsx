@@ -2,13 +2,13 @@ import React from 'react';
 
 export default function TrialDesign() {
   return (
-    <section className="relative w-full py-20 px-[93px] max-w-[1512px] mx-auto bg-white">
-      <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] p-16">
-        <h2 className="text-[48px] font-bold text-[#0a4479] text-center tracking-[0.96px] mb-12">
+    <section className="relative w-full py-10 sm:py-14 lg:py-20 px-4 sm:px-8 lg:px-[93px] max-w-[1512px] mx-auto bg-white">
+      <div className="bg-white rounded-[20px] sm:rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] p-6 sm:p-10 lg:p-16">
+        <h2 className="text-2xl sm:text-4xl lg:text-[48px] font-bold text-[#0a4479] text-center tracking-[0.96px] mb-6 sm:mb-8 lg:mb-12">
           Trial Design
         </h2>
 
-        <div className="text-[30px] font-normal text-[#0a4479] leading-normal tracking-[0.6px] space-y-8 mb-20">
+        <div className="text-base sm:text-xl lg:text-[30px] font-normal text-[#0a4479] leading-normal tracking-[0.6px] space-y-5 sm:space-y-6 lg:space-y-8 mb-10 sm:mb-14 lg:mb-20">
           <p>
             The Human Nutrition Unit carries out intervention trials investigating the relationships between diet and markers of health and disease.
           </p>
@@ -21,11 +21,11 @@ export default function TrialDesign() {
         </div>
 
         {/* Residential Trials */}
-        <div className="mb-20">
-          <h3 className="text-[36px] font-bold text-[#0a4479] text-center tracking-[0.72px] mb-8">
+        <div className="mb-10 sm:mb-14 lg:mb-20">
+          <h3 className="text-xl sm:text-2xl lg:text-[36px] font-bold text-[#0a4479] text-center tracking-[0.72px] mb-4 sm:mb-6 lg:mb-8">
             Residential Trials
           </h3>
-          <div className="text-[30px] font-normal text-[#0a4479] leading-normal tracking-[0.6px] space-y-8">
+          <div className="text-base sm:text-xl lg:text-[30px] font-normal text-[#0a4479] leading-normal tracking-[0.6px] space-y-5 sm:space-y-6 lg:space-y-8">
             <p>
               <strong>Day stay (single day) studies</strong> carried out within the Human Nutrition Unit research clinic – these studies require volunteer participants to spend the day at the Unit where a range of tests are carried. Most studies are complete by 5pm when volunteers return home.
             </p>
@@ -43,10 +43,10 @@ export default function TrialDesign() {
 
         {/* Community Trials */}
         <div>
-          <h3 className="text-[36px] font-bold text-[#0a4479] text-center tracking-[0.72px] mb-8">
+          <h3 className="text-xl sm:text-2xl lg:text-[36px] font-bold text-[#0a4479] text-center tracking-[0.72px] mb-4 sm:mb-6 lg:mb-8">
             Community Trials
           </h3>
-          <div className="text-[30px] font-normal text-[#0a4479] leading-normal tracking-[0.6px] space-y-8">
+          <div className="text-base sm:text-xl lg:text-[30px] font-normal text-[#0a4479] leading-normal tracking-[0.6px] space-y-5 sm:space-y-6 lg:space-y-8">
             <p>
               <strong>Long term (3-6 months) community studies</strong> which require visits to the Human Nutrition Unit research clinic for blood tests and other measurements – study participants continue their usual home life attending clinical visits to collect dietary test components and for study measurements. Long term studies allow the testing of products such as putative weight loss agents to be trialed.
             </p>

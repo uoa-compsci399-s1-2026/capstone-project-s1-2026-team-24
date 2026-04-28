@@ -78,3 +78,413 @@
 [ 7689211ms] [LOG] [Fast Refresh] done in 134ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
 [ 7711357ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
 [ 7711414ms] [LOG] [Fast Refresh] done in 50ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 7968949ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 7968996ms] [LOG] [Fast Refresh] done in 22ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8023764ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8023851ms] [LOG] [Fast Refresh] done in 129ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8023985ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8023994ms] [LOG] [Fast Refresh] done in 111ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8037406ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8037798ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8037798ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8037886ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8037886ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8037947ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8058908ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8058922ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8058923ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8082979ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8082979ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8083011ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8106102ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8106103ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8106122ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8115218ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8115219ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8115255ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8135586ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8135586ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8135629ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8154320ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8154320ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8154341ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8157684ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8157684ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8157785ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8158150ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8158150ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8158252ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8158427ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8158427ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8178996ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:49
+Expression expected
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                               ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8178997ms] [ERROR] ./src/components/sections/ResearchIntroduction.tsx:17:50
+Unexpected character '’'
+  15 |       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
+  16 |         <Link href="/about" className="hover:underline">About</Link>
+> 17 |         <span className="mx-2 font-normal"> {‘>’} </span>
+     |                                                ^
+  18 |         <span className="font-bold">Our Research</span>
+  19 |       </nav>
+  20 |
+
+Parsing ecmascript source code failed
+
+Import trace:
+  Server Component:
+    ./src/components/sections/ResearchIntroduction.tsx
+    ./src/app/research/page.tsx @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:3272
+[ 8179054ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8179086ms] [LOG] [Fast Refresh] done in 37ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8179334ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8179616ms] [LOG] [Fast Refresh] done in 382ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8610151ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8610332ms] [LOG] [Fast Refresh] done in 109ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8628860ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8628953ms] [LOG] [Fast Refresh] done in 53ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8834065ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431
+[ 8834079ms] [LOG] [Fast Refresh] done in 114ms @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_115brz8._.js:2431

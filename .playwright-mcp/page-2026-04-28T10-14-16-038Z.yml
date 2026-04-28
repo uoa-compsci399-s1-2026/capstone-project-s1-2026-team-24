@@ -1,0 +1,157 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link "DONATIONS" [ref=e6] [cursor=pointer]:
+        - /url: /collaborations/funding
+      - link "MEDIA" [ref=e7] [cursor=pointer]:
+        - /url: /media-publications
+      - link "NEWS" [ref=e8] [cursor=pointer]:
+        - /url: /news
+      - link "CONTACT" [ref=e9] [cursor=pointer]:
+        - /url: /contact
+      - button "EN" [ref=e11]:
+        - text: EN
+        - img [ref=e12]
+    - navigation "Main navigation" [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - link "University of Auckland — Home" [ref=e17] [cursor=pointer]:
+            - /url: /
+            - img "University of Auckland" [ref=e18]
+          - link "HNU — Home" [ref=e20] [cursor=pointer]:
+            - /url: /
+            - img "HNU" [ref=e21]
+        - button "Open menu" [ref=e22]:
+          - img [ref=e23]
+  - generic [ref=e25]:
+    - img [ref=e26]
+    - generic [ref=e27]:
+      - heading "Our Research" [level=1] [ref=e28]
+      - paragraph [ref=e29]:
+        - text: Better health through nutrition science.
+        - text: Explore our research in diet, disease, and clinical trials
+  - main [ref=e30]:
+    - generic [ref=e31]:
+      - navigation [ref=e32]:
+        - link "About" [ref=e33] [cursor=pointer]:
+          - /url: /about
+        - generic [ref=e34]: ">"
+        - text: Our Research
+      - generic [ref=e35]:
+        - heading "HNU is a nutrition research facility within The University of Auckland, New Zealand's most prestigious and largest University." [level=2] [ref=e36]
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - paragraph [ref=e39]: The Unit undertakes research to establish links between diet, health and disease prevention.
+            - paragraph [ref=e40]: We investigate the effects of whole foods, food components, bioactives and nutraceutical products on health and disease.
+            - paragraph [ref=e41]: Trials are carried out both as academic and commercial collaborations.
+          - generic [ref=e42]:
+            - generic [ref=e43]: Overweight and obesity
+            - generic [ref=e44]: Weight control & appetite regulation
+            - generic [ref=e45]: Metabolic syndrome & dyslipidaemia
+            - generic [ref=e46]: Cardiovascular & diabetic risk
+    - generic [ref=e48]:
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - heading "Our research focuses on key areas of human nutrition, including:" [level=3] [ref=e51]
+          - list [ref=e52]:
+            - listitem [ref=e53]: Obesity and body-weight control
+            - listitem [ref=e54]: Regulation of appetite
+            - listitem [ref=e55]: Obesity related metabolic disorders
+            - listitem [ref=e56]: Cardiovascular risk, including dyslipidaemias
+            - listitem [ref=e57]: Pre-diabetes and Type 2 diabetes
+            - listitem [ref=e58]: Metabolism & nutrition
+            - listitem [ref=e59]: Body Composition
+        - generic [ref=e61]:
+          - heading "Research into the health benefits of food components includes:" [level=3] [ref=e62]
+          - list [ref=e63]:
+            - listitem [ref=e64]: Dietary lipids, including omega-3 fatty acids (fish oils and nuts)
+            - listitem [ref=e65]: Dietary proteins, including dairy proteins
+            - listitem [ref=e66]: Dietary carbohydrates, including soluble (ß-glucan) and insoluble dietary fibres
+            - listitem [ref=e67]: Plant Flavonoids
+      - paragraph [ref=e68]: We conduct investigations into healthy men and women participants and participants with different states of metabolic health.
+    - generic [ref=e70]:
+      - heading "Trial Design" [level=2] [ref=e71]
+      - generic [ref=e72]:
+        - paragraph [ref=e73]: The Human Nutrition Unit carries out intervention trials investigating the relationships between diet and markers of health and disease.
+        - paragraph [ref=e74]: Trials are randomised, placebo-controlled, single or double blind interventions and may be of either a cross-over or parallel design.
+        - paragraph [ref=e75]: All trials are required to conform to human ethics procedures and good clinical practice (GCP), and human ethics committee approval is mandatory. Therapeutic trials are also required to obtain NZ Standing Committee on Therapeutic Trials (SCOTT) and MedSafe approval.
+      - generic [ref=e76]:
+        - heading "Residential Trials" [level=3] [ref=e77]
+        - generic [ref=e78]:
+          - paragraph [ref=e79]:
+            - strong [ref=e80]: Day stay (single day) studies
+            - text: carried out within the Human Nutrition Unit research clinic – these studies require volunteer participants to spend the day at the Unit where a range of tests are carried. Most studies are complete by 5pm when volunteers return home.
+          - paragraph [ref=e81]:
+            - strong [ref=e82]: Longer term (1-4 weeks) residential studies
+            - text: carried out within the Human Nutrition Unit residential facility – these studies require volunteer participants to live at the Unit and follow a carefully controlled dietary regime. Breakfast, dinner and overnight stay occur within the comfortable facilities of the Unit. During the day participants may attend work or study taking with them their food requirements for the day. Careful control and provision of all dietary components increases both the accuracy of the trial, since precise dietary components can be altered, and the compliance of the participants.
+          - paragraph [ref=e83]: Many of these studies are of a 'cross-over' design, where the participant completes both the treatment and control arms of the trial. This gives additional power to the study to detect significant effects of the dietary component under investigation using only a small number of trial subjects.
+          - paragraph [ref=e84]: Entry into the trial is randomised and treatment group blinded until completion.
+      - generic [ref=e85]:
+        - heading "Community Trials" [level=3] [ref=e86]
+        - generic [ref=e87]:
+          - paragraph [ref=e88]:
+            - strong [ref=e89]: Long term (3-6 months) community studies
+            - text: which require visits to the Human Nutrition Unit research clinic for blood tests and other measurements – study participants continue their usual home life attending clinical visits to collect dietary test components and for study measurements. Long term studies allow the testing of products such as putative weight loss agents to be trialed.
+          - paragraph [ref=e90]: Many of these studies are of a 'parallel' design, where participants are randomised into either the treatment or the control arm of the trial.
+    - generic [ref=e92]:
+      - generic [ref=e93]:
+        - heading "Does the heterogeneity in the energy cost of posture maintenance reside in differential patterns of spontaneous weight-shifting?" [level=2] [ref=e94]
+        - paragraph [ref=e95]: Due to sedentarity-associated disease risks, there is much interest in methods to increase low-intensity physical activity. In this context, it is widely assumed that altering posture allocation can modify energy expenditure (EE) to impact body-weight regulation and health. However, we have recently shown the existence of two distinct phenotypes pertaining to the energy cost of standing...
+        - link "More Information" [ref=e97] [cursor=pointer]:
+          - /url: /research/posture-maintenance
+      - img "Spinal page clipboard" [ref=e99]
+  - contentinfo [ref=e100]:
+    - generic [ref=e101]:
+      - generic [ref=e102]:
+        - generic [ref=e103]:
+          - img "University of Auckland" [ref=e104]
+          - img "HNU Auckland" [ref=e105]
+        - generic [ref=e106]:
+          - heading "Explore" [level=3] [ref=e107]
+          - list [ref=e108]:
+            - listitem [ref=e109]:
+              - link "Home" [ref=e110] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e111]:
+              - link "Our Team" [ref=e112] [cursor=pointer]:
+                - /url: /team
+            - listitem [ref=e113]:
+              - link "Research" [ref=e114] [cursor=pointer]:
+                - /url: /research
+            - listitem [ref=e115]:
+              - link "Studies" [ref=e116] [cursor=pointer]:
+                - /url: /studies
+            - listitem [ref=e117]:
+              - link "Contact" [ref=e118] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e119]:
+          - heading "Stay Updated" [level=3] [ref=e120]
+          - generic [ref=e123]:
+            - textbox "Email address for mailing list" [ref=e124]:
+              - /placeholder: Enter your email
+            - button "Subscribe" [ref=e125]
+      - list [ref=e127]:
+        - listitem [ref=e128]:
+          - link "The University of Auckland" [ref=e129] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz
+        - listitem [ref=e130]:
+          - generic [ref=e131]: "|"
+          - link "Accessibility" [ref=e132] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/accessibility.html
+        - listitem [ref=e133]:
+          - generic [ref=e134]: "|"
+          - link "Copyright by UniServices" [ref=e135] [cursor=pointer]:
+            - /url: https://www.uniservices.co.nz
+        - listitem [ref=e136]:
+          - generic [ref=e137]: "|"
+          - link "Privacy" [ref=e138] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/privacy.html
+        - listitem [ref=e139]:
+          - generic [ref=e140]: "|"
+          - link "Disclaimer" [ref=e141] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/disclaimer.html
+  - button "Open Next.js Dev Tools" [ref=e148] [cursor=pointer]:
+    - img [ref=e149]
+  - alert [ref=e152]
