@@ -5,118 +5,81 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-const NAV_ITEMS = [
-  { label: 'Home', href: '/' },
-  { label: 'About', href: '/about' },
-  { label: 'Research', href: '/research' },
-  {
-    label: 'Studies',
-    href: '/studies',
-    children: [
-      { label: 'Studies Overview', href: '/studies' },
-      { label: 'NZ Synergy Study', href: '/studies/nz-synergy' },
-      { label: 'Ferdinand Study', href: '/studies/ferdinand' },
-      { label: 'NZ Food & Beverage Study', href: '/studies/food-beverage' },
-    ],
-  },
-  {
-    label: 'Collaborations',
-    href: '/collaborations',
-    children: [
-      { label: 'Academic Collaborations', href: '/collaborations/academic' },
-      { label: 'Industry Collaboration', href: '/collaborations/industry' },
-      { label: 'Funding', href: '/collaborations/funding' },
-    ],
-  },
-  { label: 'Media & Publications', href: '/media-publications' },
+const ABOUT_ITEMS = [
+  { label: 'Discover HNU', href: '/about' },
+  { label: 'Our Team', href: '/team' },
+  { label: 'Our Research', href: '/research' },
+] as const;
+
+const TOP_BAR_LINKS = [
+  { label: 'DONATIONS', href: '/collaborations/funding' },
+  { label: 'MEDIA', href: '/media-publications' },
+  { label: 'NEWS', href: '/news' },
+  { label: 'CONTACT', href: '/contact' },
+] as const;
+
+const STUDIES_ITEMS = [
+  { label: 'Studies Overview', href: '/studies' },
+  { label: 'NZ Synergy Study', href: '/studies/nz-synergy' },
+  { label: 'NZ Food & Beverage Study', href: '/studies/food-beverage' },
+  { label: 'Ferdinand Study', href: '/studies/ferdinand' },
+] as const;
+
+const POPULAR_SEARCHES = [
+  { label: 'Donations', href: '/collaborations/funding' },
   { label: 'Contact', href: '/contact' },
 ] as const;
 
-type NavItem = (typeof NAV_ITEMS)[number];
-type DropdownItem = { label: string; href: string };
-
 export default function Navbar() {
   const pathname = usePathname();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [studiesOpen, setStudiesOpen] = useState(false);
+  const [searchStudiesOpen, setSearchStudiesOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const [lang, setLang] = useState<'EN' | 'ZH'>('EN');
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [mobileExpanded, setMobileExpanded] = useState<string | null>(null);
-  const navRef = useRef<HTMLElement>(null);
+  const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
+  const [mobileStudiesOpen, setMobileStudiesOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const isActive = (href: string) => {
-    if (!pathname) return false;
-    if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
-  };
-
-  // Close desktop dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (navRef.current && !navRef.current.contains(e.target as Node)) {
-        setOpenDropdown(null);
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) {
+        setAboutOpen(false);
+        setStudiesOpen(false);
+        setLangOpen(false);
+        setSearchOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close mobile menu on route change
   useEffect(() => {
     setMobileOpen(false);
-    setOpenDropdown(null);
-    setMobileExpanded(null);
+    setAboutOpen(false);
+    setStudiesOpen(false);
+    setSearchStudiesOpen(false);
+    setSearchOpen(false);
+    setLangOpen(false);
+    setMobileAboutOpen(false);
+    setMobileStudiesOpen(false);
   }, [pathname]);
 
-  function handleDropdownKeyDown(
-    e: React.KeyboardEvent<HTMLButtonElement>,
-    label: string,
-    children: readonly DropdownItem[],
-    dropdownId: string,
-  ) {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      setOpenDropdown(openDropdown === label ? null : label);
-    } else if (e.key === 'Escape') {
-      setOpenDropdown(null);
-    } else if (e.key === 'ArrowDown' && openDropdown === label) {
-      e.preventDefault();
-      const firstItem = document.querySelector<HTMLElement>(`#${dropdownId} a`);
-      firstItem?.focus();
+  useEffect(() => {
+    if (searchOpen) {
+      searchInputRef.current?.focus();
     }
-  }
+  }, [searchOpen]);
 
-  function handleDropdownItemKeyDown(
-    e: React.KeyboardEvent<HTMLAnchorElement>,
-    items: readonly DropdownItem[],
-    index: number,
-    dropdownId: string,
-  ) {
-    const allItems = document.querySelectorAll<HTMLElement>(`#${dropdownId} a`);
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      allItems[index + 1]?.focus();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (index === 0) {
-        // Focus the trigger button
-        const btn = document.querySelector<HTMLElement>(
-          `[aria-controls="${dropdownId}"]`,
-        );
-        btn?.focus();
-      } else {
-        allItems[index - 1]?.focus();
-      }
-    } else if (e.key === 'Escape') {
-      setOpenDropdown(null);
-      const btn = document.querySelector<HTMLElement>(
-        `[aria-controls="${dropdownId}"]`,
-      );
-      btn?.focus();
-    }
-  }
+  const mainNavStyle = searchOpen
+    ? { backgroundColor: '#0c0c48' }
+    : { background: 'linear-gradient(to bottom, #0c0c48 55%, #4a6a8c 85%, #7a96ae 100%)' };
 
   return (
     <>
-      {/* Skip to content */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:rounded focus:bg-white focus:text-[#0c0c48] focus:font-semibold"
@@ -124,121 +87,220 @@ export default function Navbar() {
         Skip to main content
       </a>
 
-      <nav
-        ref={navRef}
-        style={{ backgroundColor: '#0c0c48' }}
-        className="text-white relative z-40"
-        aria-label="Main navigation"
-      >
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex-shrink-0" aria-label="University of Auckland — Home">
-              <Image
-                src="/images/logos/UoA-Logo-Primary-RGB-Reversed-Small.png"
-                alt="University of Auckland"
-                width={120}
-                height={40}
-                priority
-              />
-            </Link>
+      <header ref={headerRef} className="relative z-40">
+        {/* Top utility bar */}
+        <div className="bg-white">
+          <div className="max-w-[1512px] mx-auto px-14 flex items-center justify-end h-10">
+            {TOP_BAR_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="px-3 text-[14px] font-bold tracking-[0.28px] text-[#0c0c48] hover:opacity-70 transition-opacity whitespace-nowrap"
+              >
+                {link.label}
+              </Link>
+            ))}
 
-            {/* Desktop nav */}
-            <div className="hidden lg:flex items-center gap-1">
-              {NAV_ITEMS.map((item) => {
-                const hasChildren = 'children' in item && item.children;
-                const dropdownId = `dropdown-${item.label.toLowerCase().replace(/\s+/g, '-')}`;
-
-                if (hasChildren) {
-                  return (
-                    <div key={item.label} className="relative">
+            {/* Language switcher */}
+            <div className="relative ml-1">
+              <button
+                onClick={() => setLangOpen(!langOpen)}
+                className="flex items-center gap-1 px-3 text-[14px] font-bold tracking-[0.28px] text-[#0c0c48] hover:opacity-70 transition-opacity"
+                aria-expanded={langOpen}
+                aria-haspopup="listbox"
+              >
+                {lang}
+                <svg
+                  className={`w-3 h-3 transition-transform ${langOpen ? 'rotate-180' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {langOpen && (
+                <ul
+                  role="listbox"
+                  className="absolute right-0 top-full mt-1 bg-white shadow-lg rounded border border-gray-100 z-50 min-w-[60px]"
+                >
+                  {(['EN', 'ZH'] as const).map((l) => (
+                    <li key={l} role="option" aria-selected={lang === l}>
                       <button
-                        id={`btn-${dropdownId}`}
-                        aria-haspopup="true"
-                        aria-expanded={openDropdown === item.label}
-                        aria-controls={dropdownId}
-                        onClick={() =>
-                          setOpenDropdown(openDropdown === item.label ? null : item.label)
-                        }
-                        onKeyDown={(e) =>
-                          handleDropdownKeyDown(e, item.label, item.children, dropdownId)
-                        }
-                        className={`flex items-center gap-1 px-3 py-2 text-sm rounded hover:bg-white/10 transition-colors ${
-                          isActive(item.href) ? 'font-semibold underline underline-offset-4' : ''
-                        }`}
+                        className={`block w-full px-4 py-2 text-[14px] font-bold text-[#0c0c48] hover:bg-gray-50 text-left ${lang === l ? 'bg-gray-50' : ''}`}
+                        onClick={() => { setLang(l); setLangOpen(false); }}
                       >
-                        {item.label}
-                        <svg
-                          className={`w-4 h-4 transition-transform ${openDropdown === item.label ? 'rotate-180' : ''}`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
+                        {l}
                       </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
 
-                      {openDropdown === item.label && (
-                        <ul
-                          id={dropdownId}
-                          role="menu"
-                          aria-labelledby={`btn-${dropdownId}`}
-                          className="absolute top-full left-0 mt-1 w-56 rounded shadow-lg py-1 z-50"
-                          style={{ backgroundColor: '#0c0c48', border: '1px solid rgba(255,255,255,0.15)' }}
-                        >
-                          {item.children.map((child, idx) => (
-                            <li key={child.href} role="none">
-                              <Link
-                                href={child.href}
-                                role="menuitem"
-                                className={`block px-4 py-2 text-sm hover:bg-white/10 transition-colors ${
-                                  isActive(child.href) ? 'font-semibold bg-white/10' : ''
-                                }`}
-                                onClick={() => setOpenDropdown(null)}
-                                onKeyDown={(e) =>
-                                  handleDropdownItemKeyDown(e, item.children, idx, dropdownId)
-                                }
-                              >
-                                {child.label}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  );
-                }
-
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`px-3 py-2 text-sm rounded hover:bg-white/10 transition-colors ${
-                      isActive(item.href) ? 'font-semibold underline underline-offset-4' : ''
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
+        {/* Main nav */}
+        <nav
+          style={mainNavStyle}
+          className="transition-[background] duration-300"
+          aria-label="Main navigation"
+        >
+          <div className="max-w-[1512px] mx-auto px-14 flex items-center justify-between h-[180px]">
+            {/* Logos */}
+            <div className="flex items-center">
+              <Link href="/" aria-label="University of Auckland — Home">
+                <Image
+                  src="/images/logos/UoA-Logo-Primary-RGB-Reversed-Small.png"
+                  alt="University of Auckland"
+                  width={164}
+                  height={78}
+                  priority
+                  className="object-contain"
+                />
+              </Link>
+              <div className="w-px h-16 bg-white/60 mx-5" aria-hidden="true" />
+              <Link href="/" aria-label="HNU — Home">
+                <Image
+                  src="/images/logos/hnu-logo.svg"
+                  alt="HNU"
+                  width={173}
+                  height={58}
+                  className="object-contain"
+                />
+              </Link>
             </div>
 
-            {/* Hamburger button */}
+            {/* Desktop nav items */}
+            <div className="hidden lg:flex items-center gap-8">
+              {/* About dropdown */}
+              <div className="relative">
+                <button
+                  className="flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+                  onClick={() => setAboutOpen(!aboutOpen)}
+                  aria-expanded={aboutOpen}
+                  aria-haspopup="true"
+                  aria-controls="about-dropdown"
+                >
+                  About
+                  <svg
+                    className={`w-3 h-3 transition-transform ${aboutOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {aboutOpen && (
+                  <ul
+                    id="about-dropdown"
+                    role="menu"
+                    className="absolute top-full left-0 mt-2 w-52 rounded shadow-lg py-1 z-50 border border-white/15"
+                    style={{ backgroundColor: '#0c0c48' }}
+                  >
+                    {ABOUT_ITEMS.map((item) => (
+                      <li key={item.href} role="none">
+                        <Link
+                          href={item.href}
+                          role="menuitem"
+                          className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+                          onClick={() => setAboutOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Studies dropdown */}
+              <div className="relative">
+                <button
+                  className="flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+                  onClick={() => setStudiesOpen(!studiesOpen)}
+                  aria-expanded={studiesOpen}
+                  aria-haspopup="true"
+                  aria-controls="studies-dropdown"
+                >
+                  Studies
+                  <svg
+                    className={`w-3 h-3 transition-transform ${studiesOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {studiesOpen && (
+                  <ul
+                    id="studies-dropdown"
+                    role="menu"
+                    className="absolute top-full left-0 mt-2 w-56 rounded shadow-lg py-1 z-50 border border-white/15"
+                    style={{ backgroundColor: '#0c0c48' }}
+                  >
+                    {STUDIES_ITEMS.map((item) => (
+                      <li key={item.href} role="none">
+                        <Link
+                          href={item.href}
+                          role="menuitem"
+                          className="block px-4 py-2 text-sm text-white hover:bg-white/10 transition-colors"
+                          onClick={() => setStudiesOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <Link
+                href="/collaborations"
+                className="text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+              >
+                Collaborations
+              </Link>
+
+              {/* Search / Close button */}
+              {searchOpen ? (
+                <button
+                  onClick={() => setSearchOpen(false)}
+                  className="flex items-center justify-center w-[57px] h-[57px] rounded-full border-[3px] border-white text-white hover:bg-white/10 transition-colors"
+                  aria-label="Close search"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  className="flex items-center gap-3 pl-4 pr-6 h-[57px] rounded-[28.5px] border-[3px] border-white text-white hover:bg-white/10 transition-colors text-[20px] tracking-[0.4px] whitespace-nowrap"
+                  aria-label="Open search"
+                >
+                  <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  Search
+                </button>
+              )}
+            </div>
+
+            {/* Mobile hamburger */}
             <button
-              className="lg:hidden p-2 rounded hover:bg-white/10 transition-colors"
+              className="lg:hidden p-2 rounded text-white hover:bg-white/10 transition-colors"
+              onClick={() => setMobileOpen(!mobileOpen)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
               aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
-              onClick={() => setMobileOpen(!mobileOpen)}
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                 {mobileOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -247,33 +309,45 @@ export default function Navbar() {
               </svg>
             </button>
           </div>
-        </div>
 
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div
-            id="mobile-menu"
-            style={{ backgroundColor: '#0c0c48', borderTop: '1px solid rgba(255,255,255,0.15)' }}
-          >
-            <ul className="max-w-7xl mx-auto px-4 py-2 space-y-1">
-              {NAV_ITEMS.map((item) => {
-                const hasChildren = 'children' in item && item.children;
+          {/* Search overlay panel */}
+          {searchOpen && (
+            <div className="px-14 pb-16 pt-2" style={{ backgroundColor: '#0c0c48' }}>
+              <div className="max-w-[741px]">
+                <div className="flex items-center gap-4 pb-4 border-b border-white/30">
+                  <input
+                    ref={searchInputRef}
+                    type="search"
+                    placeholder="Search"
+                    className="flex-1 bg-transparent text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
+                    aria-label="Search"
+                  />
+                  <svg
+                    className="w-10 h-10 text-white/75 flex-shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
 
-                if (hasChildren) {
-                  return (
-                    <li key={item.label}>
+                <div className="mt-3">
+                  <p className="text-white text-[16px] tracking-[0.32px] mb-1">Popular searches</p>
+                  <ul>
+                    {/* Studies with dropdown */}
+                    <li>
                       <button
-                        className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded hover:bg-white/10 transition-colors ${
-                          isActive(item.href) ? 'font-semibold' : ''
-                        }`}
-                        onClick={() =>
-                          setMobileExpanded(mobileExpanded === item.label ? null : item.label)
-                        }
-                        aria-expanded={mobileExpanded === item.label}
+                        className="flex items-center gap-2 text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
+                        onClick={() => setSearchStudiesOpen(!searchStudiesOpen)}
+                        aria-expanded={searchStudiesOpen}
+                        aria-haspopup="true"
+                        aria-controls="search-studies-dropdown"
                       >
-                        {item.label}
+                        Studies
                         <svg
-                          className={`w-4 h-4 transition-transform ${mobileExpanded === item.label ? 'rotate-180' : ''}`}
+                          className={`w-4 h-4 transition-transform ${searchStudiesOpen ? 'rotate-180' : ''}`}
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -282,43 +356,138 @@ export default function Navbar() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
-                      {mobileExpanded === item.label && (
-                        <ul className="ml-4 mt-1 space-y-1">
-                          {item.children.map((child) => (
-                            <li key={child.href}>
+                      {searchStudiesOpen && (
+                        <ul
+                          id="search-studies-dropdown"
+                          role="menu"
+                          className="ml-4 mb-1 border-l border-white/20 pl-4"
+                        >
+                          {STUDIES_ITEMS.map((item) => (
+                            <li key={item.href} role="none">
                               <Link
-                                href={child.href}
-                                className={`block px-3 py-2 text-sm rounded hover:bg-white/10 transition-colors ${
-                                  isActive(child.href) ? 'font-semibold bg-white/10' : ''
-                                }`}
+                                href={item.href}
+                                role="menuitem"
+                                className="block text-[16px] text-white/80 leading-[40px] hover:text-white hover:opacity-80 transition-colors"
+                                onClick={() => setSearchOpen(false)}
                               >
-                                {child.label}
+                                {item.label}
                               </Link>
                             </li>
                           ))}
                         </ul>
                       )}
                     </li>
-                  );
-                }
+                    {/* Plain popular search links */}
+                    {POPULAR_SEARCHES.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="block text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
+                          onClick={() => setSearchOpen(false)}
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+        </nav>
 
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={`block px-3 py-2 text-sm rounded hover:bg-white/10 transition-colors ${
-                        isActive(item.href) ? 'font-semibold underline underline-offset-4' : ''
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div
+            id="mobile-menu"
+            className="lg:hidden"
+            style={{ backgroundColor: '#0c0c48', borderTop: '1px solid rgba(255,255,255,0.15)' }}
+          >
+            <ul className="px-4 py-2 space-y-1">
+              <li>
+                <button
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
+                  onClick={() => setMobileAboutOpen(!mobileAboutOpen)}
+                  aria-expanded={mobileAboutOpen}
+                >
+                  About
+                  <svg
+                    className={`w-4 h-4 transition-transform ${mobileAboutOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {mobileAboutOpen && (
+                  <ul className="ml-4 mt-1 space-y-1">
+                    {ABOUT_ITEMS.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+              <li>
+                <button
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
+                  onClick={() => setMobileStudiesOpen(!mobileStudiesOpen)}
+                  aria-expanded={mobileStudiesOpen}
+                >
+                  Studies
+                  <svg
+                    className={`w-4 h-4 transition-transform ${mobileStudiesOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {mobileStudiesOpen && (
+                  <ul className="ml-4 mt-1 space-y-1">
+                    {STUDIES_ITEMS.map((item) => (
+                      <li key={item.href}>
+                        <Link
+                          href={item.href}
+                          className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+              <li>
+                <Link href="/collaborations" className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors">
+                  Collaborations
+                </Link>
+              </li>
+              <li className="border-t border-white/15 pt-1 mt-1">
+                {TOP_BAR_LINKS.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </li>
             </ul>
           </div>
         )}
-      </nav>
+      </header>
     </>
   );
 }

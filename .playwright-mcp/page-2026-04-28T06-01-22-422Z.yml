@@ -1,0 +1,130 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link "DONATIONS" [ref=e6] [cursor=pointer]:
+        - /url: /collaborations/funding
+      - link "MEDIA" [ref=e7] [cursor=pointer]:
+        - /url: /media-publications
+      - link "NEWS" [ref=e8] [cursor=pointer]:
+        - /url: /news
+      - link "CONTACT" [ref=e9] [cursor=pointer]:
+        - /url: /contact
+      - button "EN" [ref=e11]:
+        - text: EN
+        - img [ref=e12]
+    - navigation "Main navigation" [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - link "University of Auckland — Home" [ref=e17] [cursor=pointer]:
+            - /url: /
+            - img "University of Auckland" [ref=e18]
+          - link "HNU — Home" [ref=e20] [cursor=pointer]:
+            - /url: /
+            - img "HNU" [ref=e21]
+        - generic [ref=e22]:
+          - button "About" [ref=e24]:
+            - text: About
+            - img [ref=e25]
+          - link "Studies" [ref=e27] [cursor=pointer]:
+            - /url: /studies
+          - link "Collaborations" [ref=e28] [cursor=pointer]:
+            - /url: /collaborations
+          - button "Open search" [ref=e29]:
+            - img [ref=e30]
+            - text: Search
+  - main [ref=e32]:
+    - heading "Home" [level=1] [ref=e33]
+    - region "Audience pathways" [ref=e34]:
+      - generic [ref=e35]:
+        - generic [ref=e37]:
+          - paragraph [ref=e38]: Industry Partners
+          - heading "Work With Us" [level=2] [ref=e39]
+          - paragraph [ref=e40]: Partner with HNU to run clinical trials, access our participant network, and leverage our state-of-the-art research facilities. We work with pharmaceutical companies, biotech firms, and academic institutions to bring studies to life.
+          - list [ref=e41]:
+            - listitem [ref=e42]:
+              - generic [ref=e43]: ✓
+              - text: Clinical trial design & management
+            - listitem [ref=e44]:
+              - generic [ref=e45]: ✓
+              - text: Access to pre-screened participant pools
+            - listitem [ref=e46]:
+              - generic [ref=e47]: ✓
+              - text: Advanced on-site research facilities
+            - listitem [ref=e48]:
+              - generic [ref=e49]: ✓
+              - text: Regulatory & ethics expertise
+          - link "Explore Collaborations" [ref=e50] [cursor=pointer]:
+            - /url: /collaborations
+        - generic [ref=e52]:
+          - paragraph [ref=e53]: Study Participants
+          - heading "Join a Study" [level=2] [ref=e54]
+          - paragraph [ref=e55]: Healthy volunteers and patients are the heart of what we do. Participating in a study is safe, rewarding, and helps advance medicine for everyone. Find a study that fits your life.
+          - list [ref=e56]:
+            - listitem [ref=e57]:
+              - generic [ref=e58]: ✓
+              - text: Ethically approved & independently monitored
+            - listitem [ref=e59]:
+              - generic [ref=e60]: ✓
+              - text: Compensation provided for your time
+            - listitem [ref=e61]:
+              - generic [ref=e62]: ✓
+              - text: Regular health check-ups included
+            - listitem [ref=e63]:
+              - generic [ref=e64]: ✓
+              - text: Contribute to life-changing research
+          - link "Find a Study" [ref=e65] [cursor=pointer]:
+            - /url: /studies
+  - contentinfo [ref=e66]:
+    - generic [ref=e67]:
+      - generic [ref=e68]:
+        - generic [ref=e69]:
+          - img "University of Auckland" [ref=e70]
+          - img "HNU Auckland" [ref=e71]
+        - generic [ref=e72]:
+          - heading "Explore" [level=3] [ref=e73]
+          - list [ref=e74]:
+            - listitem [ref=e75]:
+              - link "Home" [ref=e76] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e77]:
+              - link "Our Team" [ref=e78] [cursor=pointer]:
+                - /url: /team
+            - listitem [ref=e79]:
+              - link "Research" [ref=e80] [cursor=pointer]:
+                - /url: /research
+            - listitem [ref=e81]:
+              - link "Studies" [ref=e82] [cursor=pointer]:
+                - /url: /studies
+            - listitem [ref=e83]:
+              - link "Contact" [ref=e84] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e85]:
+          - heading "Stay Updated" [level=3] [ref=e86]
+          - generic [ref=e89]:
+            - textbox "Email address for mailing list" [ref=e90]:
+              - /placeholder: Enter your email
+            - button "Subscribe" [ref=e91]
+      - list [ref=e93]:
+        - listitem [ref=e94]:
+          - link "The University of Auckland" [ref=e95] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz
+        - listitem [ref=e96]:
+          - generic [ref=e97]: "|"
+          - link "Accessibility" [ref=e98] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/accessibility.html
+        - listitem [ref=e99]:
+          - generic [ref=e100]: "|"
+          - link "Copyright by UniServices" [ref=e101] [cursor=pointer]:
+            - /url: https://www.uniservices.co.nz
+        - listitem [ref=e102]:
+          - generic [ref=e103]: "|"
+          - link "Privacy" [ref=e104] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/privacy.html
+        - listitem [ref=e105]:
+          - generic [ref=e106]: "|"
+          - link "Disclaimer" [ref=e107] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/disclaimer.html
+  - button "Open Next.js Dev Tools" [ref=e114] [cursor=pointer]:
+    - img [ref=e115]
