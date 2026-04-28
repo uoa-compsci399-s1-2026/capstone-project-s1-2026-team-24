@@ -1,106 +1,57 @@
-import Button from "@/components/ui/Button";
+import Image from "next/image";
 
 export default function AudiencePathway() {
   return (
     <section
-      style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)" }}
-      aria-label="Audience pathways"
+      style={{
+        width: "100vw",
+        marginLeft: "calc(-50vw + 50%)",
+        marginTop: "calc(-1 * var(--spacing) * 8)",
+      }}
+      aria-label="Human Nutrition Unit hero section"
+      className="overflow-visible"
     >
-      <div className="flex flex-col md:flex-row">
-        {/* Left pathway: For Industry Partners */}
-        <div
-          className="flex-1 flex flex-col items-center justify-center px-10 py-20 text-center text-white"
-          style={{ backgroundColor: "var(--uoa-waitemata)" }}
-        >
-          <div className="max-w-md">
-            <p className="text-sm font-semibold uppercase tracking-widest text-[var(--uoa-mahina)] mb-3">
-              Industry Partners
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-5">
-              Work With Us
-            </h2>
-            <p className="text-base sm:text-lg text-gray-300 mb-8 leading-relaxed">
-              Partner with HNU to run clinical trials, access our participant
-              network, and leverage our state-of-the-art research facilities.
-              We work with pharmaceutical companies, biotech firms, and
-              academic institutions to bring studies to life.
-            </p>
-            <ul className="text-sm text-gray-400 mb-10 space-y-2 text-left">
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" className="text-[var(--uoa-mahina)] mt-0.5">
-                  &#10003;
-                </span>
-                Clinical trial design &amp; management
-              </li>
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" className="text-[var(--uoa-mahina)] mt-0.5">
-                  &#10003;
-                </span>
-                Access to pre-screened participant pools
-              </li>
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" className="text-[var(--uoa-mahina)] mt-0.5">
-                  &#10003;
-                </span>
-                Advanced on-site research facilities
-              </li>
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" className="text-[var(--uoa-mahina)] mt-0.5">
-                  &#10003;
-                </span>
-                Regulatory &amp; ethics expertise
-              </li>
-            </ul>
-            <Button href="/collaborations" variant="secondary" size="lg">
-              Explore Collaborations
-            </Button>
+      <div
+        className="relative min-h-[860px] px-8 py-24 md:px-14 md:py-28 lg:px-24"
+        style={{
+          background:
+            "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
+        }}
+      >
+        {/* Hero bowl image */}
+        <div className="pointer-events-none absolute -left-75 bottom-[-320px] h-[1000px] w-[1000px]">
+          <div className="relative h-full w-full">
+            <Image
+              src="/images/nutrition plate.png"
+              alt="Colourful salad bowl with fresh vegetables"
+              fill
+              priority
+              sizes="900px"
+              className="object-contain drop-shadow-2xl"
+              style={{ transform: "scaleX(-1)" }}
+            />
           </div>
         </div>
 
-        {/* Right pathway: For Study Participants */}
-        <div
-          className="flex-1 flex flex-col items-center justify-center px-10 py-20 text-center"
-          style={{ backgroundColor: "var(--uoa-mahina)", color: "var(--uoa-waitemata)" }}
-        >
-          <div className="max-w-md">
-            <p
-              className="text-sm font-semibold uppercase tracking-widest mb-3"
-              style={{ color: "var(--uoa-waitemata)", opacity: 0.6 }}
+        <div className="relative z-10 mx-auto flex min-h-[580px] max-w-9xl items-center justify-center lg:justify-end">
+          <div className="max-w-6xl text-center text-white lg:text-right">
+            <h2
+              className="leading-[1.05]"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "76px",
+                fontWeight: 800,
+                opacity: 0.75,
+              }}
             >
-              Study Participants
-            </p>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-5">
-              Join a Study
+              Unlock the power of food with the Human Nutrition Unit
             </h2>
-            <p className="text-base sm:text-lg mb-8 leading-relaxed" style={{ color: "var(--uoa-waitemata)", opacity: 0.85 }}>
-              Healthy volunteers and patients are the heart of what we do.
-              Participating in a study is safe, rewarding, and helps advance
-              medicine for everyone. Find a study that fits your life.
-            </p>
-            <ul
-              className="text-sm mb-10 space-y-2 text-left"
-              style={{ color: "var(--uoa-waitemata)", opacity: 0.75 }}
+            <a
+              href="/studies"
+              className="mt-12 inline-flex rounded-full border-[3px] border-white/75 px-10 py-4 text-xl font-semibold tracking-wide text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" style={{ opacity: 1, color: "var(--uoa-waitemata)" }} className="mt-0.5 font-bold">&#10003;</span>
-                Ethically approved &amp; independently monitored
-              </li>
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" style={{ opacity: 1, color: "var(--uoa-waitemata)" }} className="mt-0.5 font-bold">&#10003;</span>
-                Compensation provided for your time
-              </li>
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" style={{ opacity: 1, color: "var(--uoa-waitemata)" }} className="mt-0.5 font-bold">&#10003;</span>
-                Regular health check-ups included
-              </li>
-              <li className="flex items-start gap-2">
-                <span aria-hidden="true" style={{ opacity: 1, color: "var(--uoa-waitemata)" }} className="mt-0.5 font-bold">&#10003;</span>
-                Contribute to life-changing research
-              </li>
-            </ul>
-            <Button href="/studies" variant="primary" size="lg">
-              Find a Study
-            </Button>
+              JOIN A STUDY
+            </a>
           </div>
         </div>
       </div>
