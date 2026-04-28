@@ -76,7 +76,7 @@ export default function Navbar() {
 
   const mainNavStyle = searchOpen
     ? { backgroundColor: '#0c0c48' }
-    : { background: 'linear-gradient(to bottom, #0c0c48 55%, #4a6a8c 85%, #7a96ae 100%)' };
+    : {};
 
   return (
     <>
