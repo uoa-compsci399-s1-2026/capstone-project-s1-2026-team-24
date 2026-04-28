@@ -104,7 +104,12 @@ export default function AudiencePathway() {
                   key={title}
                   className="rounded-[30px] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
                 >
-                  <div className="h-[250px] rounded-[10px] bg-red-500" />
+                  <div className="h-[250px] rounded-[10px]">
+                    <img
+                      src="/674d07898d4f507a734d7b00_Photo for Synergy Study Advertisement_Edited_0-p-2000.jpg"
+                    />
+                  </div>
+                    
                   <p
                     className="pt-5 text-center text-[#17174f]"
                     style={{
@@ -120,15 +125,16 @@ export default function AudiencePathway() {
             )}
           </div>
 
-          <div className="mt-24 overflow-hidden rounded-[30px] shadow-[0_15px_30px_rgba(0,0,0,0.12)]">
-            <div className="grid min-h-[520px] md:grid-cols-[1.2fr_1fr]">
-              <div
-                className="flex flex-col justify-between px-10 py-10 text-white md:px-14 md:py-14"
-                style={{
-                  background:
-                    "linear-gradient(90deg, #0f4b88 0%, #0d447d 58%, rgba(13,68,125,0.25) 100%)",
-                }}
-              >
+          <div className="mt-22 overflow-hidden rounded-[30px] shadow-[0_15px_30px_rgba(0,0,0,0.12)]">
+            {/* <div className="grid min-h-[520px] md:grid-cols-[1.2fr_1fr]"> */}
+              <div className="relative h-full min-h-[713px] w-full">
+                  <Image
+                    src="/1630363804706 (1).jpg"
+                    alt="HNU team member standing by blue railings"
+                    fill
+                    sizes="(min-width: 768px) 40vw, 100vw"
+                    className="object-cover object-right translate-y-14"
+                  />
                 <div>
                   <h3
                     style={{
@@ -176,20 +182,10 @@ export default function AudiencePathway() {
                   Read More &rarr;
                 </a>
               </div>
-
-              <div className="relative h-full min-h-[520px]">
-                <Image
-                  src="/1630363804706 (1).jpg"
-                  alt="HNU team member standing by blue railings"
-                  fill
-                  sizes="(min-width: 768px) 40vw, 100vw"
-                  className="object-cover object-right"
-                />
-              </div>
             </div>
           </div>
         </div>
-      </div>
+       {/* </div> */}
     </section>
   );
 }
