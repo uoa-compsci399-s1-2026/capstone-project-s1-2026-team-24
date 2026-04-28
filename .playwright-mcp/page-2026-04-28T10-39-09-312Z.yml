@@ -1,0 +1,168 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link "DONATIONS" [ref=e6] [cursor=pointer]:
+        - /url: /collaborations/funding
+      - link "MEDIA" [ref=e7] [cursor=pointer]:
+        - /url: /media-publications
+      - link "NEWS" [ref=e8] [cursor=pointer]:
+        - /url: /news
+      - link "CONTACT" [ref=e9] [cursor=pointer]:
+        - /url: /contact
+      - button "EN" [ref=e11]:
+        - text: EN
+        - img [ref=e12]
+    - navigation "Main navigation" [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - link "University of Auckland — Home" [ref=e17] [cursor=pointer]:
+            - /url: /
+            - img "University of Auckland" [ref=e18]
+          - link "HNU — Home" [ref=e20] [cursor=pointer]:
+            - /url: /
+            - img "HNU" [ref=e21]
+        - button "Open menu" [ref=e22]:
+          - img [ref=e23]
+  - generic [ref=e25]:
+    - img [ref=e26]
+    - generic [ref=e27]:
+      - heading "Collaborations" [level=1] [ref=e28]
+      - paragraph [ref=e29]:
+        - text: Building partnerships in nutrition research.
+        - text: Learn more about our collaborative work and initiatives
+  - main [ref=e30]:
+    - generic [ref=e31]:
+      - navigation [ref=e32]:
+        - link "About" [ref=e33] [cursor=pointer]:
+          - /url: /about
+        - text: ">"
+        - strong [ref=e34]: Collaborations
+      - generic [ref=e35]:
+        - heading "Our Collaborations" [level=2] [ref=e36]
+        - paragraph [ref=e37]: The Human Nutrition Unit encourages research collaborations with industry and academic units, both nationally and internationally.
+        - paragraph [ref=e38]: "The research pathway includes:"
+        - list [ref=e39]:
+          - listitem [ref=e40]: early inception hypotheses
+          - listitem [ref=e41]: protocol development
+          - listitem [ref=e42]: ethical and regulatory approval
+          - listitem [ref=e43]: completion of trials
+          - listitem [ref=e44]: data analysis
+          - listitem [ref=e45]: interpretation
+          - listitem [ref=e46]: report writing and publication
+        - paragraph [ref=e47]: The Unit ensures compliance with Good Clinical Practice, up to the level of ICH GCP where required, and has experience of and welcomes independent trial monitoring and audit processes.
+      - generic [ref=e49]:
+        - heading "Academic Collaborations" [level=2] [ref=e50]
+        - paragraph [ref=e51]: Academic collaborations aim to contribute to nutrition research within an academic environment.
+        - paragraph [ref=e52]: As well as collaborations with Schools and Faculties within the University of Auckland, the Unit also collaborates with the Wellington Medical School, University of Otago, NZ and internationally with academic departments in Australia, Japan and Hong Kong.
+        - paragraph [ref=e53]: Examples of Collaborations
+        - list [ref=e54]:
+          - listitem [ref=e55]: dairy bioactives and health, LactoPharma consortium
+          - listitem [ref=e56]: marine polysaccharide Chitosan and weight loss, collaboration with the University of Queensland, Aus
+          - listitem [ref=e57]: Omega-3 polyunsaturated fatty acids (fish oils) and stroke, collaboration with the George Institute, Aus
+          - listitem [ref=e58]: Adipokynes in obesity, collaboration with the University of Hong Kong
+      - generic [ref=e60]:
+        - heading "Industry Collaboration" [level=2] [ref=e61]
+        - paragraph [ref=e62]: The Unit provides independent expertise for Industry collaboration.
+        - paragraph [ref=e63]: "Examples of Collaborations:"
+        - generic [ref=e64]:
+          - paragraph [ref=e65]:
+            - strong [ref=e66]: Pharmaceutical
+            - text: "— new therapeutics for treatment of diabetic cardiomyopathy: complete diet balance studies"
+          - paragraph [ref=e67]:
+            - strong [ref=e68]: Food
+            - text: — novel butter fat and cardiovascular risk
+          - paragraph [ref=e69]:
+            - strong [ref=e70]: Food components
+            - text: — dairy lipids & proteins and cholesterol lowering
+          - paragraph [ref=e71]:
+            - strong [ref=e72]: Food ingredients
+            - text: — barley ß-glucan Glucagel and cholesterol lowering; barley ß-glucan Cerogen and glucose control
+          - paragraph [ref=e73]:
+            - strong [ref=e74]: Nutraceuticals
+            - text: — marine polysaccharide Chitosan and weight loss; Omega-3 polyunsaturated fatty acids (fish oils) and stroke.
+        - paragraph [ref=e75]: The Human Nutrition Unit is also a member of the LactoPharma consortium, a NZ-wide collaborative program supported by the NZ Foundation for Research Science and Technology (FRST) and the NZ dairy company Fonterra Co-Operative group Ltd.
+      - generic [ref=e77]:
+        - heading "Funding" [level=2] [ref=e78]
+        - paragraph [ref=e79]: The Unit receives highly competitive grant and commercial funding.
+        - paragraph [ref=e80]: Grant Funding
+        - generic [ref=e81]:
+          - paragraph [ref=e82]: High Value Nutrition
+          - paragraph [ref=e83]: The Riddet Institute
+          - paragraph [ref=e84]: Ministry of Business, Innovation and Employment (MBIE), NZ
+          - paragraph [ref=e85]: Health Research Council, NZ
+        - paragraph [ref=e86]: Commercial Funding and Sponsorship
+        - list [ref=e87]:
+          - listitem [ref=e88]: Pharmaceutical Industry
+          - listitem [ref=e89]: Nutraceutical Industry
+          - listitem [ref=e90]: Food Industry
+    - generic [ref=e91]:
+      - heading "OUR PARTNERS" [level=2] [ref=e92]
+      - generic "Our partners" [ref=e93]:
+        - generic [ref=e94]:
+          - img [ref=e96]
+          - img [ref=e98]
+          - img [ref=e100]
+          - img [ref=e102]
+          - img [ref=e104]
+          - img [ref=e106]
+          - img [ref=e108]
+          - img [ref=e110]
+          - img [ref=e112]
+          - img [ref=e114]
+          - img [ref=e116]
+          - img [ref=e118]
+  - contentinfo [ref=e119]:
+    - generic [ref=e120]:
+      - generic [ref=e121]:
+        - generic [ref=e122]:
+          - img "University of Auckland" [ref=e123]
+          - img "HNU Auckland" [ref=e124]
+        - generic [ref=e125]:
+          - heading "Explore" [level=3] [ref=e126]
+          - list [ref=e127]:
+            - listitem [ref=e128]:
+              - link "Home" [ref=e129] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e130]:
+              - link "Our Team" [ref=e131] [cursor=pointer]:
+                - /url: /team
+            - listitem [ref=e132]:
+              - link "Research" [ref=e133] [cursor=pointer]:
+                - /url: /research
+            - listitem [ref=e134]:
+              - link "Studies" [ref=e135] [cursor=pointer]:
+                - /url: /studies
+            - listitem [ref=e136]:
+              - link "Contact" [ref=e137] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e138]:
+          - heading "Stay Updated" [level=3] [ref=e139]
+          - generic [ref=e142]:
+            - textbox "Email address for mailing list" [ref=e143]:
+              - /placeholder: Enter your email
+            - button "Subscribe" [ref=e144]
+      - list [ref=e146]:
+        - listitem [ref=e147]:
+          - link "The University of Auckland" [ref=e148] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz
+        - listitem [ref=e149]:
+          - generic [ref=e150]: "|"
+          - link "Accessibility" [ref=e151] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/accessibility.html
+        - listitem [ref=e152]:
+          - generic [ref=e153]: "|"
+          - link "Copyright by UniServices" [ref=e154] [cursor=pointer]:
+            - /url: https://www.uniservices.co.nz
+        - listitem [ref=e155]:
+          - generic [ref=e156]: "|"
+          - link "Privacy" [ref=e157] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/privacy.html
+        - listitem [ref=e158]:
+          - generic [ref=e159]: "|"
+          - link "Disclaimer" [ref=e160] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/disclaimer.html
+  - button "Open Next.js Dev Tools" [ref=e167] [cursor=pointer]:
+    - img [ref=e168]
+  - alert [ref=e171]

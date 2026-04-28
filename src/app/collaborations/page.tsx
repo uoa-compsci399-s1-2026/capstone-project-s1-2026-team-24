@@ -1,9 +1,31 @@
-import PageLayout from '@/components/layout/PageLayout';
+import type { Metadata } from 'next';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import CollaborationsHero from '@/components/sections/CollaborationsHero';
+import CollaborationsBody from '@/components/sections/CollaborationsBody';
+import OurPartners from '@/components/sections/OurPartners';
+
+export const metadata: Metadata = {
+  title: 'Collaborations | HNU Auckland',
+  description:
+    'Building partnerships in nutrition research. Learn more about our collaborative work and initiatives.',
+};
 
 export default function CollaborationsPage() {
   return (
-    <PageLayout title="Collaborations | UoA Research" description="Academic and industry collaborations at the University of Auckland">
-      <h1>Collaborations</h1>
-    </PageLayout>
+    <>
+      <Navbar />
+      {/*
+        CollaborationsHero is a direct flex sibling of Navbar in the body's flex-col.
+        Its negative margin-top slides it up behind the transparent navbar while
+        padding-top keeps the visible text below the navbar.
+      */}
+      <CollaborationsHero />
+      <main id="main-content">
+        <CollaborationsBody />
+        <OurPartners />
+      </main>
+      <Footer />
+    </>
   );
 }
