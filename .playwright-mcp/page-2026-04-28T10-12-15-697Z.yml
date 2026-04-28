@@ -1,0 +1,168 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link "DONATIONS" [ref=e6] [cursor=pointer]:
+        - /url: /collaborations/funding
+      - link "MEDIA" [ref=e7] [cursor=pointer]:
+        - /url: /media-publications
+      - link "NEWS" [ref=e8] [cursor=pointer]:
+        - /url: /news
+      - link "CONTACT" [ref=e9] [cursor=pointer]:
+        - /url: /contact
+      - button "EN" [ref=e11]:
+        - text: EN
+        - img [ref=e12]
+    - navigation "Main navigation" [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - link "University of Auckland — Home" [ref=e17] [cursor=pointer]:
+            - /url: /
+            - img "University of Auckland" [ref=e18]
+          - link "HNU — Home" [ref=e20] [cursor=pointer]:
+            - /url: /
+            - img "HNU" [ref=e21]
+        - button "Open menu" [ref=e22]:
+          - img [ref=e23]
+  - generic [ref=e25]:
+    - img [ref=e26]
+    - generic [ref=e27]:
+      - heading "Our Team" [level=1] [ref=e28]
+      - paragraph [ref=e29]:
+        - text: We're passionate about what we do.
+        - text: Find out more about the people behind
+        - text: the Human Nutrition Unit
+  - main [ref=e30]:
+    - paragraph [ref=e32]:
+      - link "About" [ref=e33] [cursor=pointer]:
+        - /url: /about
+      - text: ">"
+      - strong [ref=e34]: Our Team
+    - generic [ref=e36]:
+      - heading "Board of Directors" [level=2] [ref=e37]
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - img "Dr Jennifer Miles Chan" [ref=e41]
+          - generic [ref=e42]:
+            - heading "Dr Jennifer Miles Chan" [level=3] [ref=e43]
+            - paragraph [ref=e44]: Managing Director
+            - generic [ref=e45]:
+              - img [ref=e47]
+              - img [ref=e50]
+        - generic [ref=e53]:
+          - img "Professor Sally Poppitt" [ref=e55]
+          - generic [ref=e56]:
+            - heading "Professor Sally Poppitt" [level=3] [ref=e57]
+            - paragraph [ref=e58]: Founding Director
+            - generic [ref=e59]:
+              - img [ref=e61]
+              - img [ref=e64]
+        - generic [ref=e67]:
+          - img "Professor Garth Cooper" [ref=e69]
+          - generic [ref=e70]:
+            - heading "Professor Garth Cooper" [level=3] [ref=e71]
+            - paragraph [ref=e72]: Co-Director
+            - generic [ref=e73]:
+              - img [ref=e75]
+              - img [ref=e78]
+    - generic [ref=e82]:
+      - heading "Research Team" [level=2] [ref=e83]
+      - generic [ref=e84]:
+        - generic [ref=e85]:
+          - img "Dr Ivana Sequeira" [ref=e87]
+          - heading "Dr Ivana Sequeira" [level=3] [ref=e88]
+          - paragraph [ref=e89]: Senior Lecturer
+        - generic [ref=e90]:
+          - img "Dr Louise Lu" [ref=e92]
+          - heading "Dr Louise Lu" [level=3] [ref=e93]
+          - paragraph [ref=e94]: Research Fellow
+        - generic [ref=e95]:
+          - img "Mr Jack Penhaligan" [ref=e97]
+          - heading "Mr Jack Penhaligan" [level=3] [ref=e98]
+          - paragraph [ref=e99]: PhD Candidate
+        - generic [ref=e100]:
+          - img "Ms Julia Cree" [ref=e102]
+          - heading "Ms Julia Cree" [level=3] [ref=e103]
+          - paragraph [ref=e104]: PhD Candidate
+        - generic [ref=e105]:
+          - img "Mr Kok Hong Leiu" [ref=e107]
+          - heading "Mr Kok Hong Leiu" [level=3] [ref=e108]
+          - paragraph [ref=e109]: PhD Candidate
+        - generic [ref=e110]:
+          - img "Ms Theresa Alipia" [ref=e112]
+          - heading "Ms Theresa Alipia" [level=3] [ref=e113]
+          - paragraph [ref=e114]: PhD Candidate
+        - generic [ref=e115]:
+          - img "Dr William Zhu" [ref=e117]
+          - heading "Dr William Zhu" [level=3] [ref=e118]
+          - paragraph [ref=e119]: Research Nurse
+        - generic [ref=e120]:
+          - img "Ms Shakeela Jayasinghe" [ref=e122]
+          - heading "Ms Shakeela Jayasinghe" [level=3] [ref=e123]
+          - paragraph [ref=e124]: HNU Administrator
+        - generic [ref=e125]:
+          - img "Ms Natalie Radich" [ref=e127]
+          - heading "Ms Natalie Radich" [level=3] [ref=e128]
+          - paragraph [ref=e129]: HNU Administrator
+        - generic [ref=e130]:
+          - img "Mr Saril Vaid" [ref=e132]
+          - heading "Mr Saril Vaid" [level=3] [ref=e133]
+          - paragraph [ref=e134]: Metabolic Cook
+        - generic [ref=e135]:
+          - img "Ms Niamh Brennan" [ref=e137]
+          - heading "Ms Niamh Brennan" [level=3] [ref=e138]
+          - paragraph [ref=e139]: Research Assistant
+  - contentinfo [ref=e140]:
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - generic [ref=e143]:
+          - img "University of Auckland" [ref=e144]
+          - img "HNU Auckland" [ref=e145]
+        - generic [ref=e146]:
+          - heading "Explore" [level=3] [ref=e147]
+          - list [ref=e148]:
+            - listitem [ref=e149]:
+              - link "Home" [ref=e150] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e151]:
+              - link "Our Team" [ref=e152] [cursor=pointer]:
+                - /url: /team
+            - listitem [ref=e153]:
+              - link "Research" [ref=e154] [cursor=pointer]:
+                - /url: /research
+            - listitem [ref=e155]:
+              - link "Studies" [ref=e156] [cursor=pointer]:
+                - /url: /studies
+            - listitem [ref=e157]:
+              - link "Contact" [ref=e158] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e159]:
+          - heading "Stay Updated" [level=3] [ref=e160]
+          - generic [ref=e163]:
+            - textbox "Email address for mailing list" [ref=e164]:
+              - /placeholder: Enter your email
+            - button "Subscribe" [ref=e165]
+      - list [ref=e167]:
+        - listitem [ref=e168]:
+          - link "The University of Auckland" [ref=e169] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz
+        - listitem [ref=e170]:
+          - generic [ref=e171]: "|"
+          - link "Accessibility" [ref=e172] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/accessibility.html
+        - listitem [ref=e173]:
+          - generic [ref=e174]: "|"
+          - link "Copyright by UniServices" [ref=e175] [cursor=pointer]:
+            - /url: https://www.uniservices.co.nz
+        - listitem [ref=e176]:
+          - generic [ref=e177]: "|"
+          - link "Privacy" [ref=e178] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/privacy.html
+        - listitem [ref=e179]:
+          - generic [ref=e180]: "|"
+          - link "Disclaimer" [ref=e181] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/disclaimer.html
+  - button "Open Next.js Dev Tools" [ref=e188] [cursor=pointer]:
+    - img [ref=e189]
+  - alert [ref=e192]
