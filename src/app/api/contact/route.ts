@@ -1,26 +1,68 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-export async function POST(request: NextRequest) {
+const ALLOWED_CATEGORIES = [
+  "Study Participant Inquiry",
+  "Industry Partnership",
+  "Media & Press",
+  "General Enquiry",
+  "Other",
+] as const;
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+export async function POST(request: Request) {
   try {
-    const { name, email, category, message } = await request.json();
+    const body = await request.json().catch(() => null);
+    const name = typeof body?.name === "string" ? body.name.trim() : "";
+    const email = typeof body?.email === "string" ? body.email.trim() : "";
+    const category =
+      typeof body?.category === "string" ? body.category.trim() : "";
+    const message =
+      typeof body?.message === "string" ? body.message.trim() : "";
 
-    if (!name?.trim() || !email?.trim() || !category?.trim() || !message?.trim()) {
-      return NextResponse.json({ error: 'All fields are required.' }, { status: 400 });
+    if (!name || !email || !category || !message) {
+      return NextResponse.json(
+        { error: "name, email, category, and message are required." },
+        { status: 400 },
+      );
     }
 
-    const submission = await prisma.contactSubmission.create({
+    if (!isValidEmail(email)) {
+      return NextResponse.json(
+        { error: "email must be a valid email address." },
+        { status: 400 },
+      );
+    }
+
+    if (
+      !ALLOWED_CATEGORIES.includes(
+        category as (typeof ALLOWED_CATEGORIES)[number],
+      )
+    ) {
+      return NextResponse.json(
+        { error: "category must be one of the allowed values." },
+        { status: 400 },
+      );
+    }
+
+    await prisma.contactSubmission.create({
       data: {
-        name: name.trim(),
-        email: email.trim(),
-        category: category.trim(),
-        message: message.trim(),
+        name,
+        email,
+        category,
+        message,
       },
     });
 
-    return NextResponse.json({ id: submission.id }, { status: 201 });
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {
-    console.error('Failed to submit contact form:', error);
-    return NextResponse.json({ error: 'Failed to submit. Please try again.' }, { status: 500 });
+    console.error("POST /api/contact failed:", error);
+    return NextResponse.json(
+      { error: "Failed to process contact submission." },
+      { status: 500 },
+    );
   }
 }
