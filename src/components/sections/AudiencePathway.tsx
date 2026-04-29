@@ -1,12 +1,32 @@
 import Image from "next/image";
+import PostureMaintenanceCallout from '@/components/sections/PostureMaintenanceCallout';
+import OurPartners from '@/components/sections/OurPartners';
+
 
 export default function AudiencePathway() {
+  const studies = [
+    {
+      title: "NZ Synergy",
+      imageSrc:
+        "/674d07898d4f507a734d7b00_Photo for Synergy Study Advertisement_Edited_0-p-2000.jpg",
+    },
+    {
+      title: "NZ Food and Beverage",
+      imageSrc: "/feijoa.jpg",
+    },
+    {
+      title: "Ferdinand",
+      imageSrc: "/ferdinand.jpg",
+    },
+  ];
+
   return (
     <section
       style={{
         width: "100vw",
         marginLeft: "calc(-50vw + 50%)",
         marginTop: "-310px",
+        marginBottom: "-65px",
       }}
       aria-label="Human Nutrition Unit hero section"
       className="overflow-visible"
@@ -98,44 +118,48 @@ export default function AudiencePathway() {
           </h3>
 
           <div className="mt-10 grid gap-8 md:grid-cols-3">
-            {["NZ Synergy", "NZ Food and Beverage", "Ferdinand"].map(
-              (title) => (
-                <div
-                  key={title}
-                  className="rounded-[30px] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
-                >
-                  <div className="h-[250px] rounded-[10px]">
-                    <img
-                      src="/674d07898d4f507a734d7b00_Photo for Synergy Study Advertisement_Edited_0-p-2000.jpg"
-                    />
-                  </div>
-                    
-                  <p
-                    className="pt-5 text-center text-[#17174f]"
-                    style={{
-                      fontFamily: "Inter, sans-serif",
-                      fontSize: "28px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {title}
-                  </p>
+            {studies.map((study) => (
+              <div
+                key={study.title}
+                className="rounded-[30px] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+              >
+                <div className="w-[375px] h-[300px] mx-auto overflow-hidden rounded-[10px]">
+                  <img
+                    src={study.imageSrc}
+                    className="w-full h-full object-cover"
+                    alt={study.title}
+                  />
                 </div>
-              ),
-            )}
+
+                <p
+                  className="pt-5 text-center text-[#17174f]"
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: "28px",
+                    fontWeight: 700,
+                  }}
+                >
+                  {study.title}
+                </p>
+              </div>
+            ))}
           </div>
 
           <div className="mt-22 overflow-hidden rounded-[30px] shadow-[0_15px_30px_rgba(0,0,0,0.12)]">
-            {/* <div className="grid min-h-[520px] md:grid-cols-[1.2fr_1fr]"> */}
-              <div className="relative h-full min-h-[713px] w-full">
-                  <Image
-                    src="/1630363804706 (1).jpg"
-                    alt="HNU team member standing by blue railings"
-                    fill
-                    sizes="(min-width: 768px) 40vw, 100vw"
-                    className="object-cover object-right translate-y-14"
-                  />
-                <div>
+            <div className="relative h-180 w-full">
+              <Image
+                src="/1630363804706 (1).jpg"
+                alt="HNU team member standing by blue railings"
+                fill
+                sizes="(min-width: 768px) 40vw, 100vw"
+                className="object-cover object-top w-full h-full"
+              />
+              {/* Blue overlay */}
+              <div className="absolute inset-0 z-[5] bg-[linear-gradient(to_right,#0A4479_0%,#0A4479_40%,rgba(10,68,121,0)_70%,rgba(10,68,121,0)_100%)]" />
+
+              {/* Text container */}
+              <div className="absolute inset-0 z-10 flex items-center pl-[90px] text-white">
+                <div className="h-[550px] w-[450px] flex flex-col gap-5">
                   <h3
                     style={{
                       fontFamily: "Inter, sans-serif",
@@ -145,6 +169,7 @@ export default function AudiencePathway() {
                   >
                     About Us
                   </h3>
+
                   <p
                     className="mt-8 max-w-[620px] leading-[1.35]"
                     style={{
@@ -157,6 +182,7 @@ export default function AudiencePathway() {
                     of Auckland, New Zealand&apos;s most prestigious and largest
                     University.
                   </p>
+
                   <p
                     className="mt-8 max-w-[620px] leading-[1.35]"
                     style={{
@@ -168,24 +194,27 @@ export default function AudiencePathway() {
                     The Unit undertakes research to establish links between
                     diet, health and disease prevention.
                   </p>
-                </div>
 
-                <a
-                  href="/about"
-                  className="mt-10 inline-flex text-white underline underline-offset-4"
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: "20px",
-                    fontWeight: 400,
-                  }}
-                >
-                  Read More &rarr;
-                </a>
+                  <a
+                    href="/about"
+                    className="mt-10 inline-flex text-white underline underline-offset-4"
+                    style={{
+                      fontFamily: "Inter, sans-serif",
+                      fontSize: "20px",
+                      fontWeight: 400,
+                    }}
+                  >
+                    Read More &rarr;
+                  </a>
+
+                </div>
               </div>
             </div>
           </div>
         </div>
-       {/* </div> */}
+      </div>
+      <PostureMaintenanceCallout />
+      <OurPartners />
     </section>
   );
 }
