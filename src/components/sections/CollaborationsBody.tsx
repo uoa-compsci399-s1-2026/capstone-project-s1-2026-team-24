@@ -29,7 +29,8 @@ function SectionDivider() {
 
 export default function CollaborationsBody() {
   return (
-    <section className="bg-white py-8 sm:py-10 lg:py-12 px-4 sm:px-8 lg:px-[93px] max-w-[1512px] mx-auto">
+    <section className="bg-white w-full">
+      <div className="py-8 sm:py-10 lg:py-12 px-4 sm:px-8 lg:px-[93px] max-w-[1512px] mx-auto">
       {/* Breadcrumb */}
       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
         <Link href="/about" className="hover:underline">
@@ -171,6 +172,7 @@ export default function CollaborationsBody() {
             </li>
           ))}
         </ul>
+      </div>
       </div>
     </section>
   );
