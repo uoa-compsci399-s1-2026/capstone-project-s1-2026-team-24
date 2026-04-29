@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "UoA Research",
   description: "University of Auckland Research",
+  icons: {
+    icon: '/images/logos/hnu-logo.svg',
+  },
 };
 
 export default function RootLayout({
