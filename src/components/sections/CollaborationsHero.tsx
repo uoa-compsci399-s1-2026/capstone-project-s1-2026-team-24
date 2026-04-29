@@ -29,7 +29,7 @@ export default function CollaborationsHero() {
             position: 'absolute',
             width: '4018px',
             height: '296px',
-            top: '50%',
+            top: '85%',
             left: '50%',
             transform: 'translate(-50%, -50%) rotate(-8deg)',
             opacity: 0.35,

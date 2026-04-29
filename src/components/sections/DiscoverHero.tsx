@@ -1,3 +1,6 @@
+const HERO_BG_URL =
+  'https://www.figma.com/api/mcp/asset/28e7c007-8c5a-446b-ba12-b77b0fc567e5';
+
 const NAVBAR_HEIGHT = 220;
 const UTILITY_BAR_HEIGHT = 110;
 
@@ -11,6 +14,14 @@ export default function DiscoverHero() {
         backgroundColor: '#0c0c48',
       }}
     >
+      {/* Hero background image */}
+      <img
+        src={HERO_BG_URL}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+
       {/* Diagonal Māori pattern overlay */}
       <div
         className="absolute inset-0 overflow-hidden pointer-events-none"
@@ -21,7 +32,7 @@ export default function DiscoverHero() {
             position: 'absolute',
             width: '4018px',
             height: '296px',
-            top: '50%',
+            top: '85%',
             left: '50%',
             transform: 'translate(-50%, -50%) rotate(-8deg)',
             opacity: 0.25,
