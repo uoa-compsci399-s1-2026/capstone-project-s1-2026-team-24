@@ -1,0 +1,162 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - banner [ref=e3]:
+    - generic [ref=e5]:
+      - link "DONATIONS" [ref=e6] [cursor=pointer]:
+        - /url: /collaborations/funding
+      - link "MEDIA" [ref=e7] [cursor=pointer]:
+        - /url: /media-publications
+      - link "NEWS" [ref=e8] [cursor=pointer]:
+        - /url: /news
+      - link "CONTACT" [ref=e9] [cursor=pointer]:
+        - /url: /contact
+      - button "EN" [ref=e11]:
+        - text: EN
+        - img [ref=e12]
+    - navigation "Main navigation" [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - link "University of Auckland — Home" [ref=e17] [cursor=pointer]:
+            - /url: /
+            - img "University of Auckland" [ref=e18]
+          - link "HNU — Home" [ref=e20] [cursor=pointer]:
+            - /url: /
+            - img "HNU" [ref=e21]
+        - generic [ref=e22]:
+          - button "About" [ref=e24]:
+            - text: About
+            - img [ref=e25]
+          - button "Studies" [ref=e28]:
+            - text: Studies
+            - img [ref=e29]
+          - link "Collaborations" [ref=e31] [cursor=pointer]:
+            - /url: /collaborations
+          - button "Open search" [ref=e32]:
+            - img [ref=e33]
+            - text: Search
+  - generic [ref=e36]:
+    - heading "Discover HNU" [level=1] [ref=e37]
+    - paragraph [ref=e38]:
+      - text: Focused on better health through nutrition.
+      - text: Learn more about our work and purpose
+  - main [ref=e39]:
+    - generic [ref=e41]:
+      - navigation [ref=e42]:
+        - link "About" [ref=e43] [cursor=pointer]:
+          - /url: /about
+        - text: ">"
+        - strong [ref=e44]: Discover HNU
+      - iframe [ref=e47]:
+        - generic [active] [ref=f3e1]:
+          - generic "YouTube Video Player" [ref=f3e3]
+          - generic [ref=f3e5]:
+            - generic:
+              - generic:
+                - button "Play video" [ref=f3e10] [cursor=pointer]:
+                  - generic [ref=f3e13]:
+                    - img
+                - button "Hide player controls" [ref=f3e14] [cursor=pointer]
+                - generic [ref=f3e16]:
+                  - generic [ref=f3e21]:
+                    - generic [ref=f3e22]:
+                      - link "Professor Sally Poppitt from the Faculty of Science" [ref=f3e23] [cursor=pointer]:
+                        - /url: https://www.youtube.com/watch?v=FSvG3KU8-uo
+                      - link "University of Auckland | Waipapa Taumata Rau" [ref=f3e24] [cursor=pointer]:
+                        - /url: /channel/UCUKg41qkUTUQXGDzklgpmlQ
+                        - generic [ref=f3e25]: University of Auckland | Waipapa Taumata Rau
+                    - generic [ref=f3e26]:
+                      - button "thumbnail-image" [ref=f3e27] [cursor=pointer]:
+                        - img "thumbnail-image" [ref=f3e28]
+                      - generic [ref=f3e30]:
+                        - generic: University of Auckland | Waipapa Taumata Rau
+                        - generic: 25.3k subscribers
+                  - generic [ref=f3e31]:
+                    - button "Share" [ref=f3e34] [cursor=pointer]:
+                      - generic [ref=f3e38]:
+                        - img
+                    - link "Watch on YouTube" [ref=f3e45] [cursor=pointer]:
+                      - /url: https://www.youtube.com/watch?v=FSvG3KU8-uo
+                      - generic [ref=f3e48]:
+                        - text: Watch on
+                        - img [ref=f3e50]:
+                          - generic [ref=f3e52]:
+                            - img
+    - generic [ref=e48]:
+      - img [ref=e50]
+      - generic [ref=e52]:
+        - heading "Who are we" [level=2] [ref=e53]
+        - generic [ref=e54]:
+          - paragraph [ref=e55]: HNU is a University of Auckland research facility, established in 1998 as a collaboration between the School of Biological Sciences and the Department of Medicine at the University of Auckland.
+          - paragraph [ref=e56]: It is New Zealand's only live-in nutrition trials facility which has the capability to carry out long-term human residential studies.
+    - heading "What we do" [level=2] [ref=e58]
+    - generic [ref=e61]:
+      - img "Services and expertise" [ref=e63]
+      - generic [ref=e64]:
+        - heading "Services & Expertise" [level=3] [ref=e65]
+        - paragraph [ref=e66]: The Human Nutrition Unit provides a comprehensive range of services across both academic and commercially funded research. These include consultancy on nutrition regulatory issues and health claims, trial design and protocol development, participant recruitment and screening, and full trial management and coordination. The team also delivers data collection, analysis, interpretation, and the publication of peer-reviewed scientific research.
+    - generic [ref=e67]:
+      - img [ref=e69]
+      - generic [ref=e71]:
+        - heading "Capabilities" [level=3] [ref=e72]
+        - paragraph [ref=e73]: The Unit is equipped to deliver highly controlled and precise nutrition research. Capabilities include controlled diet provision, energy expenditure measurement, anthropometric assessments such as body composition analysis, and clinical procedures including phlebotomy and venous cannulation. Additional services include urine and faecal sample collection, with external nursing support available for overnight studies when required.
+        - link "Read More →" [ref=e74] [cursor=pointer]:
+          - /url: /research
+    - generic [ref=e77]:
+      - img "HNU facilities" [ref=e79]
+      - generic [ref=e80]:
+        - heading "Facilities" [level=3] [ref=e81]
+        - paragraph [ref=e82]: HNU offers a purpose-built research environment designed to support controlled human nutrition studies. Facilities include a clinical room for blood collection, an indirect calorimetry room for measuring energy expenditure, an interview lounge, and a biological sample handling laboratory. The Unit also features a metabolic kitchen and five fully furnished residential bedrooms, along with bathroom facilities, enabling both short- and long-term live-in studies.
+  - contentinfo [ref=e83]:
+    - generic [ref=e84]:
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - img "University of Auckland" [ref=e87]
+          - img "HNU Auckland" [ref=e88]
+        - generic [ref=e89]:
+          - heading "Explore" [level=3] [ref=e90]
+          - list [ref=e91]:
+            - listitem [ref=e92]:
+              - link "Home" [ref=e93] [cursor=pointer]:
+                - /url: /
+            - listitem [ref=e94]:
+              - link "Our Team" [ref=e95] [cursor=pointer]:
+                - /url: /team
+            - listitem [ref=e96]:
+              - link "Research" [ref=e97] [cursor=pointer]:
+                - /url: /research
+            - listitem [ref=e98]:
+              - link "Studies" [ref=e99] [cursor=pointer]:
+                - /url: /studies
+            - listitem [ref=e100]:
+              - link "Contact" [ref=e101] [cursor=pointer]:
+                - /url: /contact
+        - generic [ref=e102]:
+          - heading "Stay Updated" [level=3] [ref=e103]
+          - generic [ref=e106]:
+            - textbox "Email address for mailing list" [ref=e107]:
+              - /placeholder: Enter your email
+            - button "Subscribe" [ref=e108]
+      - list [ref=e110]:
+        - listitem [ref=e111]:
+          - link "The University of Auckland" [ref=e112] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz
+        - listitem [ref=e113]:
+          - generic [ref=e114]: "|"
+          - link "Accessibility" [ref=e115] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/accessibility.html
+        - listitem [ref=e116]:
+          - generic [ref=e117]: "|"
+          - link "Copyright by UniServices" [ref=e118] [cursor=pointer]:
+            - /url: https://www.uniservices.co.nz
+        - listitem [ref=e119]:
+          - generic [ref=e120]: "|"
+          - link "Privacy" [ref=e121] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/privacy.html
+        - listitem [ref=e122]:
+          - generic [ref=e123]: "|"
+          - link "Disclaimer" [ref=e124] [cursor=pointer]:
+            - /url: https://www.auckland.ac.nz/en/about/the-university/disclaimer.html
+  - button "Open Next.js Dev Tools" [ref=e131] [cursor=pointer]:
+    - img [ref=e132]
+  - alert [ref=e135]
