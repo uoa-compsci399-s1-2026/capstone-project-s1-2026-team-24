@@ -30,16 +30,16 @@ export default function DiscoverHero() {
         <div
           style={{
             position: 'absolute',
-            width: '4018px',
-            height: '296px',
-            top: '85%',
+            width: '4000px',
+            height: '250px',
+            top: '100%',
             left: '50%',
-            transform: 'translate(-50%, -50%) rotate(-8deg)',
+            transform: 'translate(-50%, -50%) rotate(-12.38deg)',
             opacity: 0.25,
             backgroundImage: 'url(/maori-pattern.svg)',
             backgroundRepeat: 'repeat-x',
             backgroundSize: 'auto 100%',
-            filter: 'sepia(0.4) hue-rotate(153deg) saturate(2) brightness(2)',
+            filter: 'brightness(0) invert(1)',
           }}
         />
       </div>
