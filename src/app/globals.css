@@ -69,6 +69,8 @@ body {
 
 .marquee-track {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   width: max-content;
   animation: marquee 28s linear infinite;
 }
