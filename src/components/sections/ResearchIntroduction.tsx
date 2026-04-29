@@ -10,7 +10,8 @@ const CATEGORIES = [
 
 export default function ResearchIntroduction() {
   return (
-    <section className="relative w-full py-8 sm:py-10 lg:py-12 px-4 sm:px-8 lg:px-[93px] max-w-[1512px] mx-auto bg-white">
+    <section className="bg-white w-full">
+      <div className="relative py-8 sm:py-10 lg:py-12 px-4 sm:px-8 lg:px-[93px] max-w-[1512px] mx-auto">
       {/* Breadcrumbs */}
       <nav className="mb-8 sm:mb-10 lg:mb-12 text-base sm:text-lg lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
         <Link href="/about" className="hover:underline">About</Link>
@@ -50,6 +51,7 @@ export default function ResearchIntroduction() {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </section>
   );

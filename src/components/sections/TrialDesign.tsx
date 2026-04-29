@@ -2,7 +2,8 @@ import React from 'react';
 
 export default function TrialDesign() {
   return (
-    <section className="relative w-full py-10 sm:py-14 lg:py-20 px-4 sm:px-8 lg:px-[93px] max-w-[1512px] mx-auto bg-white">
+    <section className="bg-white w-full">
+      <div className="relative py-10 sm:py-14 lg:py-20 px-4 sm:px-8 lg:px-[93px] max-w-[1512px] mx-auto">
       <div className="bg-white rounded-[20px] sm:rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] p-6 sm:p-10 lg:p-16">
         <h2 className="text-2xl sm:text-4xl lg:text-[48px] font-bold text-[#0a4479] text-center tracking-[0.96px] mb-6 sm:mb-8 lg:mb-12">
           Trial Design
@@ -55,6 +56,7 @@ export default function TrialDesign() {
             </p>
           </div>
         </div>
+      </div>
       </div>
     </section>
   );
