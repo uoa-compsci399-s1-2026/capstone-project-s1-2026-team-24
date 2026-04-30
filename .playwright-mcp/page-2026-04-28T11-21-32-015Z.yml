@@ -88,8 +88,8 @@
         - generic [ref=e73]:
           - generic [ref=e74]:
             - img [ref=e75]
-            - link "hnu@auckland.ac.nz" [ref=e79] [cursor=pointer]:
-              - /url: mailto:hnu@auckland.ac.nz
+            - link "HNU_SYNERGY@auckland.ac.nz" [ref=e79] [cursor=pointer]:
+              - /url: mailto:HNU_SYNERGY@auckland.ac.nz
           - generic [ref=e80]:
             - img [ref=e81]
             - link "09 923 4567" [ref=e83] [cursor=pointer]:

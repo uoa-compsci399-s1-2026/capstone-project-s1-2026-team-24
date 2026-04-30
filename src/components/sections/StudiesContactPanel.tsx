@@ -96,7 +96,7 @@ export default function StudiesContactPanel() {
         <div className="flex items-start gap-4">
           <EmailIcon />
           <p className="text-[#0a4479] text-base sm:text-[20px] tracking-[0.4px]">
-            hnu@auckland.ac.nz
+            HNU_SYNERGY@auckland.ac.nz
           </p>
         </div>
         <div className="flex items-start gap-4">

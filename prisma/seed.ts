@@ -37,8 +37,8 @@ async function main() {
         compensationZh:
           '补偿信息请参阅 Human Nutrition Unit 官方研究页面。',
         redcapUrl: 'TODO_REAL_REDCAP_URL',
-        contactEmail: 'hnu@auckland.ac.nz',
-        contactPhone: 'TODO_REAL_PHONE',
+        contactEmail: 'HNU_SYNERGY@auckland.ac.nz',
+        contactPhone: '09 923 4567',
         ethicsStatement:
           'Please refer to the official Human Nutrition Unit study page for ethics information.',
         isActive: true,
@@ -62,8 +62,8 @@ async function main() {
         compensationZh:
           '补偿信息请参阅 Human Nutrition Unit 官方研究页面。',
         redcapUrl: 'TODO_REAL_REDCAP_URL',
-        contactEmail: 'hnu@auckland.ac.nz',
-        contactPhone: 'TODO_REAL_PHONE',
+        contactEmail: 'HNU_SYNERGY@auckland.ac.nz',
+        contactPhone: '09 923 4567',
         ethicsStatement:
           'Please refer to the official Human Nutrition Unit study page for ethics information.',
         isActive: true,
@@ -87,8 +87,8 @@ async function main() {
         compensationZh:
           '补偿信息请参阅 Human Nutrition Unit 官方研究页面。',
         redcapUrl: 'TODO_REAL_REDCAP_URL',
-        contactEmail: 'hnu@auckland.ac.nz',
-        contactPhone: 'TODO_REAL_PHONE',
+        contactEmail: 'HNU_SYNERGY@auckland.ac.nz',
+        contactPhone: '09 923 4567',
         ethicsStatement:
           'Please refer to the official Human Nutrition Unit study page for ethics information.',
         isActive: true,

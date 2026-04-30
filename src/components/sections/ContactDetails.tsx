@@ -112,10 +112,10 @@ export default function ContactDetails() {
               <div className="flex items-center gap-3">
                 <EmailIcon />
                 <a
-                  href="mailto:hnu@auckland.ac.nz"
+                  href="mailto:HNU_SYNERGY@auckland.ac.nz"
                   className="text-sm sm:text-[20px] hover:underline break-all"
                 >
-                  hnu@auckland.ac.nz
+                  HNU_SYNERGY@auckland.ac.nz
                 </a>
               </div>
 
