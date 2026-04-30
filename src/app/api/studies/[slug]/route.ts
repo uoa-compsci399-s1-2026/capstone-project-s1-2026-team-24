@@ -25,6 +25,7 @@ export async function GET(_request: Request, context: RouteContext) {
         redcapUrl: true,
         contactEmail: true,
         contactPhone: true,
+        contactPhoneZh: true,
         ethicsStatement: true,
       },
     });

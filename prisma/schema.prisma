@@ -25,6 +25,7 @@ model Study {
   redcapUrl        String
   contactEmail     String
   contactPhone     String
+  contactPhoneZh   String
   ethicsStatement  String
   isActive         Boolean  @default(true)
   order            Int      @default(0)

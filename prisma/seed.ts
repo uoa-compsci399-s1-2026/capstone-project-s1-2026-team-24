@@ -36,9 +36,10 @@ async function main() {
           'Please refer to the official Human Nutrition Unit study page for compensation details.',
         compensationZh:
           '补偿信息请参阅 Human Nutrition Unit 官方研究页面。',
-        redcapUrl: 'TODO_REAL_REDCAP_URL',
+        redcapUrl: 'https://hnu-auckland.webflow.io/about/join-nz-synergy-study-can-yu-xin-xi-lan-xie-tong-ying-yang-yan-jiu',
         contactEmail: 'HNU_SYNERGY@auckland.ac.nz',
-        contactPhone: '09 923 4567',
+        contactPhone: ' 02109195443',
+        contactPhoneZh: '02109196703',
         ethicsStatement:
           'Please refer to the official Human Nutrition Unit study page for ethics information.',
         isActive: true,
@@ -62,10 +63,11 @@ async function main() {
         compensationZh:
           '补偿信息请参阅 Human Nutrition Unit 官方研究页面。',
         redcapUrl: 'TODO_REAL_REDCAP_URL',
-        contactEmail: 'HNU_SYNERGY@auckland.ac.nz',
+        contactEmail: 'FERDINAND@auckland.ac.nz',
         contactPhone: '09 923 4567',
+        contactPhoneZh: '09 923 4567',
         ethicsStatement:
-          'Please refer to the official Human Nutrition Unit study page for ethics information.',
+          'This study has received ethical approval from the Southern Health and Disability Ethics Committee (20/STH/51).',
         isActive: true,
         order: 2,
       },
@@ -86,11 +88,12 @@ async function main() {
           'Please refer to the official Human Nutrition Unit study page for compensation details.',
         compensationZh:
           '补偿信息请参阅 Human Nutrition Unit 官方研究页面。',
-        redcapUrl: 'TODO_REAL_REDCAP_URL',
+        redcapUrl: 'https://www.hnu.auckland.ac.nz/nz-food-and-beverage-study',
         contactEmail: 'HNU_SYNERGY@auckland.ac.nz',
-        contactPhone: '09 923 4567',
+        contactPhone: '02109195443',
+        contactPhoneZh: '021196703',
         ethicsStatement:
-          'Please refer to the official Human Nutrition Unit study page for ethics information.',
+          'This study has received ethical approval from the NZ Southern Health and Disability Ethics Committee (21/STH/231).',
         isActive: true,
         order: 3,
       },
