@@ -174,6 +174,13 @@ export default function Navbar() {
 
             {/* Desktop nav items */}
             <div className="hidden lg:flex items-center gap-8">
+              <Link
+                href="/"
+                className="text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+              >
+                Home
+              </Link>
+
               {/* About dropdown */}
               <div className="relative">
                 <button
@@ -404,6 +411,11 @@ export default function Navbar() {
             style={{ backgroundColor: '#0c0c48', borderTop: '1px solid rgba(255,255,255,0.15)' }}
           >
             <ul className="px-4 py-2 space-y-1">
+              <li>
+                <Link href="/" className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors">
+                  Home
+                </Link>
+              </li>
               <li>
                 <button
                   className="w-full flex items-center justify-between px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
