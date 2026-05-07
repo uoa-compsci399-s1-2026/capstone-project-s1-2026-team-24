@@ -38,21 +38,6 @@ export default function AudiencePathway() {
             "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
         }}
       >
-        {/* Hero bowl image */}
-        <div className="pointer-events-none absolute -left-75 bottom-[-400px] h-[1000px] w-[1000px]">
-          <div className="relative h-full w-full">
-            <Image
-              src="/images/nutrition plate.png"
-              alt="Colourful salad bowl with fresh vegetables"
-              fill
-              priority
-              sizes="900px"
-              className="object-contain drop-shadow-2xl"
-              style={{ transform: "scaleX(-1)" }}
-            />
-          </div>
-        </div>
-
         <div className="relative z-10 mx-auto flex min-h-[350px] max-w-9xl justify-center lg:justify-end">
           <div className="max-w-6xl text-center text-white lg:text-right">
             <h2
