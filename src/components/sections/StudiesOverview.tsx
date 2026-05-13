@@ -1,35 +1,66 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const STUDIES = [
-  {
-    id: 'nz-synergy',
-    name: 'NZ Synergy',
-    image: '/services-and-expertise.jpg',
-    href: '/studies/nz-synergy',
-  },
-  {
-    id: 'food-beverage',
-    name: 'NZ Food and Beverage',
-    image: '/feijoa.jpg',
-    href: '/studies/food-beverage',
-  },
-  {
-    id: 'ferdinand',
-    name: 'Ferdinand',
-    image: '/ferdinand.jpg',
-    href: '/studies/ferdinand',
-  },
-];
+type Study = {
+  id: number;
+  slug: string;
+  title: string;
+  shortDescription: string | null;
+  imagePath: string | null;
+};
+
+function isStudy(data: unknown): data is Study {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+
+  const study = data as Record<string, unknown>;
+
+  return (
+    typeof study.id === 'number' &&
+    typeof study.slug === 'string' &&
+    typeof study.title === 'string' &&
+    'shortDescription' in study &&
+    (typeof study.shortDescription === 'string' || study.shortDescription === null) &&
+    'imagePath' in study &&
+    (typeof study.imagePath === 'string' || study.imagePath === null)
+  );
+}
 
 export default function StudiesOverview() {
+  const [studies, setStudies] = useState<Study[]>([]);
   const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const filtered = STUDIES.filter(s =>
-    s.name.toLowerCase().includes(query.toLowerCase())
+  useEffect(() => {
+    async function loadStudies() {
+      try {
+        const res = await fetch('/api/studies');
+        if (!res.ok) {
+          throw new Error('Failed to fetch studies');
+        }
+
+        const data: unknown = await res.json();
+        if (!Array.isArray(data) || !data.every(isStudy)) {
+          throw new Error('Invalid studies response');
+        }
+
+        setStudies(data);
+      } catch {
+        setStudies([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStudies();
+  }, []);
+
+  const filtered = studies.filter(s =>
+    s.title.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
@@ -67,30 +98,43 @@ export default function StudiesOverview() {
 
       {/* Study cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-[1330px] mx-auto">
-        {filtered.map(study => (
-          <Link key={study.id} href={study.href} className="group">
-            <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] overflow-hidden hover:shadow-[0px_0px_40px_0px_rgba(0,0,0,0.3)] transition-shadow h-full">
-              <div className="relative h-[260px] sm:h-[311px] mx-4 sm:mx-5 mt-4 sm:mt-5 rounded-[10px] overflow-hidden">
-                <Image
-                  src={study.image}
-                  alt={study.name}
-                  fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-              </div>
-              <div className="py-6 px-4 text-center">
-                <h2 className="text-[#0c0c48] text-2xl sm:text-[32px] font-bold tracking-[0.64px] leading-normal">
-                  {study.name}
-                </h2>
+        {loading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] overflow-hidden h-[400px] animate-pulse"
+            >
+              <div className="bg-gray-200 h-[311px] mx-5 mt-5 rounded-[10px]" />
+              <div className="py-6 px-4 flex justify-center">
+                <div className="bg-gray-200 h-8 w-40 rounded-full" />
               </div>
             </div>
-          </Link>
-        ))}
-        {filtered.length === 0 && (
+          ))
+        ) : filtered.length === 0 ? (
           <p className="col-span-full text-center text-[#8e8d8d] text-xl py-12">
-            No studies match your search.
+            {studies.length === 0 ? 'No studies available.' : 'No studies match your search.'}
           </p>
+        ) : (
+          filtered.map(study => (
+            <Link key={study.id} href={`/studies/${study.slug}`} className="group">
+              <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] overflow-hidden hover:shadow-[0px_0px_40px_0px_rgba(0,0,0,0.3)] transition-shadow h-full">
+                <div className="relative h-[260px] sm:h-[311px] mx-4 sm:mx-5 mt-4 sm:mt-5 rounded-[10px] overflow-hidden">
+                  <Image
+                    src={study.imagePath ?? '/placeholder-study.jpg'}
+                    alt={study.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                </div>
+                <div className="py-6 px-4 text-center">
+                  <h2 className="text-[#0c0c48] text-2xl sm:text-[32px] font-bold tracking-[0.64px] leading-normal">
+                    {study.title}
+                  </h2>
+                </div>
+              </div>
+            </Link>
+          ))
         )}
       </div>
     </section>
