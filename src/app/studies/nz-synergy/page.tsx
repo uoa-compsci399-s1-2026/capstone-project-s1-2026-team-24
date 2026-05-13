@@ -72,7 +72,7 @@ export default async function NZSynergyPage() {
 
       {/* Content — single flowing block matching the Figma design */}
       <main id="main-content" className="bg-white">
-        <div className="max-w-[1440px] mx-auto px-6 sm:px-12 lg:px-[92px] pb-16 lg:pb-24">
+        <div className="max-w-[1440px] mx-auto px-6 sm:px-12 lg:px-[92px] pt-10 lg:pt-16 pb-16 lg:pb-24">
         <div
           className="text-[#0a4479] text-lg sm:text-2xl lg:text-[32px] font-normal leading-relaxed lg:leading-[50px] tracking-[0.64px]"
         >
