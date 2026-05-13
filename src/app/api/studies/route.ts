@@ -15,6 +15,7 @@ export async function GET() {
         slug: true,
         title: true,
         shortDescription: true,
+        imagePath: true,
         contactEmail: true,
         isActive: true,
       },

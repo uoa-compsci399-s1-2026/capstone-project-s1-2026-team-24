@@ -49,6 +49,7 @@ export async function POST(request: Request) {
     const redcapUrl = asTrimmedString(body?.redcapUrl);
     const contactEmail = asTrimmedString(body?.contactEmail);
     const contactPhone = asTrimmedString(body?.contactPhone);
+    const imagePath = asTrimmedString(body?.imagePath);
     const ethicsStatement = asTrimmedString(body?.ethicsStatement);
 
     if (
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
         redcapUrl,
         contactEmail,
         contactPhone,
+        imagePath,
         ethicsStatement,
         isActive: asBoolean(body?.isActive, true),
         order: asNumber(body?.order, 0),

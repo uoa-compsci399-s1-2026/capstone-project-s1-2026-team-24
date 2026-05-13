@@ -40,6 +40,7 @@ export async function PATCH(
       "redcapUrl",
       "contactEmail",
       "contactPhone",
+      "imagePath",
       "ethicsStatement",
       "isActive",
       "order",

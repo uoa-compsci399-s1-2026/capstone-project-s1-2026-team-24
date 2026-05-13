@@ -40,6 +40,7 @@ async function main() {
         contactEmail: 'HNU_SYNERGY@auckland.ac.nz',
         contactPhone: ' 02109195443',
         contactPhoneZh: '02109196703',
+        imagePath: '/services-and-expertise.jpg',
         ethicsStatement:
           'Please refer to the official Human Nutrition Unit study page for ethics information.',
         isActive: true,
@@ -66,6 +67,7 @@ async function main() {
         contactEmail: 'FERDINAND@auckland.ac.nz',
         contactPhone: '09 923 4567',
         contactPhoneZh: '09 923 4567',
+        imagePath: '/ferdinand.jpg',
         ethicsStatement:
           'This study has received ethical approval from the Southern Health and Disability Ethics Committee (20/STH/51).',
         isActive: true,
@@ -92,6 +94,7 @@ async function main() {
         contactEmail: 'HNU_SYNERGY@auckland.ac.nz',
         contactPhone: '02109195443',
         contactPhoneZh: '021196703',
+        imagePath: '/feijoa.jpg',
         ethicsStatement:
           'This study has received ethical approval from the NZ Southern Health and Disability Ethics Committee (21/STH/231).',
         isActive: true,
