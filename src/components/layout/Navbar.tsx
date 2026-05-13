@@ -39,8 +39,13 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileStudiesOpen, setMobileStudiesOpen] = useState(false);
+  const [searchContentTopOffset, setSearchContentTopOffset] = useState(0);
   const headerRef = useRef<HTMLElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const searchDialogRef = useRef<HTMLDivElement>(null);
+  const previousBodyOverflowRef = useRef<string | null>(null);
+  const wasSearchOpenRef = useRef(false);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -68,12 +73,98 @@ export default function Navbar() {
   useEffect(() => {
     if (searchOpen) {
       searchInputRef.current?.focus();
+    } else if (wasSearchOpenRef.current) {
+      searchTriggerRef.current?.focus();
     }
+    wasSearchOpenRef.current = searchOpen;
   }, [searchOpen]);
 
   useEffect(() => {
-    document.body.style.overflow = searchOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    if (searchOpen) {
+      previousBodyOverflowRef.current = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    } else if (previousBodyOverflowRef.current !== null) {
+      document.body.style.overflow = previousBodyOverflowRef.current;
+      previousBodyOverflowRef.current = null;
+    }
+
+    return () => {
+      if (previousBodyOverflowRef.current !== null) {
+        document.body.style.overflow = previousBodyOverflowRef.current;
+        previousBodyOverflowRef.current = null;
+      }
+    };
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const updateSearchContentTopOffset = () => {
+      setSearchContentTopOffset(headerRef.current?.offsetHeight ?? 0);
+    };
+
+    updateSearchContentTopOffset();
+
+    window.addEventListener('resize', updateSearchContentTopOffset);
+    const headerElement = headerRef.current;
+    const resizeObserver = typeof window !== 'undefined' && 'ResizeObserver' in window
+      ? new ResizeObserver(updateSearchContentTopOffset)
+      : null;
+
+    if (headerElement && resizeObserver) {
+      resizeObserver.observe(headerElement);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateSearchContentTopOffset);
+      resizeObserver?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    function handleSearchDialogKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setSearchOpen(false);
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const dialogElement = searchDialogRef.current;
+      if (!dialogElement) return;
+
+      const focusableElements = Array.from(
+        dialogElement.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getAttribute('aria-hidden') !== 'true');
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey) {
+        if (activeElement === firstElement || !dialogElement.contains(activeElement)) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+        return;
+      }
+
+      if (activeElement === lastElement || !dialogElement.contains(activeElement)) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleSearchDialogKeyDown);
+    return () => document.removeEventListener('keydown', handleSearchDialogKeyDown);
   }, [searchOpen]);
 
   const mainNavStyle = searchOpen
@@ -289,6 +380,7 @@ export default function Navbar() {
                 </button>
               ) : (
                 <button
+                  ref={searchTriggerRef}
                   onClick={() => setSearchOpen(true)}
                   className="flex items-center gap-3 pl-4 pr-6 h-[57px] rounded-[28.5px] border-[3px] border-white text-white hover:bg-white/10 transition-colors text-[20px] tracking-[0.4px] whitespace-nowrap"
                   aria-label="Open search"
@@ -422,14 +514,14 @@ export default function Navbar() {
       {/* Full-screen search overlay */}
       {searchOpen && (
         <div
+          ref={searchDialogRef}
           className="fixed inset-0 z-40"
           style={{ backgroundColor: '#0c0c48' }}
           role="dialog"
           aria-modal="true"
           aria-label="Search"
         >
-          {/* Content starts below the header (40px top bar + 180px main nav) */}
-          <div className="pt-[220px] px-14 max-w-[1512px] mx-auto">
+          <div className="px-14 max-w-[1512px] mx-auto" style={{ paddingTop: `${searchContentTopOffset}px` }}>
             <div className="max-w-[741px]">
               <div className="flex items-center gap-4 pb-4 border-b border-white/30">
                 <input
