@@ -12,6 +12,18 @@ type Study = {
   imagePath: string | null;
 };
 
+function isStudy(data: unknown): data is Study {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof data.id === 'number' &&
+    typeof data.slug === 'string' &&
+    typeof data.title === 'string' &&
+    (typeof data.shortDescription === 'string' || data.shortDescription === null) &&
+    (typeof data.imagePath === 'string' || data.imagePath === null)
+  );
+}
+
 export default function StudiesOverview() {
   const [studies, setStudies] = useState<Study[]>([]);
   const [query, setQuery] = useState('');
@@ -19,8 +31,19 @@ export default function StudiesOverview() {
 
   useEffect(() => {
     fetch('/api/studies')
-      .then(res => res.json())
-      .then((data: Study[]) => setStudies(data))
+      .then(async res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch studies');
+        }
+
+        const data: unknown = await res.json();
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid studies response');
+        }
+
+        return data.filter(isStudy);
+      })
+      .then(data => setStudies(data))
       .catch(() => setStudies([]))
       .finally(() => setLoading(false));
   }, []);

@@ -9,6 +9,15 @@ type Study = {
   title: string;
 };
 
+function isStudy(data: unknown): data is Study {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    typeof data.id === 'number' &&
+    typeof data.title === 'string'
+  );
+}
+
 const inputClass =
   'w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors';
 
@@ -27,8 +36,19 @@ export default function JoinStudyForm() {
 
   useEffect(() => {
     fetch('/api/studies')
-      .then(res => res.json())
-      .then((data: Study[]) => setStudies(data))
+      .then(async res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch studies');
+        }
+
+        const data: unknown = await res.json();
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid studies response');
+        }
+
+        return data.filter(isStudy);
+      })
+      .then(data => setStudies(data))
       .catch(() => setStudies([]))
       .finally(() => setStudiesLoading(false));
   }, []);
