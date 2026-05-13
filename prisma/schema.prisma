@@ -27,6 +27,7 @@ model Study {
   contactPhone     String
   contactPhoneZh   String
   ethicsStatement  String
+  imagePath        String   @default("")
   isActive         Boolean  @default(true)
   order            Int      @default(0)
   createdAt        DateTime @default(now())
