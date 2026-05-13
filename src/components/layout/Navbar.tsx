@@ -39,8 +39,13 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileStudiesOpen, setMobileStudiesOpen] = useState(false);
+  const [searchContentTopOffset, setSearchContentTopOffset] = useState(0);
   const headerRef = useRef<HTMLElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const searchDialogRef = useRef<HTMLDivElement>(null);
+  const previousBodyOverflowRef = useRef<string | null>(null);
+  const wasSearchOpenRef = useRef(false);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -48,7 +53,6 @@ export default function Navbar() {
         setAboutOpen(false);
         setStudiesOpen(false);
         setLangOpen(false);
-        setSearchOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -69,7 +73,98 @@ export default function Navbar() {
   useEffect(() => {
     if (searchOpen) {
       searchInputRef.current?.focus();
+    } else if (wasSearchOpenRef.current) {
+      searchTriggerRef.current?.focus();
     }
+    wasSearchOpenRef.current = searchOpen;
+  }, [searchOpen]);
+
+  useEffect(() => {
+    if (searchOpen) {
+      previousBodyOverflowRef.current = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    } else if (previousBodyOverflowRef.current !== null) {
+      document.body.style.overflow = previousBodyOverflowRef.current;
+      previousBodyOverflowRef.current = null;
+    }
+
+    return () => {
+      if (previousBodyOverflowRef.current !== null) {
+        document.body.style.overflow = previousBodyOverflowRef.current;
+        previousBodyOverflowRef.current = null;
+      }
+    };
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const updateSearchContentTopOffset = () => {
+      setSearchContentTopOffset(headerRef.current?.offsetHeight ?? 0);
+    };
+
+    updateSearchContentTopOffset();
+
+    window.addEventListener('resize', updateSearchContentTopOffset);
+    const headerElement = headerRef.current;
+    const resizeObserver = typeof window !== 'undefined' && 'ResizeObserver' in window
+      ? new ResizeObserver(updateSearchContentTopOffset)
+      : null;
+
+    if (headerElement && resizeObserver) {
+      resizeObserver.observe(headerElement);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateSearchContentTopOffset);
+      resizeObserver?.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!searchOpen) return;
+
+    function handleSearchDialogKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setSearchOpen(false);
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const dialogElement = searchDialogRef.current;
+      if (!dialogElement) return;
+
+      const focusableElements = Array.from(
+        dialogElement.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((element) => element.getAttribute('aria-hidden') !== 'true');
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const activeElement = document.activeElement as HTMLElement | null;
+
+      if (event.shiftKey) {
+        if (activeElement === firstElement || !dialogElement.contains(activeElement)) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+        return;
+      }
+
+      if (activeElement === lastElement || !dialogElement.contains(activeElement)) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleSearchDialogKeyDown);
+    return () => document.removeEventListener('keydown', handleSearchDialogKeyDown);
   }, [searchOpen]);
 
   const mainNavStyle = searchOpen
@@ -85,7 +180,7 @@ export default function Navbar() {
         Skip to main content
       </a>
 
-      <header ref={headerRef} className="relative z-40">
+      <header ref={headerRef} className="relative z-50">
         {/* Top utility bar */}
         <div className="bg-white">
           <div className="max-w-[1512px] mx-auto px-14 flex items-center justify-end h-10">
@@ -285,6 +380,7 @@ export default function Navbar() {
                 </button>
               ) : (
                 <button
+                  ref={searchTriggerRef}
                   onClick={() => setSearchOpen(true)}
                   className="flex items-center gap-3 pl-4 pr-6 h-[57px] rounded-[28.5px] border-[3px] border-white text-white hover:bg-white/10 transition-colors text-[20px] tracking-[0.4px] whitespace-nowrap"
                   aria-label="Open search"
@@ -315,90 +411,6 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Search overlay panel */}
-          {searchOpen && (
-            <div className="px-14 pb-16 pt-2" style={{ backgroundColor: '#0c0c48' }}>
-              <div className="max-w-[741px]">
-                <div className="flex items-center gap-4 pb-4 border-b border-white/30">
-                  <input
-                    ref={searchInputRef}
-                    type="search"
-                    placeholder="Search"
-                    className="flex-1 bg-transparent text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
-                    aria-label="Search"
-                  />
-                  <svg
-                    className="w-10 h-10 text-white/75 flex-shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-
-                <div className="mt-3">
-                  <p className="text-white text-[16px] tracking-[0.32px] mb-1">Popular searches</p>
-                  <ul>
-                    {/* Studies with dropdown */}
-                    <li>
-                      <button
-                        className="flex items-center gap-2 text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
-                        onClick={() => setSearchStudiesOpen(!searchStudiesOpen)}
-                        aria-expanded={searchStudiesOpen}
-                        aria-haspopup="true"
-                        aria-controls="search-studies-dropdown"
-                      >
-                        Studies
-                        <svg
-                          className={`w-4 h-4 transition-transform ${searchStudiesOpen ? 'rotate-180' : ''}`}
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          aria-hidden="true"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                      {searchStudiesOpen && (
-                        <ul
-                          id="search-studies-dropdown"
-                          role="menu"
-                          className="ml-4 mb-1 border-l border-white/20 pl-4"
-                        >
-                          {STUDIES_ITEMS.map((item) => (
-                            <li key={item.href} role="none">
-                              <Link
-                                href={item.href}
-                                role="menuitem"
-                                className="block text-[16px] text-white/80 leading-[40px] hover:text-white hover:opacity-80 transition-colors"
-                                onClick={() => setSearchOpen(false)}
-                              >
-                                {item.label}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                    {/* Plain popular search links */}
-                    {POPULAR_SEARCHES.map((item) => (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          className="block text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
-                          onClick={() => setSearchOpen(false)}
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
         </nav>
 
         {/* Mobile menu */}
@@ -498,6 +510,98 @@ export default function Navbar() {
           </div>
         )}
       </header>
+
+      {/* Full-screen search overlay */}
+      {searchOpen && (
+        <div
+          ref={searchDialogRef}
+          className="fixed inset-0 z-40"
+          style={{ backgroundColor: '#0c0c48' }}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Search"
+        >
+          <div className="px-14 max-w-[1512px] mx-auto" style={{ paddingTop: `${searchContentTopOffset}px` }}>
+            <div className="max-w-[741px]">
+              <div className="flex items-center gap-4 pb-4 border-b border-white/30">
+                <input
+                  ref={searchInputRef}
+                  type="search"
+                  placeholder="Search"
+                  className="flex-1 bg-transparent text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
+                  aria-label="Search"
+                />
+                <svg
+                  className="w-10 h-10 text-white/75 flex-shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+
+              <div className="mt-3">
+                <p className="text-white text-[16px] tracking-[0.32px] mb-1">Popular searches</p>
+                <ul>
+                  <li>
+                    <button
+                      className="flex items-center gap-2 text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
+                      onClick={() => setSearchStudiesOpen(!searchStudiesOpen)}
+                      aria-expanded={searchStudiesOpen}
+                      aria-haspopup="true"
+                      aria-controls="search-studies-dropdown"
+                    >
+                      Studies
+                      <svg
+                        className={`w-4 h-4 transition-transform ${searchStudiesOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {searchStudiesOpen && (
+                      <ul
+                        id="search-studies-dropdown"
+                        role="menu"
+                        className="ml-4 mb-1 border-l border-white/20 pl-4"
+                      >
+                        {STUDIES_ITEMS.map((item) => (
+                          <li key={item.href} role="none">
+                            <Link
+                              href={item.href}
+                              role="menuitem"
+                              className="block text-[16px] text-white/80 leading-[40px] hover:text-white hover:opacity-80 transition-colors"
+                              onClick={() => setSearchOpen(false)}
+                            >
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                  {POPULAR_SEARCHES.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className="block text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
+                        onClick={() => setSearchOpen(false)}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
