@@ -10,11 +10,15 @@ type Study = {
 };
 
 function isStudy(data: unknown): data is Study {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+
+  const study = data as Record<string, unknown>;
+
   return (
-    typeof data === 'object' &&
-    data !== null &&
-    typeof data.id === 'number' &&
-    typeof data.title === 'string'
+    typeof study.id === 'number' &&
+    typeof study.title === 'string'
   );
 }
 
@@ -42,11 +46,11 @@ export default function JoinStudyForm() {
         }
 
         const data: unknown = await res.json();
-        if (!Array.isArray(data)) {
+        if (!Array.isArray(data) || !data.every(isStudy)) {
           throw new Error('Invalid studies response');
         }
 
-        return data.filter(isStudy);
+        return data;
       })
       .then(data => setStudies(data))
       .catch(() => setStudies([]))

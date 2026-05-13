@@ -13,14 +13,20 @@ type Study = {
 };
 
 function isStudy(data: unknown): data is Study {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+
+  const study = data as Record<string, unknown>;
+
   return (
-    typeof data === 'object' &&
-    data !== null &&
-    typeof data.id === 'number' &&
-    typeof data.slug === 'string' &&
-    typeof data.title === 'string' &&
-    (typeof data.shortDescription === 'string' || data.shortDescription === null) &&
-    (typeof data.imagePath === 'string' || data.imagePath === null)
+    typeof study.id === 'number' &&
+    typeof study.slug === 'string' &&
+    typeof study.title === 'string' &&
+    'shortDescription' in study &&
+    (typeof study.shortDescription === 'string' || study.shortDescription === null) &&
+    'imagePath' in study &&
+    (typeof study.imagePath === 'string' || study.imagePath === null)
   );
 }
 
@@ -37,11 +43,11 @@ export default function StudiesOverview() {
         }
 
         const data: unknown = await res.json();
-        if (!Array.isArray(data)) {
+        if (!Array.isArray(data) || !data.every(isStudy)) {
           throw new Error('Invalid studies response');
         }
 
-        return data.filter(isStudy);
+        return data;
       })
       .then(data => setStudies(data))
       .catch(() => setStudies([]))
