@@ -5,7 +5,7 @@ import Footer from '@/components/layout/Footer';
 import StudyContent from './StudyContent';
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 };
 
 async function fetchStudy(slug: string) {

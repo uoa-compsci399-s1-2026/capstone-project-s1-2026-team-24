@@ -42,10 +42,12 @@ export default function StudyContent({
   return (
     <div className="max-w-[900px] mx-auto px-4 sm:px-8 lg:px-0 py-12 lg:py-16 flex flex-col gap-12">
       {/* Language toggle */}
-      <div className="flex gap-3">
+      <div className="flex gap-3" role="group" aria-label="Language">
         <button
+          type="button"
+          aria-pressed={lang === 'en'}
           onClick={() => setLang('en')}
-          className={`px-5 py-2 rounded-full font-semibold text-sm transition-colors ${
+          className={`px-5 py-2 rounded-full font-semibold text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c0c48] ${
             lang === 'en'
               ? 'bg-[#0c0c48] text-white'
               : 'border border-[#0c0c48] text-[#0c0c48] hover:bg-[#0c0c48]/10'
@@ -54,8 +56,10 @@ export default function StudyContent({
           English
         </button>
         <button
+          type="button"
+          aria-pressed={lang === 'zh'}
           onClick={() => setLang('zh')}
-          className={`px-5 py-2 rounded-full font-semibold text-sm transition-colors ${
+          className={`px-5 py-2 rounded-full font-semibold text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c0c48] ${
             lang === 'zh'
               ? 'bg-[#0c0c48] text-white'
               : 'border border-[#0c0c48] text-[#0c0c48] hover:bg-[#0c0c48]/10'
