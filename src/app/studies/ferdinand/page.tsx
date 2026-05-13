@@ -10,8 +10,8 @@ export const metadata: Metadata = {
     'A 6-month weight loss nutrition study investigating whether daily feijoa whole fruit powder alters the risk of developing type 2 diabetes.',
 };
 
-// Full navbar height (utility bar 40px + main nav 180px)
-const NAVBAR_HEIGHT = 220;
+// Full navbar height (utility bar 40px + main nav 140px)
+const NAVBAR_HEIGHT = 180;
 
 export default function FerdinandPage() {
   return (
@@ -20,7 +20,7 @@ export default function FerdinandPage() {
 
       {/* Hero — image extends up behind the main nav portion of the navbar */}
       <section
-        className="relative w-full overflow-hidden h-[520px] sm:h-[660px] lg:h-[800px]"
+        className="relative w-full overflow-hidden h-[380px] sm:h-[480px] lg:h-[554px]"
         style={{ marginTop: `-${NAVBAR_HEIGHT}px` }}
         aria-label="Ferdinand study hero"
       >

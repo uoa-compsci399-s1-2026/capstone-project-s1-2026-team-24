@@ -51,7 +51,7 @@ export default async function StudyPage({ params }: Props) {
       {/* Hero — extends behind the transparent main nav (same -220px pattern as StudiesHero) */}
       <section
         className="relative w-full overflow-hidden flex flex-col justify-end h-[400px] sm:h-[480px] lg:h-[554px]"
-        style={{ backgroundColor: '#0c0c48', marginTop: '-220px' }}
+        style={{ backgroundColor: '#0c0c48', marginTop: '-180px' }}
       >
         <div
           className="absolute inset-0 overflow-hidden pointer-events-none"

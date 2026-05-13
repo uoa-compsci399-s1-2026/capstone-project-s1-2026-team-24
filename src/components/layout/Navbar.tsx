@@ -167,9 +167,21 @@ export default function Navbar() {
     return () => document.removeEventListener('keydown', handleSearchDialogKeyDown);
   }, [searchOpen]);
 
+  // The home page hero pulls its own gradient up over the navbar, so the
+  // navbar stays transparent there to let it show through. On every other
+  // page the navbar carries its own gradient (sampled from Figma): opaque
+  // dark navy at the top fading to fully transparent at the bottom, so the
+  // subpage hero gradient flows up into the navbar and the two read as one
+  // block with no hard seam.
+  const isHomePage = pathname === '/';
   const mainNavStyle = searchOpen
     ? { backgroundColor: '#0c0c48' }
-    : {};
+    : isHomePage
+      ? {}
+      : {
+          background:
+            'linear-gradient(180deg, rgba(10, 26, 85, 1) 0%, rgba(10, 26, 85, 0) 100%)',
+        };
 
   return (
     <>
@@ -197,7 +209,11 @@ export default function Navbar() {
             {/* Language switcher */}
             <div className="relative ml-1">
               <button
-                onClick={() => setLangOpen(!langOpen)}
+                onClick={() => {
+                  setLangOpen((open) => !open);
+                  setAboutOpen(false);
+                  setStudiesOpen(false);
+                }}
                 className="flex items-center gap-1 px-3 text-[14px] font-bold tracking-[0.28px] text-[#0c0c48] hover:opacity-70 transition-opacity"
                 aria-expanded={langOpen}
                 aria-haspopup="listbox"
@@ -240,7 +256,7 @@ export default function Navbar() {
           className="transition-[background] duration-300"
           aria-label="Main navigation"
         >
-          <div className="max-w-[1512px] mx-auto px-14 flex items-center justify-between h-[180px]">
+          <div className="max-w-[1512px] mx-auto px-14 flex items-center justify-between h-[140px]">
             {/* Logos */}
             <div className="flex items-center">
               <Link href="/" aria-label="University of Auckland — Home">
@@ -278,7 +294,11 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   className="flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
-                  onClick={() => setAboutOpen(!aboutOpen)}
+                  onClick={() => {
+                    setAboutOpen((open) => !open);
+                    setStudiesOpen(false);
+                    setLangOpen(false);
+                  }}
                   aria-expanded={aboutOpen}
                   aria-haspopup="true"
                   aria-controls="about-dropdown"
@@ -321,7 +341,11 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   className="flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
-                  onClick={() => setStudiesOpen(!studiesOpen)}
+                  onClick={() => {
+                    setStudiesOpen((open) => !open);
+                    setAboutOpen(false);
+                    setLangOpen(false);
+                  }}
                   aria-expanded={studiesOpen}
                   aria-haspopup="true"
                   aria-controls="studies-dropdown"
