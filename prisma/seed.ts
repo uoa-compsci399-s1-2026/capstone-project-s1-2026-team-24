@@ -71,7 +71,7 @@ async function main() {
         ethicsStatement:
           'This study has received ethical approval from the Southern Health and Disability Ethics Committee (20/STH/51).',
         isActive: true,
-        order: 2,
+        order: 3,
       },
       {
         slug: 'food-beverage',
@@ -98,7 +98,7 @@ async function main() {
         ethicsStatement:
           'This study has received ethical approval from the NZ Southern Health and Disability Ethics Committee (21/STH/231).',
         isActive: true,
-        order: 3,
+        order: 2,
       },
     ],
   })
