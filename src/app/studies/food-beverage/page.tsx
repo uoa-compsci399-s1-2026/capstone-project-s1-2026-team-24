@@ -10,8 +10,8 @@ export const metadata: Metadata = {
     'A short-term study investigating how different foods and beverages affect your metabolic rate, fat burn, blood sugar levels, and appetite.',
 };
 
-// Full navbar height (utility bar 40px + main nav 180px)
-const NAVBAR_HEIGHT = 220;
+// Full navbar height (utility bar 40px + main nav 140px)
+const NAVBAR_HEIGHT = 180;
 
 export default function NZFoodAndBeveragePage() {
   return (
@@ -20,12 +20,12 @@ export default function NZFoodAndBeveragePage() {
 
       {/* Hero — image extends up behind the main nav portion of the navbar */}
       <section
-        className="relative w-full overflow-hidden h-[520px] sm:h-[660px] lg:h-[800px]"
-        style={{ marginTop: `-${NAVBAR_HEIGHT + 90}px` }}
+        className="relative w-full overflow-hidden h-[380px] sm:h-[480px] lg:h-[554px]"
+        style={{ marginTop: `-${NAVBAR_HEIGHT}px` }}
         aria-label="NZ Food and Beverage study hero"
       >
         <Image
-          src="/ferdinand.jpg"
+          src="/food-bev.jpg"
           alt=""
           fill
           className="object-cover"

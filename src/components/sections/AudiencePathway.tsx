@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import PostureMaintenanceCallout from '@/components/sections/PostureMaintenanceCallout';
 import OurPartners from '@/components/sections/OurPartners';
 
@@ -7,16 +8,19 @@ export default function AudiencePathway() {
   const studies = [
     {
       title: "NZ Synergy",
+      href: "/studies/nz-synergy",
       imageSrc:
         "/674d07898d4f507a734d7b00_Photo for Synergy Study Advertisement_Edited_0-p-2000.jpg",
     },
     {
       title: "NZ Food and Beverage",
-      imageSrc: "/feijoa.jpg",
+      href: "/studies/food-beverage",
+      imageSrc: "/food-bev.jpg",
     },
     {
       title: "Ferdinand",
-      imageSrc: "/ferdinand.jpg",
+      href: "/studies/ferdinand",
+      imageSrc: "/feijoa.jpg",
     },
   ];
 
@@ -104,9 +108,11 @@ export default function AudiencePathway() {
 
           <div className="mt-10 grid gap-8 md:grid-cols-3">
             {studies.map((study) => (
-              <div
+              <Link
                 key={study.title}
-                className="rounded-[30px] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+                href={study.href}
+                aria-label={`Open the ${study.title} study page`}
+                className="block rounded-[30px] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(0,0,0,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0a4479]"
               >
                 <div className="w-[375px] h-[300px] mx-auto overflow-hidden rounded-[10px]">
                   <img
@@ -126,7 +132,7 @@ export default function AudiencePathway() {
                 >
                   {study.title}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
 
