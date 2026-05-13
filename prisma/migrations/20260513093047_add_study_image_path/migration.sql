@@ -1,9 +1,3 @@
-/*
-  Warnings:
-
-  - Made the column `contactPhoneZh` on table `Study` required. This step will fail if there are existing NULL values in that column.
-
-*/
 -- RedefineTables
 PRAGMA defer_foreign_keys=ON;
 PRAGMA foreign_keys=OFF;
@@ -29,7 +23,7 @@ CREATE TABLE "new_Study" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
-INSERT INTO "new_Study" ("compensationEn", "compensationZh", "contactEmail", "contactPhone", "contactPhoneZh", "createdAt", "eligibilityEn", "eligibilityZh", "ethicsStatement", "fullDescriptionEn", "fullDescriptionZh", "id", "isActive", "order", "redcapUrl", "shortDescription", "slug", "title", "updatedAt") SELECT "compensationEn", "compensationZh", "contactEmail", "contactPhone", "contactPhoneZh", "createdAt", "eligibilityEn", "eligibilityZh", "ethicsStatement", "fullDescriptionEn", "fullDescriptionZh", "id", "isActive", "order", "redcapUrl", "shortDescription", "slug", "title", "updatedAt" FROM "Study";
+INSERT INTO "new_Study" ("compensationEn", "compensationZh", "contactEmail", "contactPhone", "contactPhoneZh", "createdAt", "eligibilityEn", "eligibilityZh", "ethicsStatement", "fullDescriptionEn", "fullDescriptionZh", "id", "isActive", "order", "redcapUrl", "shortDescription", "slug", "title", "updatedAt") SELECT "compensationEn", "compensationZh", "contactEmail", "contactPhone", COALESCE("contactPhoneZh", ''), "createdAt", "eligibilityEn", "eligibilityZh", "ethicsStatement", "fullDescriptionEn", "fullDescriptionZh", "id", "isActive", "order", "redcapUrl", "shortDescription", "slug", "title", "updatedAt" FROM "Study";
 DROP TABLE "Study";
 ALTER TABLE "new_Study" RENAME TO "Study";
 CREATE UNIQUE INDEX "Study_slug_key" ON "Study"("slug");
