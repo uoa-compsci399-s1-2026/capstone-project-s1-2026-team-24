@@ -45,7 +45,7 @@ export default function AudiencePathway() {
         <div className="pointer-events-none absolute -left-75 bottom-[-400px] h-[1000px] w-[1000px]">
           <div className="relative h-full w-full">
             <Image
-              src="/images/nutrition plate.png"
+              src="/Untitled422_20260425205737.png"
               alt="Colourful salad bowl with fresh vegetables"
               fill
               priority
