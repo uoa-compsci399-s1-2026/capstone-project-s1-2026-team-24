@@ -16,7 +16,7 @@ export const SUBPAGE_HERO_GRADIENT =
 type SubpageHeroProps = {
   title: string;
   subtitle: ReactNode;
-  /** Optional override for the subtitle max-width in px at lg breakpoint. */
+  /** Optional override for the subtitle max-width in px (applied at all breakpoints). */
   subtitleMaxWidth?: number;
   /** Optional inline style override on the section (used sparingly). */
   style?: CSSProperties;
@@ -33,7 +33,7 @@ export default function SubpageHero({
       className="relative w-full overflow-hidden flex flex-col justify-center h-[380px] sm:h-[480px] lg:h-[554px]"
       style={{
         marginTop: `-${NAVBAR_HEIGHT}px`,
-        paddingTop: `${UTILITY_BAR_HEIGHT}px`,
+        paddingTop: `${NAVBAR_HEIGHT / 2}px`,
         backgroundImage: SUBPAGE_HERO_GRADIENT,
         backgroundColor: '#092d65',
         ...style,
