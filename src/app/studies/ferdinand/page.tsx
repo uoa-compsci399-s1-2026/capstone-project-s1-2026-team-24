@@ -21,7 +21,7 @@ export default function FerdinandPage() {
       {/* Hero — image extends up behind the main nav portion of the navbar */}
       <section
         className="relative w-full overflow-hidden h-[520px] sm:h-[660px] lg:h-[800px]"
-        style={{ marginTop: `-${NAVBAR_HEIGHT + 90}px` }}
+        style={{ marginTop: `-${NAVBAR_HEIGHT}px` }}
         aria-label="Ferdinand study hero"
       >
         <Image
@@ -89,7 +89,7 @@ export default function FerdinandPage() {
               <li className="mb-0">
                 Are overweight or obese (this is calculated by your height and weight)
               </li>
-              <li className="mb-0">Are happy to participate in an 6-month weight loss study</li>
+              <li className="mb-0">Are happy to participate in a 6-month weight loss study</li>
               <li className="mb-0">
                 Are happy to consume feijoa whole fruit powder or matched placebo powder every day
                 for six months
@@ -103,15 +103,15 @@ export default function FerdinandPage() {
             </p>
             <p className="mb-0">
               To sign up for the study, click{' '}
-              <a href="/studies" className="underline hover:opacity-70 transition-opacity">
+              <Link href="/studies" className="underline hover:opacity-70 transition-opacity">
                 here
-              </a>
+              </Link>
             </p>
             <p className="mb-0">
               If you have any further questions please visit our{' '}
-              <a href="/studies" className="underline hover:opacity-70 transition-opacity">
+              <Link href="/studies" className="underline hover:opacity-70 transition-opacity">
                 FAQ
-              </a>{' '}
+              </Link>{' '}
               page
             </p>
             <p className="mb-0">
