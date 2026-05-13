@@ -39,8 +39,9 @@ export default function JoinStudyForm() {
   const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
-    fetch('/api/studies')
-      .then(async res => {
+    async function loadStudies() {
+      try {
+        const res = await fetch('/api/studies');
         if (!res.ok) {
           throw new Error('Failed to fetch studies');
         }
@@ -50,11 +51,15 @@ export default function JoinStudyForm() {
           throw new Error('Invalid studies response');
         }
 
-        return data;
-      })
-      .then(data => setStudies(data))
-      .catch(() => setStudies([]))
-      .finally(() => setStudiesLoading(false));
+        setStudies(data);
+      } catch {
+        setStudies([]);
+      } finally {
+        setStudiesLoading(false);
+      }
+    }
+
+    loadStudies();
   }, []);
 
   function clearError() {

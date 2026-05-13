@@ -36,8 +36,9 @@ export default function StudiesOverview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/studies')
-      .then(async res => {
+    async function loadStudies() {
+      try {
+        const res = await fetch('/api/studies');
         if (!res.ok) {
           throw new Error('Failed to fetch studies');
         }
@@ -47,11 +48,15 @@ export default function StudiesOverview() {
           throw new Error('Invalid studies response');
         }
 
-        return data;
-      })
-      .then(data => setStudies(data))
-      .catch(() => setStudies([]))
-      .finally(() => setLoading(false));
+        setStudies(data);
+      } catch {
+        setStudies([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadStudies();
   }, []);
 
   const filtered = studies.filter(s =>
