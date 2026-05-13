@@ -23,7 +23,50 @@ CREATE TABLE "new_Study" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
-INSERT INTO "new_Study" ("compensationEn", "compensationZh", "contactEmail", "contactPhone", "contactPhoneZh", "createdAt", "eligibilityEn", "eligibilityZh", "ethicsStatement", "fullDescriptionEn", "fullDescriptionZh", "id", "isActive", "order", "redcapUrl", "shortDescription", "slug", "title", "updatedAt") SELECT "compensationEn", "compensationZh", "contactEmail", "contactPhone", COALESCE("contactPhoneZh", ''), "createdAt", "eligibilityEn", "eligibilityZh", "ethicsStatement", "fullDescriptionEn", "fullDescriptionZh", "id", "isActive", "order", "redcapUrl", "shortDescription", "slug", "title", "updatedAt" FROM "Study";
+INSERT INTO "new_Study" (
+    "compensationEn",
+    "compensationZh",
+    "contactEmail",
+    "contactPhone",
+    "contactPhoneZh",
+    "createdAt",
+    "eligibilityEn",
+    "eligibilityZh",
+    "ethicsStatement",
+    "fullDescriptionEn",
+    "fullDescriptionZh",
+    "id",
+    "imagePath",
+    "isActive",
+    "order",
+    "redcapUrl",
+    "shortDescription",
+    "slug",
+    "title",
+    "updatedAt"
+)
+SELECT
+    "compensationEn",
+    "compensationZh",
+    "contactEmail",
+    "contactPhone",
+    COALESCE("contactPhoneZh", ''),
+    "createdAt",
+    "eligibilityEn",
+    "eligibilityZh",
+    "ethicsStatement",
+    "fullDescriptionEn",
+    "fullDescriptionZh",
+    "id",
+    '',
+    "isActive",
+    "order",
+    "redcapUrl",
+    "shortDescription",
+    "slug",
+    "title",
+    "updatedAt"
+FROM "Study";
 DROP TABLE "Study";
 ALTER TABLE "new_Study" RENAME TO "Study";
 CREATE UNIQUE INDEX "Study_slug_key" ON "Study"("slug");
