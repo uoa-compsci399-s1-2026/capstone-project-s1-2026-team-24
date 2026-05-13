@@ -42,7 +42,7 @@ async function main() {
         contactPhoneZh: '02109196703',
         imagePath: '/services-and-expertise.jpg',
         ethicsStatement:
-          'Please refer to the official Human Nutrition Unit study page for ethics information.',
+          'This study has received ethical approval from the Southern Health and Disability Ethics Committee (20/STH/51).',
         isActive: true,
         order: 1,
       },
