@@ -20,6 +20,9 @@ export const metadata: Metadata = {
 
 // Full navbar height (utility bar 40px + main nav 180px)
 const NAVBAR_HEIGHT = 220;
+// Keep hero heading vertically aligned by offsetting for content below navbar.
+const HERO_CONTENT_OFFSET = 90;
+const HERO_MARGIN_TOP = -(NAVBAR_HEIGHT + HERO_CONTENT_OFFSET);
 
 export default async function NZSynergyPage() {
   const study = await fetchStudy();
@@ -35,7 +38,7 @@ export default async function NZSynergyPage() {
       {/* Hero — image extends up behind the main nav portion of the navbar */}
       <section
         className="relative w-full overflow-hidden h-[520px] sm:h-[660px] lg:h-[800px]"
-        style={{ marginTop: `-${NAVBAR_HEIGHT + 90}px` }}
+        style={{ marginTop: `${HERO_MARGIN_TOP}px` }}
         aria-label="NZ Synergy study hero"
       >
         <Image
@@ -158,12 +161,12 @@ export default async function NZSynergyPage() {
           </p>
           <p className="mb-0">If you have any further questions, please see our</p>
           <p>
-            <a
+            <Link
               href="/studies"
               className="underline hover:opacity-70 transition-opacity"
             >
               FAQs
-            </a>
+            </Link>
           </p>
         </div>
         </div>

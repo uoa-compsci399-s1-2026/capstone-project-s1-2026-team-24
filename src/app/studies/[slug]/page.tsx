@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import StudyContent from './StudyContent';
@@ -86,9 +87,9 @@ export default async function StudyPage({ params }: Props) {
       <nav aria-label="Breadcrumb" className="px-6 sm:px-12 lg:px-[52px] py-5">
         <ol className="flex items-center gap-2 text-[20px] text-[#0c0c48] tracking-[0.4px]">
           <li>
-            <a href="/studies" className="hover:opacity-70 transition-opacity">
+            <Link href="/studies" className="hover:opacity-70 transition-opacity">
               Studies
-            </a>
+            </Link>
           </li>
           <li aria-hidden="true">&gt;</li>
           <li>
