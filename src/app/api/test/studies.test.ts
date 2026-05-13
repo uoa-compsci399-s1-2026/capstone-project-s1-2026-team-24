@@ -75,6 +75,7 @@ describe("GET /api/studies/[slug]", () => {
   it("returns study details by slug", async () => {
     mockPrisma.study.findFirst.mockResolvedValueOnce({
       title: "Study 1",
+      isActive: true,
       fullDescriptionEn: "en",
       fullDescriptionZh: "zh",
       eligibilityEn: "elig en",
@@ -84,6 +85,7 @@ describe("GET /api/studies/[slug]", () => {
       redcapUrl: "https://example.com",
       contactEmail: "team@example.com",
       contactPhone: "123",
+      contactPhoneZh: "123",
       ethicsStatement: "ethics",
     });
 
@@ -93,8 +95,27 @@ describe("GET /api/studies/[slug]", () => {
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({
       title: "Study 1",
+      isActive: true,
       fullDescriptionEn: "en",
       fullDescriptionZh: "zh",
+    });
+    expect(mockPrisma.study.findFirst).toHaveBeenCalledWith({
+      where: { slug: "s1" },
+      select: {
+        title: true,
+        isActive: true,
+        fullDescriptionEn: true,
+        fullDescriptionZh: true,
+        eligibilityEn: true,
+        eligibilityZh: true,
+        compensationEn: true,
+        compensationZh: true,
+        redcapUrl: true,
+        contactEmail: true,
+        contactPhone: true,
+        contactPhoneZh: true,
+        ethicsStatement: true,
+      },
     });
   });
 
