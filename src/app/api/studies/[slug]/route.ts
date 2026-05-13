@@ -16,6 +16,7 @@ export async function GET(_request: Request, context: RouteContext) {
       },
       select: {
         title: true,
+        isActive: true,
         fullDescriptionEn: true,
         fullDescriptionZh: true,
         eligibilityEn: true,

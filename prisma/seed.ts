@@ -20,7 +20,7 @@ async function main() {
   await prisma.study.createMany({
     data: [
       {
-        slug: 'nz-synergy-study',
+        slug: 'nz-synergy',
         title: 'NZ Synergy Study',
         shortDescription:
           'A 2-week residential nutrition study for adults with elevated fasting blood sugar.',
@@ -46,7 +46,7 @@ async function main() {
         order: 1,
       },
       {
-        slug: 'ferdinand-study',
+        slug: 'ferdinand',
         title: 'Ferdinand Study',
         shortDescription:
           'A 6-month weight loss study involving feijoa powder, HNU visits, and a Cambridge diet.',
@@ -72,7 +72,7 @@ async function main() {
         order: 2,
       },
       {
-        slug: 'nz-food-beverage-study',
+        slug: 'food-beverage',
         title: 'NZ Food & Beverage Study',
         shortDescription:
           'A short-term metabolism study involving 1 screening visit and 2 study visits.',
