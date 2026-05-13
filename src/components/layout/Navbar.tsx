@@ -13,8 +13,6 @@ const ABOUT_ITEMS = [
 
 const TOP_BAR_LINKS = [
   { label: 'DONATIONS', href: '/collaborations/funding' },
-  { label: 'MEDIA', href: '/media-publications' },
-  { label: 'NEWS', href: '/news' },
   { label: 'CONTACT', href: '/contact' },
 ] as const;
 
