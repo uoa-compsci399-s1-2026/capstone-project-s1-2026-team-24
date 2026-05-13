@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
-const ACTIVE_STUDIES = ['NZ Synergy', 'NZ Food and Beverage', 'Ferdinand'];
+type Study = {
+  id: number;
+  title: string;
+};
 
 const inputClass =
   'w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors';
@@ -13,12 +16,22 @@ const labelClass =
   'block font-semibold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2';
 
 export default function JoinStudyForm() {
+  const [studies, setStudies] = useState<Study[]>([]);
+  const [studiesLoading, setStudiesLoading] = useState(true);
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
   const [study, setStudy] = useState('');
   const [message, setMessage] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    fetch('/api/studies')
+      .then(res => res.json())
+      .then((data: Study[]) => setStudies(data))
+      .catch(() => setStudies([]))
+      .finally(() => setStudiesLoading(false));
+  }, []);
 
   function clearError() {
     if (state === 'error') setState('idle');
@@ -124,14 +137,14 @@ export default function JoinStudyForm() {
               clearError();
             }}
             className={`${inputClass} appearance-none pr-12 cursor-pointer`}
-            disabled={state === 'loading'}
+            disabled={state === 'loading' || studiesLoading}
           >
             <option value="" disabled>
-              Select
+              {studiesLoading ? 'Loading…' : 'Select'}
             </option>
-            {ACTIVE_STUDIES.map(s => (
-              <option key={s} value={s}>
-                {s}
+            {studies.map(s => (
+              <option key={s.id} value={s.title}>
+                {s.title}
               </option>
             ))}
           </select>
