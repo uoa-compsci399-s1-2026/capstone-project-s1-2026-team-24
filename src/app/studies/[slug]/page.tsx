@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import StudyContent from './StudyContent';
@@ -47,10 +48,10 @@ export default async function StudyPage({ params }: Props) {
     <>
       <Navbar />
 
-      {/* Hero — same pattern as StudiesHero but with dynamic title */}
+      {/* Hero — extends behind the transparent main nav (same -220px pattern as StudiesHero) */}
       <section
-        className="relative w-full overflow-hidden flex flex-col justify-end h-[280px] sm:h-[360px] lg:h-[420px]"
-        style={{ backgroundColor: '#0c0c48' }}
+        className="relative w-full overflow-hidden flex flex-col justify-end h-[400px] sm:h-[480px] lg:h-[554px]"
+        style={{ backgroundColor: '#0c0c48', marginTop: '-220px' }}
       >
         <div
           className="absolute inset-0 overflow-hidden pointer-events-none"
@@ -81,6 +82,21 @@ export default async function StudyPage({ params }: Props) {
           </h1>
         </div>
       </section>
+
+      {/* Breadcrumb */}
+      <nav aria-label="Breadcrumb" className="px-6 sm:px-12 lg:px-[52px] py-5">
+        <ol className="flex items-center gap-2 text-[20px] text-[#0c0c48] tracking-[0.4px]">
+          <li>
+            <Link href="/studies" className="hover:opacity-70 transition-opacity">
+              Studies
+            </Link>
+          </li>
+          <li aria-hidden="true">&gt;</li>
+          <li>
+            <span className="font-bold">{study.title}</span>
+          </li>
+        </ol>
+      </nav>
 
       <main id="main-content" className="bg-white">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-8 lg:px-[93px]">
