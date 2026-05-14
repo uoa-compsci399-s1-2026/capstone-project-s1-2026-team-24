@@ -19,7 +19,7 @@ const FOOD_COMPONENTS = [
 
 export default function ResearchFocus() {
   return (
-    <section className="bg-[#eee] py-10 sm:py-14 lg:py-20 relative z-10">
+    <section className="bg-white py-10 sm:py-14 lg:py-20 relative z-10">
       <div className="max-w-[1512px] mx-auto px-4 sm:px-8 lg:px-[93px]">
         <div className="flex flex-col lg:flex-row gap-10 sm:gap-14 lg:gap-20 relative">
           {/* Left Column */}
