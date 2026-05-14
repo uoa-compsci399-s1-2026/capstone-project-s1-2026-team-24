@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import MailingListSignup from "@/components/MailingListSignup";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -12,10 +11,16 @@ const navLinks = [
 
 const legalLinks = [
   { href: "https://www.auckland.ac.nz", label: "The University of Auckland" },
-  { href: "https://www.auckland.ac.nz/en/about/the-university/accessibility.html", label: "Accessibility" },
+  {
+    href: "https://www.auckland.ac.nz/en/about/the-university/accessibility.html",
+    label: "Accessibility",
+  },
   { href: "https://www.uniservices.co.nz", label: "Copyright by UniServices" },
   { href: "https://www.auckland.ac.nz/en/privacy.html", label: "Privacy" },
-  { href: "https://www.auckland.ac.nz/en/about/the-university/disclaimer.html", label: "Disclaimer" },
+  {
+    href: "https://www.auckland.ac.nz/en/about/the-university/disclaimer.html",
+    label: "Disclaimer",
+  },
 ];
 
 export default function Footer() {
@@ -61,8 +66,9 @@ export default function Footer() {
 
           {/* Stay Updated — email subscribe */}
           <div>
-            <h3 className="font-bold text-xl mb-4 tracking-wide">Stay Updated</h3>
-            <MailingListSignup />
+            <h3 className="font-bold text-xl mb-4 tracking-wide">
+              Stay Updated
+            </h3>
           </div>
         </div>
 

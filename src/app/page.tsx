@@ -3,7 +3,10 @@ import AudiencePathway from "@/components/sections/AudiencePathway";
 
 export default function HomePage() {
   return (
-    <PageLayout title="UoA Research" description="University of Auckland Research">
+    <PageLayout
+      title="UoA Research"
+      description="University of Auckland Research"
+    >
       <h1
         style={{
           position: "absolute",
