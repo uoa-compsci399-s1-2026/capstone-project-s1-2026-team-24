@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import AudiencePathway from "./AudiencePathway";
+import AudiencePathway from "./HomepageStudies";
 
 const meta: Meta<typeof AudiencePathway> = {
   title: "Components/Sections/AudiencePathway",

@@ -1,28 +1,30 @@
-import PageLayout from "@/components/layout/PageLayout";
-import AudiencePathway from "@/components/sections/AudiencePathway";
+import type { Metadata } from 'next';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import HomepageHero from '@/components/sections/HomepageHero';
+import HomepageStudies from '@/components/sections/HomepageStudies';
+import OurPartners from '@/components/sections/OurPartners';
+import PostureMaintenanceCallout from '@/components/sections/PostureMaintenanceCallout';
+import HomepageAboutUs from '@/components/sections/HomepageAboutUs';
 
-export default function HomePage() {
-  return (
-    <PageLayout
-      title="UoA Research"
-      description="University of Auckland Research"
-    >
-      <h1
-        style={{
-          position: "absolute",
-          width: "1px",
-          height: "1px",
-          padding: 0,
-          margin: "-1px",
-          overflow: "hidden",
-          clip: "rect(0, 0, 0, 0)",
-          whiteSpace: "nowrap",
-          border: 0,
-        }}
-      >
-        Home
-      </h1>
-      <AudiencePathway />
-    </PageLayout>
-  );
-}
+export const metadata: Metadata = {
+    title: 'Home | Human Nutrition Unit',
+    description:
+        'The Human Nutrition Unit Homepage',
+    };
+
+    export default function HomePage() {
+        return (
+            <>
+                <Navbar />
+                <HomepageHero />
+                <main id="main-content">
+                    <HomepageStudies />
+                    <HomepageAboutUs />
+                    <PostureMaintenanceCallout />
+                    <OurPartners />
+                </main>
+                <Footer />
+            </>
+        );
+    }
