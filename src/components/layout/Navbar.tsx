@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 const ABOUT_ITEMS = [
-  { label: 'Discover HNU', href: '/about' },
-  { label: 'Our Team', href: '/team' },
-  { label: 'Our Research', href: '/research' },
+  { label: "Discover HNU", href: "/about" },
+  { label: "Our Team", href: "/team" },
+  { label: "Our Research", href: "/research" },
 ] as const;
 
 const TOP_BAR_LINKS = [
-  { label: 'DONATIONS', href: '/collaborations/funding' },
-  { label: 'CONTACT', href: '/contact' },
+  { label: "DONATIONS", href: "/collaborations/funding" },
+  { label: "CONTACT", href: "/contact" },
 ] as const;
 
 const STUDIES_ITEMS = [
-  { label: 'Studies Overview', href: '/studies' },
-  { label: 'NZ Synergy Study', href: '/studies/nz-synergy' },
-  { label: 'NZ Food & Beverage Study', href: '/studies/food-beverage' },
-  { label: 'Ferdinand Study', href: '/studies/ferdinand' },
+  { label: "Studies Overview", href: "/studies" },
+  { label: "NZ Synergy Study", href: "/studies/nz-synergy" },
+  { label: "NZ Food & Beverage Study", href: "/studies/food-beverage" },
+  { label: "Ferdinand Study", href: "/studies/ferdinand" },
 ] as const;
 
 const POPULAR_SEARCHES = [
-  { label: 'Donations', href: '/collaborations/funding' },
-  { label: 'Contact', href: '/contact' },
+  { label: "Donations", href: "/collaborations/funding" },
+  { label: "Contact", href: "/contact" },
 ] as const;
 
 export default function Navbar() {
@@ -35,7 +35,7 @@ export default function Navbar() {
   const [studiesOpen, setStudiesOpen] = useState(false);
   const [searchStudiesOpen, setSearchStudiesOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [lang, setLang] = useState<'EN' | 'ZH'>('EN');
+  const [lang, setLang] = useState<"EN" | "ZH">("EN");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileStudiesOpen, setMobileStudiesOpen] = useState(false);
@@ -55,8 +55,8 @@ export default function Navbar() {
         setLangOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export default function Navbar() {
   useEffect(() => {
     if (searchOpen) {
       previousBodyOverflowRef.current = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else if (previousBodyOverflowRef.current !== null) {
       document.body.style.overflow = previousBodyOverflowRef.current;
       previousBodyOverflowRef.current = null;
@@ -103,18 +103,19 @@ export default function Navbar() {
 
     updateSearchContentTopOffset();
 
-    window.addEventListener('resize', updateSearchContentTopOffset);
+    window.addEventListener("resize", updateSearchContentTopOffset);
     const headerElement = headerRef.current;
-    const resizeObserver = typeof window !== 'undefined' && 'ResizeObserver' in window
-      ? new ResizeObserver(updateSearchContentTopOffset)
-      : null;
+    const resizeObserver =
+      typeof window !== "undefined" && "ResizeObserver" in window
+        ? new ResizeObserver(updateSearchContentTopOffset)
+        : null;
 
     if (headerElement && resizeObserver) {
       resizeObserver.observe(headerElement);
     }
 
     return () => {
-      window.removeEventListener('resize', updateSearchContentTopOffset);
+      window.removeEventListener("resize", updateSearchContentTopOffset);
       resizeObserver?.disconnect();
     };
   }, []);
@@ -123,13 +124,13 @@ export default function Navbar() {
     if (!searchOpen) return;
 
     function handleSearchDialogKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         event.preventDefault();
         setSearchOpen(false);
         return;
       }
 
-      if (event.key !== 'Tab') return;
+      if (event.key !== "Tab") return;
 
       const dialogElement = searchDialogRef.current;
       if (!dialogElement) return;
@@ -138,7 +139,7 @@ export default function Navbar() {
         dialogElement.querySelectorAll<HTMLElement>(
           'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
         ),
-      ).filter((element) => element.getAttribute('aria-hidden') !== 'true');
+      ).filter((element) => element.getAttribute("aria-hidden") !== "true");
 
       if (focusableElements.length === 0) {
         event.preventDefault();
@@ -150,21 +151,28 @@ export default function Navbar() {
       const activeElement = document.activeElement as HTMLElement | null;
 
       if (event.shiftKey) {
-        if (activeElement === firstElement || !dialogElement.contains(activeElement)) {
+        if (
+          activeElement === firstElement ||
+          !dialogElement.contains(activeElement)
+        ) {
           event.preventDefault();
           lastElement.focus();
         }
         return;
       }
 
-      if (activeElement === lastElement || !dialogElement.contains(activeElement)) {
+      if (
+        activeElement === lastElement ||
+        !dialogElement.contains(activeElement)
+      ) {
         event.preventDefault();
         firstElement.focus();
       }
     }
 
-    document.addEventListener('keydown', handleSearchDialogKeyDown);
-    return () => document.removeEventListener('keydown', handleSearchDialogKeyDown);
+    document.addEventListener("keydown", handleSearchDialogKeyDown);
+    return () =>
+      document.removeEventListener("keydown", handleSearchDialogKeyDown);
   }, [searchOpen]);
 
   // The home page hero pulls its own gradient up over the navbar, so the
@@ -173,12 +181,12 @@ export default function Navbar() {
   // dark navy at the top fading to fully transparent at the bottom, so the
   // subpage hero gradient flows up into the navbar and the two read as one
   // block with no hard seam.
-  const isHomePage = pathname === '/';
-  const mainNavStyle = searchOpen
-    ? { backgroundColor: '#0c0c48' }
+  const isHomePage = pathname === "/";
+  const mainNavStyle = isHomePage
+    ? { backgroundColor: "#00000000" }
     : isHomePage
       ? undefined
-      : { backgroundColor: '#00000000' };
+      : { backgroundColor: "#00000000" };
 
   return (
     <>
@@ -217,13 +225,18 @@ export default function Navbar() {
               >
                 {lang}
                 <svg
-                  className={`w-3 h-3 transition-transform ${langOpen ? 'rotate-180' : ''}`}
+                  className={`w-3 h-3 transition-transform ${langOpen ? "rotate-180" : ""}`}
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
               {langOpen && (
@@ -231,11 +244,14 @@ export default function Navbar() {
                   role="listbox"
                   className="absolute right-0 top-full mt-1 bg-white shadow-lg rounded border border-gray-100 z-50 min-w-[60px]"
                 >
-                  {(['EN', 'ZH'] as const).map((l) => (
+                  {(["EN", "ZH"] as const).map((l) => (
                     <li key={l} role="option" aria-selected={lang === l}>
                       <button
-                        className={`block w-full px-4 py-2 text-[14px] font-bold text-[#0c0c48] hover:bg-gray-50 text-left ${lang === l ? 'bg-gray-50' : ''}`}
-                        onClick={() => { setLang(l); setLangOpen(false); }}
+                        className={`block w-full px-4 py-2 text-[14px] font-bold text-[#0c0c48] hover:bg-gray-50 text-left ${lang === l ? "bg-gray-50" : ""}`}
+                        onClick={() => {
+                          setLang(l);
+                          setLangOpen(false);
+                        }}
                       >
                         {l}
                       </button>
@@ -247,14 +263,13 @@ export default function Navbar() {
           </div>
         </div>
 
-
         {/* Main nav */}
         <nav
           style={mainNavStyle}
           className="transition-[background] duration-300"
           aria-label="Main navigation"
         >
-          <div className="max-w-[1512px] mx-auto px-14 flex items-center justify-between h-[140px]">
+          <div className="max-w-[1512px] mx-[-10] px-14 flex items-center justify-between h-[140px]">
             {/* Logos */}
             <div className="flex items-center">
               <Link href="/" aria-label="University of Auckland — Home">
@@ -267,13 +282,13 @@ export default function Navbar() {
                   className="object-contain"
                 />
               </Link>
-              <div className="w-px h-16 bg-white/60 mx-5" aria-hidden="true" />
+              <div className="w-px h-16 bg-white/60 mx-0" aria-hidden="true" />
               <Link href="/" aria-label="HNU — Home">
                 <Image
                   src="/images/logos/hnu-logo.svg"
                   alt="HNU"
-                  width={173}
-                  height={58}
+                  width={200}
+                  height={70}
                   className="object-contain"
                 />
               </Link>
@@ -303,13 +318,18 @@ export default function Navbar() {
                 >
                   About
                   <svg
-                    className={`w-3 h-3 transition-transform ${aboutOpen ? 'rotate-180' : ''}`}
+                    className={`w-3 h-3 transition-transform ${aboutOpen ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                     aria-hidden="true"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 {aboutOpen && (
@@ -317,7 +337,7 @@ export default function Navbar() {
                     id="about-dropdown"
                     role="menu"
                     className="absolute top-full left-0 mt-2 w-52 rounded shadow-lg py-1 z-50 border border-white/15"
-                    style={{ backgroundColor: '#0c0c48' }}
+                    style={{ backgroundColor: "#0c0c48" }}
                   >
                     {ABOUT_ITEMS.map((item) => (
                       <li key={item.href} role="none">
@@ -350,13 +370,18 @@ export default function Navbar() {
                 >
                   Studies
                   <svg
-                    className={`w-3 h-3 transition-transform ${studiesOpen ? 'rotate-180' : ''}`}
+                    className={`w-3 h-3 transition-transform ${studiesOpen ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                     aria-hidden="true"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 {studiesOpen && (
@@ -364,7 +389,7 @@ export default function Navbar() {
                     id="studies-dropdown"
                     role="menu"
                     className="absolute top-full left-0 mt-2 w-56 rounded shadow-lg py-1 z-50 border border-white/15"
-                    style={{ backgroundColor: '#0c0c48' }}
+                    style={{ backgroundColor: "#0c0c48" }}
                   >
                     {STUDIES_ITEMS.map((item) => (
                       <li key={item.href} role="none">
@@ -389,30 +414,63 @@ export default function Navbar() {
                 Collaborations
               </Link>
 
-              {/* Search / Close button */}
-              {searchOpen ? (
-                <button
-                  onClick={() => setSearchOpen(false)}
-                  className="flex items-center justify-center w-[57px] h-[57px] rounded-full border-[3px] border-white text-white hover:bg-white/10 transition-colors"
-                  aria-label="Close search"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              {/* Search button */}
+              <button
+                ref={searchTriggerRef}
+                onClick={() => setSearchOpen(!searchOpen)}
+                aria-label={searchOpen ? "Close search" : "Open search"}
+                className={`flex items-center justify-center border-[3px] border-white text-white hover:bg-white/10 h-[57px] transition-all duration-300 ease-in-out ${
+                  searchOpen
+                    ? "w-[57px] rounded-full"
+                    : "w-[160px] rounded-[28.5px] gap-3 pl-4 pr-6"
+                }`}
+              >
+                <div className="relative w-5 h-5 flex-shrink-0">
+                  <svg
+                    className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                      searchOpen
+                        ? "opacity-0 rotate-90 scale-50"
+                        : "opacity-100 rotate-0 scale-100"
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
-                </button>
-              ) : (
-                <button
-                  ref={searchTriggerRef}
-                  onClick={() => setSearchOpen(true)}
-                  className="flex items-center gap-3 pl-4 pr-6 h-[57px] rounded-[28.5px] border-[3px] border-white text-white hover:bg-white/10 transition-colors text-[20px] tracking-[0.4px] whitespace-nowrap"
-                  aria-label="Open search"
-                >
-                  <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <svg
+                    className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                      searchOpen
+                        ? "opacity-100 rotate-0 scale-100"
+                        : "opacity-0 -rotate-90 scale-50"
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
+                </div>
+                <span
+                  className={`text-[20px] tracking-[0.4px] whitespace-nowrap transition-all duration-300 overflow-hidden ${
+                    searchOpen ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
+                >
                   Search
-                </button>
-              )}
+                </span>
+              </button>
             </div>
 
             {/* Mobile hamburger */}
@@ -421,18 +479,33 @@ export default function Navbar() {
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
-              aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
                 {mobileOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 )}
               </svg>
             </button>
           </div>
-
         </nav>
 
         {/* Mobile menu */}
@@ -440,11 +513,17 @@ export default function Navbar() {
           <div
             id="mobile-menu"
             className="lg:hidden"
-            style={{ backgroundColor: '#0c0c48', borderTop: '1px solid rgba(255,255,255,0.15)' }}
+            style={{
+              backgroundColor: "#0c0c48",
+              borderTop: "1px solid rgba(255,255,255,0.15)",
+            }}
           >
             <ul className="px-4 py-2 space-y-1">
               <li>
-                <Link href="/" className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors">
+                <Link
+                  href="/"
+                  className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
+                >
                   Home
                 </Link>
               </li>
@@ -456,13 +535,18 @@ export default function Navbar() {
                 >
                   About
                   <svg
-                    className={`w-4 h-4 transition-transform ${mobileAboutOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transition-transform ${mobileAboutOpen ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                     aria-hidden="true"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 {mobileAboutOpen && (
@@ -488,13 +572,18 @@ export default function Navbar() {
                 >
                   Studies
                   <svg
-                    className={`w-4 h-4 transition-transform ${mobileStudiesOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transition-transform ${mobileStudiesOpen ? "rotate-180" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                     aria-hidden="true"
                   >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
                 {mobileStudiesOpen && (
@@ -513,7 +602,10 @@ export default function Navbar() {
                 )}
               </li>
               <li>
-                <Link href="/collaborations" className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors">
+                <Link
+                  href="/collaborations"
+                  className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
+                >
                   Collaborations
                 </Link>
               </li>
@@ -533,18 +625,21 @@ export default function Navbar() {
         )}
       </header>
 
-      {/* Full-screen search overlay */}
+      {/* Full-screen search overlay — slides down from top behind navbar */}
       {searchOpen && (
         <div
           ref={searchDialogRef}
-          className="fixed inset-0 z-40"
-          style={{ backgroundColor: '#0c0c48' }}
+          className="fixed inset-x-0 top-0 z-40 min-h-screen animate-[slideDown_0.3s_ease-out]"
+          style={{ backgroundColor: "#0c0c48" }}
           role="dialog"
           aria-modal="true"
           aria-label="Search"
         >
-          <div className="px-14 max-w-[1512px] mx-auto" style={{ paddingTop: `${searchContentTopOffset}px` }}>
-            <div className="max-w-[741px]">
+          <div
+            className="px-14 max-w-[1512px] mx-auto"
+            style={{ paddingTop: `${searchContentTopOffset}px` }}
+          >
+            <div className="max-w-[741px] mx-auto">
               <div className="flex items-center gap-4 pb-4 border-b border-white/30">
                 <input
                   ref={searchInputRef}
@@ -560,12 +655,19 @@ export default function Navbar() {
                   stroke="currentColor"
                   aria-hidden="true"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
               </div>
 
               <div className="mt-3">
-                <p className="text-white text-[16px] tracking-[0.32px] mb-1">Popular searches</p>
+                <p className="text-white text-[16px] tracking-[0.32px] mb-1">
+                  Popular searches
+                </p>
                 <ul>
                   <li>
                     <button
@@ -577,13 +679,18 @@ export default function Navbar() {
                     >
                       Studies
                       <svg
-                        className={`w-4 h-4 transition-transform ${searchStudiesOpen ? 'rotate-180' : ''}`}
+                        className={`w-4 h-4 transition-transform ${searchStudiesOpen ? "rotate-180" : ""}`}
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
                         aria-hidden="true"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                     {searchStudiesOpen && (

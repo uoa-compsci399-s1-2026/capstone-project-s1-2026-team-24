@@ -1,29 +1,29 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter-Regular.otf') format('opentype');
+  font-family: "Inter";
+  src: url("/fonts/Inter-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter-Italic.otf') format('opentype');
+  font-family: "Inter";
+  src: url("/fonts/Inter-Italic.otf") format("opentype");
   font-weight: 400;
   font-style: italic;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter-Medium.otf') format('opentype');
+  font-family: "Inter";
+  src: url("/fonts/Inter-Medium.otf") format("opentype");
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Inter';
-  src: url('/fonts/Inter-Bold.otf') format('opentype');
+  font-family: "Inter";
+  src: url("/fonts/Inter-Bold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
 }
@@ -59,12 +59,34 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .marquee-track {
@@ -73,4 +95,8 @@ body {
   flex-wrap: nowrap;
   width: max-content;
   animation: marquee 28s linear infinite;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  color: #ffffff;
 }
