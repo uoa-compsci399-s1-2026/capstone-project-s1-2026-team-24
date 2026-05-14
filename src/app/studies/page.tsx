@@ -1,15 +1,16 @@
-import type { Metadata } from 'next';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import StudiesHero from '@/components/sections/StudiesHero';
-import StudiesOverview from '@/components/sections/StudiesOverview';
-import JoinStudyForm from '@/components/sections/JoinStudyForm';
-import StudiesContactPanel from '@/components/sections/StudiesContactPanel';
+import type { Metadata } from "next";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import StudiesHero from "@/components/sections/StudiesHero";
+import StudiesOverview from "@/components/sections/StudiesOverview";
+import JoinStudyForm from "@/components/sections/JoinStudyForm";
+import StudiesContactPanel from "@/components/sections/StudiesContactPanel";
+import TrialDesign from "@/components/sections/TrialDesign";
 
 export const metadata: Metadata = {
-  title: 'Our Studies | HNU Auckland',
+  title: "Our Studies | HNU Auckland",
   description:
-    'Take part in advancing nutrition science. Explore our current studies and how to get involved.',
+    "Take part in advancing nutrition science. Explore our current studies and how to get involved.",
 };
 
 export default function StudiesPage() {
@@ -24,6 +25,8 @@ export default function StudiesPage() {
       <StudiesHero />
       <main id="main-content">
         <StudiesOverview />
+
+        <TrialDesign />
 
         {/* Join a study + Contact us — two-column card layout */}
         <section className="bg-white px-4 sm:px-8 lg:px-[71px] pb-16 lg:pb-24">

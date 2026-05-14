@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import StudyContent from './StudyContent';
+import TrialDesign from '@/components/sections/TrialDesign';
 
 type Props = {
   params: { slug: string };
@@ -113,6 +114,7 @@ export default async function StudyPage({ params }: Props) {
             contactPhoneZh={study.contactPhoneZh}
             ethicsStatement={study.ethicsStatement}
           />
+          <TrialDesign />
         </div>
       </main>
 
