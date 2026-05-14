@@ -26,7 +26,6 @@ export default function ResearchPage() {
       <main id="main-content">
         <ResearchIntroduction />
         <ResearchFocus />
-        <TrialDesign />
         <PostureMaintenanceCallout />
       </main>
       <Footer />
