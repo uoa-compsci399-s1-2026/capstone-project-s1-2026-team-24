@@ -1,20 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
+import { NAVBAR_HEIGHT } from "../layout/SubpageHero";
 
 export default function HomepageHero() {
   return (
     <section
       style={{
-        width: "100vw",
-        marginLeft: "calc(-50vw + 50%)",
-        marginTop: "-200px",
+        width: "full",
+        marginLeft: 0,
+        marginRight: 0,
+        marginTop: `-${NAVBAR_HEIGHT}px`,
         marginBottom: "0px",
       }}
       aria-label="Human Nutrition Unit hero section"
       className="overflow-visible"
     >
       <div
-        className="relative min-h-[810px] px-8 pb-24 pt-[315px] md:px-14 md:pb-28 md:pt-[315px] lg:px-24"
+        className="relative min-h-[785px] px-8 pb-24 pt-[315px] md:px-14 md:pb-28 md:pt-[315px] lg:px-15"
         style={{
           background:
             "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
@@ -33,7 +35,7 @@ export default function HomepageHero() {
           />
         </div>
 
-        <div className="relative z-10 mx-auto flex min-h-[350px] max-w-9xl justify-center lg:justify-end">
+        <div className="relative z-10 mx-0 flex min-h-[350px] max-w-10xl justify-center lg:justify-end">
           <div className="max-w-6xl text-center text-white lg:text-right">
             <h2
               className="leading-[1.05]"
@@ -44,7 +46,7 @@ export default function HomepageHero() {
                 opacity: 0.75,
               }}
             >
-              Unlock the power of food with <br/> the Human Nutrition Unit
+              Unlock the power of food with <br /> the Human Nutrition Unit
             </h2>
             <a
               href="/studies"
@@ -59,7 +61,7 @@ export default function HomepageHero() {
           </div>
         </div>
 
-        <div className="absolute bottom-5 right-18 z-5 hidden items-end gap-1 md:flex">
+        <div className="absolute bottom-5 right-13 z-5 hidden items-end gap-1 md:flex">
           <div className="relative h-[120px] w-[300px]">
             <Image
               src="/1000003090.png"
@@ -67,19 +69,22 @@ export default function HomepageHero() {
               fill
               sizes="500px"
               className="object-contain"
+              style={{ opacity: 0.5 }}
             />
           </div>
           <div
-            className="mb-5 h-[75px] w-[3px] bg-white/100"
+            className="mb-5 h-[75px] w-[3px] bg-white/100 mr-[15]"
             aria-hidden="true"
+            style={{ opacity: 0.5 }}
           />
-          <div className="relative h-[120px] w-[200px] ml-2">
+          <div className="relative h-[120px] w-[200px]">
             <Image
               src="/images/logos/UoA-Logo-Primary-RGB-Reversed-Large.png"
               alt="University of Auckland"
               fill
               sizes="122px"
               className="object-contain"
+              style={{ opacity: 0.5 }}
             />
           </div>
         </div>
