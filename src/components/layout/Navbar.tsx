@@ -177,11 +177,8 @@ export default function Navbar() {
   const mainNavStyle = searchOpen
     ? { backgroundColor: '#0c0c48' }
     : isHomePage
-      ? {}
-      : {
-          background:
-            'linear-gradient(180deg, rgba(10, 26, 85, 1) 0%, rgba(10, 26, 85, 0) 100%)',
-        };
+      ? undefined
+      : { backgroundColor: '#00000000' };
 
   return (
     <>
@@ -249,6 +246,7 @@ export default function Navbar() {
             </div>
           </div>
         </div>
+
 
         {/* Main nav */}
         <nav
