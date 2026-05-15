@@ -16,7 +16,7 @@ export default function HomepageHero() {
       className="overflow-visible"
     >
       <div
-        className="relative min-h-[785px] px-8 pb-24 pt-[315px] md:px-14 md:pb-28 md:pt-[315px] lg:px-15"
+        className="relative min-h-[810px] px-8 pb-24 pt-[315px] md:px-14 md:pb-28 md:pt-[315px] lg:px-15"
         style={{
           background:
             "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",

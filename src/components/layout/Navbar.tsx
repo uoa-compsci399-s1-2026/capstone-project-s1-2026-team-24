@@ -272,7 +272,7 @@ export default function Navbar() {
           className="transition-[background] duration-300"
           aria-label="Main navigation"
         >
-          <div className="max-w-[1512px] mx-[-10] px-14 flex items-center justify-between h-[140px]">
+          <div className="max-w-[1512px] mx-[-10px] px-17 flex items-center justify-between h-[120px]">
             {/* Logos */}
             <div className="flex items-center">
               <Link href="/" aria-label="University of Auckland — Home">
@@ -285,26 +285,20 @@ export default function Navbar() {
                   className="object-contain"
                 />
               </Link>
-              <div className="w-px h-16 bg-white/60 mx-0" aria-hidden="true" />
+              <div className="w-[2px] h-16 bg-white/60 mx-2" aria-hidden="true" />
               <Link href="/" aria-label="HNU — Home">
                 <Image
                   src="/images/logos/hnu-logo.svg"
                   alt="HNU"
                   width={200}
                   height={70}
-                  className="object-contain"
+                  className="object-contain ml-[-8px]"
                 />
               </Link>
             </div>
 
             {/* Desktop nav items */}
             <div className="hidden lg:flex items-center gap-8">
-              <Link
-                href="/"
-                className="text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
-              >
-                Home
-              </Link>
 
               {/* About dropdown */}
               <div className="relative">
