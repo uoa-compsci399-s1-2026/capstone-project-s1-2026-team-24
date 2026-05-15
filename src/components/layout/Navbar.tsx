@@ -272,7 +272,7 @@ export default function Navbar() {
           className="transition-[background] duration-300"
           aria-label="Main navigation"
         >
-          <div className="max-w-[1512px] mx-[-10px] px-17 flex items-center justify-between h-[120px]">
+          <div className="max-w-[1512px] mx-auto px-14 flex items-center justify-between h-[120px]">
             {/* Logos */}
             <div className="flex items-center">
               <Link href="/" aria-label="University of Auckland — Home">
