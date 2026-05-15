@@ -6,20 +6,19 @@ export default function HomepageStudies() {
     {
       title: "NZ Synergy",
       href: "/studies/nz-synergy",
-      imageSrc:
-        "/674d07898d4f507a734d7b00_Photo for Synergy Study Advertisement_Edited_0-p-2000.jpg",
     },
     {
-      title: "NZ Food and Beverage",
+      title: "NZ Food & Beverage",
       href: "/studies/food-beverage",
-      imageSrc: "/food-bev.jpg",
     },
     {
       title: "Ferdinand",
       href: "/studies/ferdinand",
-      imageSrc: "/feijoa.jpg",
     },
-  ];
+  ].map((study) => ({
+    ...study,
+    imageSrc: `/${study.title} Study.jpg`,
+  }));
 
   return (
     <section
