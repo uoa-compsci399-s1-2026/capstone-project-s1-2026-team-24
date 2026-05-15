@@ -278,7 +278,10 @@ export default function Navbar() {
                   className="object-contain"
                 />
               </Link>
-              <div className="w-[2px] h-16 bg-white/60 mx-2" aria-hidden="true" />
+              <div
+                className="w-[2px] h-16 bg-white/60 mx-2"
+                aria-hidden="true"
+              />
               <Link href="/" aria-label="HNU — Home">
                 <Image
                   src="/images/logos/hnu-logo.svg"
@@ -292,7 +295,6 @@ export default function Navbar() {
 
             {/* Desktop nav items */}
             <div className="hidden lg:flex items-center gap-8">
-
               {/* About dropdown */}
               <div className="relative">
                 <button
@@ -334,13 +336,13 @@ export default function Navbar() {
                   <div
                     id="about-dropdown"
                     role="menu"
-                    className={`absolute inset-x-[-854.5px] z-[-20] overflow-hidden ${aboutClosing ? 'dropdown-closing' : 'dropdown-open'}`}
+                    className={`absolute inset-x-[-842.5px] z-[-20] overflow-hidden ${aboutClosing ? "dropdown-closing" : "dropdown-open"}`}
                     style={{
-                    backgroundColor: "#0c0c48",
-                    top: -55,
-                    height: "375px",
-                    width: "100vw",
-                  }}
+                      backgroundColor: "#0c0c48",
+                      top: -55,
+                      height: "375px",
+                      width: "100vw",
+                    }}
                   >
                     <div className="absolute bottom-10 right-10 flex space-x-4">
                       {ABOUT_ITEMS.map((item) => (
@@ -348,12 +350,12 @@ export default function Navbar() {
                           key={item.href}
                           href={item.href}
                           onClick={() => {
-                          setAboutClosing(true);
-                          setTimeout(() => {
-                            setAboutOpen(false);
-                            setAboutClosing(false);
-                          }, 300);
-                        }}
+                            setAboutClosing(true);
+                            setTimeout(() => {
+                              setAboutOpen(false);
+                              setAboutClosing(false);
+                            }, 300);
+                          }}
                           className="relative group block transition-transform duration-300 hover:scale-105"
                         >
                           <img
@@ -362,7 +364,9 @@ export default function Navbar() {
                             alt={item.label}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 transition-opacity rounded-[30px]" />
-                          <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">{item.label}</p>
+                          <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
+                            {item.label}
+                          </p>
                         </Link>
                       ))}
                     </div>
@@ -408,145 +412,147 @@ export default function Navbar() {
                   </svg>
                 </button>
 
-              {/* Studies dropdown — outside header so it scrolls with page */}
-              { (studiesOpen || studiesClosing) && (
-                <div
-                  id="studies-dropdown"
-                  role="menu"
-                  className={`absolute inset-x-[-965] z-[-20] overflow-hidden ${studiesClosing ? 'dropdown-closing' : 'dropdown-open'}`}
-                  style={{
-                    backgroundColor: "#0c0c48",
-                    top: -55,
-                    height: "375px",
-                    width: "100vw",
-                  }}
-                >
-                  <div className="absolute bottom-10 right-10 flex space-x-4">
-                    {STUDIES_ITEMS.slice(1).map((item, index) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => {
-                          setStudiesClosing(true);
-                          setTimeout(() => {
-                            setStudiesOpen(false);
-                            setStudiesClosing(false);
-                          }, 300);
-                        }}
-                        className="relative group block transition-transform duration-300 hover:scale-105"
-                      >
-                        <img
-                          src={`/${item.label}.jpg`}
-                          className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                          alt={item.label}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 transition-opacity rounded-[30px]" />
-                        <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">{item.label}</p>
-                      </Link>
-                    ))}
+                {/* Studies dropdown — outside header so it scrolls with page */}
+                {(studiesOpen || studiesClosing) && (
+                  <div
+                    id="studies-dropdown"
+                    role="menu"
+                    className={`absolute inset-x-[-953px] z-[-20] overflow-hidden ${studiesClosing ? "dropdown-closing" : "dropdown-open"}`}
+                    style={{
+                      backgroundColor: "#0c0c48",
+                      top: -55,
+                      height: "375px",
+                      width: "100vw",
+                    }}
+                  >
+                    <div className="absolute bottom-10 right-10 flex space-x-4">
+                      {STUDIES_ITEMS.slice(1).map((item, index) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => {
+                            setStudiesClosing(true);
+                            setTimeout(() => {
+                              setStudiesOpen(false);
+                              setStudiesClosing(false);
+                            }, 300);
+                          }}
+                          className="relative group block transition-transform duration-300 hover:scale-105"
+                        >
+                          <img
+                            src={`/${item.label}.jpg`}
+                            className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                            alt={item.label}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 transition-opacity rounded-[30px]" />
+                          <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
+                            {item.label}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
                   </div>
+                )}
+              </div>
+
+              <Link
+                href="/collaborations"
+                className="text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+              >
+                Collaborations
+              </Link>
+
+              {/* Search button */}
+              <button
+                ref={searchTriggerRef}
+                onClick={() => setSearchOpen(!searchOpen)}
+                aria-label={searchOpen ? "Close search" : "Open search"}
+                className={`flex items-center justify-center border-[3px] border-white text-white hover:bg-white/10 h-[57px] transition-all duration-300 ease-in-out ${
+                  searchOpen
+                    ? "w-[57px] rounded-full"
+                    : "w-[160px] rounded-[28.5px] gap-3 pl-4 pr-6"
+                }`}
+              >
+                <div className="relative w-5 h-5 flex-shrink-0">
+                  <svg
+                    className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                      searchOpen
+                        ? "opacity-0 rotate-90 scale-50"
+                        : "opacity-100 rotate-0 scale-100"
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <svg
+                    className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                      searchOpen
+                        ? "opacity-100 rotate-0 scale-100"
+                        : "opacity-0 -rotate-90 scale-50"
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
                 </div>
-              )}
+                <span
+                  className={`text-[20px] tracking-[0.4px] whitespace-nowrap transition-all duration-300 overflow-hidden ${
+                    searchOpen ? "w-0 opacity-0" : "w-auto opacity-100"
+                  }`}
+                >
+                  Search
+                </span>
+              </button>
             </div>
 
-            <Link
-              href="/collaborations"
-              className="text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
-            >
-              Collaborations
-            </Link>
-
-            {/* Search button */}
+            {/* Mobile hamburger */}
             <button
-              ref={searchTriggerRef}
-              onClick={() => setSearchOpen(!searchOpen)}
-              aria-label={searchOpen ? "Close search" : "Open search"}
-              className={`flex items-center justify-center border-[3px] border-white text-white hover:bg-white/10 h-[57px] transition-all duration-300 ease-in-out ${
-                searchOpen
-                  ? "w-[57px] rounded-full"
-                  : "w-[160px] rounded-[28.5px] gap-3 pl-4 pr-6"
-              }`}
+              className="lg:hidden p-2 rounded text-white hover:bg-white/10 transition-colors"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-menu"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
             >
-              <div className="relative w-5 h-5 flex-shrink-0">
-                <svg
-                  className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-                    searchOpen
-                      ? "opacity-0 rotate-90 scale-50"
-                      : "opacity-100 rotate-0 scale-100"
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-                <svg
-                  className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-                    searchOpen
-                      ? "opacity-100 rotate-0 scale-100"
-                      : "opacity-0 -rotate-90 scale-50"
-                  }`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                {mobileOpen ? (
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
                     d="M6 18L18 6M6 6l12 12"
                   />
-                </svg>
-              </div>
-              <span
-                className={`text-[20px] tracking-[0.4px] whitespace-nowrap transition-all duration-300 overflow-hidden ${
-                  searchOpen ? "w-0 opacity-0" : "w-auto opacity-100"
-                }`}
-              >
-                Search
-              </span>
+                ) : (
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                )}
+              </svg>
             </button>
-          </div>
-
-          {/* Mobile hamburger */}
-          <button
-            className="lg:hidden p-2 rounded text-white hover:bg-white/10 transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-expanded={mobileOpen}
-            aria-controls="mobile-menu"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              {mobileOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
           </div>
         </nav>
 
