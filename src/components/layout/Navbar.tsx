@@ -196,7 +196,7 @@ export default function Navbar() {
       <header ref={headerRef} className="relative z-50">
         {/* Top utility bar */}
         <div className="bg-white">
-          <div className="max-w-[1512px] mx-auto px-14 flex items-center justify-end h-10">
+          <div className="max-w-[1512px] mx-auto px-12 flex items-center justify-end h-9.5">
             {TOP_BAR_LINKS.map((link) => (
               <Link
                 key={link.href}
