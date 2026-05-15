@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/nextjs-vite";
-import AudiencePathway from "./HomepageStudies";
+import HomepageStudies from "./HomepageStudies";
 
-const meta: Meta<typeof AudiencePathway> = {
-  title: "Components/Sections/AudiencePathway",
-  component: AudiencePathway,
+const meta: Meta<typeof HomepageStudies> = {
+  title: "Components/Sections/HomepageStudies",
+  component: HomepageStudies,
   tags: ["autodocs"],
   parameters: {
     layout: "fullscreen",
@@ -11,6 +11,6 @@ const meta: Meta<typeof AudiencePathway> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof AudiencePathway>;
+type Story = StoryObj<typeof HomepageStudies>;
 
 export const Default: Story = {};

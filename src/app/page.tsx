@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     export default function HomePage() {
         return (
             <>
+            <style>{`body { background-color: #ffffff; }`}</style>
                 <Navbar />
                 <HomepageHero />
                 <main id="main-content">
