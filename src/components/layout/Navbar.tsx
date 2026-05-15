@@ -193,13 +193,6 @@ export default function Navbar() {
 
   return (
     <>
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:rounded focus:bg-white focus:text-[#0c0c48] focus:font-semibold"
-      >
-        Skip to main content
-      </a>
-
       <header ref={headerRef} className="relative z-50">
         {/* Top utility bar */}
         <div className="bg-white">
@@ -272,7 +265,7 @@ export default function Navbar() {
           className="transition-[background] duration-300"
           aria-label="Main navigation"
         >
-          <div className="max-w-[1512px] mx-auto px-14 flex items-center justify-between h-[120px]">
+          <div className="max-w-[1512px] mx-[-10px] px-17 flex items-center justify-between h-[120px]">
             {/* Logos */}
             <div className="flex items-center">
               <Link href="/" aria-label="University of Auckland — Home">
@@ -292,7 +285,7 @@ export default function Navbar() {
                   alt="HNU"
                   width={200}
                   height={70}
-                  className="object-contain ml-[-8px]"
+                  className="object-contain ml-[-10px]"
                 />
               </Link>
             </div>
