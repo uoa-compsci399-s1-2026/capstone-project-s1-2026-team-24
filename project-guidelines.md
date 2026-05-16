@@ -14,30 +14,31 @@ If anything in this file conflicts with what an agent's training data or a casua
 - **Section 9** is the process rules (branching, migrations, dependencies).
 - **Section 10** is the explicit "do not touch" list.
 
-Companion documents that you should also read:
+Companion documents:
 
-- **`CLIENT_REQUIREMENTS.md`** : what the client wants the site to be.
-- **`IMPLEMENTATION_PLAN.md`** : the tracks of work, ownership, and acceptance criteria.
-- **`PROJECT_STATE.md`** : the exhaustive snapshot of the codebase at week 9 of the project. Use this as your reference for "what currently exists" before assuming.
-- **`BRAND.md`** : UoA brand guidelines.
-- **`DESIGN.md`** : visual / styling guidelines for new UI.
+- **`BRAND.md`** — project brand and design tokens sourced from the Figma file `HNU--Copy-latest-`. The colour palette, type, radius/elevation, and component patterns documented there are authoritative. **It was refreshed in May 2026; the old UoA-corporate version it replaced is no longer accurate.**
+
+> **A note on stale planning docs.** Earlier in the project there were `CLIENT_REQUIREMENTS.md`, `IMPLEMENTATION_PLAN.md`, and `PROJECT_STATE.md` files used to bootstrap the plan. They are kept locally by Cam but **not checked in**. Do not look for them in the repo. The current source of truth on ownership, scope, and architecture is this file plus `BRAND.md`.
 
 ---
 
 ## 1. Ownership and current work
 
-This is a six-person university capstone project. Two weeks remain until final delivery. Work has been carved into tracks (described in `IMPLEMENTATION_PLAN.md`). **Each track has a designated owner. Do not work on a track you do not own.**
+This is a six-person university capstone project. Two weeks remain until final delivery. Work has been carved into tracks. **Each track has a designated owner. Do not work on a track you do not own.**
 
 ### 1.1 Current track owners
 
-| Track | Owner | What it covers |
-| ----- | ----- | -------------- |
-| A | Cam | Schema migrations and seed updates. Foundational. |
-| B + C | Teammate 1 | Wire team/partners to DB; remove three hardcoded study pages. |
-| E + F | Teammate 2 | Contact flow cleanup, donations removal, hide team emails. |
-| D | Cam | Admin / CMS UI. The full admin surface. |
-| I | Cam | Publications system (ORCID fetch, affiliation filter, CMS review, public archive). |
-| G, H, J, K, L, M | TBD | Picked up after the above. Coordinate before starting. |
+| Track | Owner | Status | What it covers |
+| ----- | ----- | ------ | -------------- |
+| A | Cam | **Done (merged)** | Schema migrations and seed updates. Foundational. |
+| B + C | Teammate 1 | In progress | Wire team/partners components to the DB; remove the three hardcoded study folders under `src/app/studies/`. |
+| E + F | Teammate 2 | In progress | Contact-flow cleanup (single form, six inquiry types, rate limiting + honeypot, Donations link removal), and hiding team-member emails everywhere except individual study pages. |
+| D | **Karandeep** | In progress | Admin / CMS UI. The full admin surface. Karandeep started the first-pass shell (studies / team / partners list + create pages) and is taking the rest. |
+| G | **Karandeep** | In progress | Home page. The Hero / About / Studies refactor (`HomepageHero.tsx`, `HomepageAboutUs.tsx`, `HomepageStudies.tsx`) is his work, and he's implementing the above-the-fold dynamic highlight section the client edits through the CMS. |
+| I | Cam | Not started | Publications system (ORCID fetch, affiliation filter, CMS review, public archive). Schema is now in place (`Publication`, `PublicationCategory`, `PublicationAuthor` from Track A). |
+| H, J, K, L, M | TBD | Not started | Picked up after the above. Coordinate before starting. |
+
+**Notable ownership changes since the plan was originally drafted:** Cam previously had Track D and Track G on his list; Karandeep has taken both. Cam now owns A (done), I (next), and is the coordination point for cross-cutting concerns.
 
 ### 1.2 What "owning a track" means
 
@@ -47,12 +48,14 @@ If you own a track, you are the one making the technical decisions inside it and
 
 A few files are shared across tracks. Anyone touching them must be deliberate:
 
-- `prisma/schema.prisma` and `prisma/seed.ts`: schema and seed. **Only Cam edits these without coordination.** All schema changes happen in Track A's migration batch. If your work needs a new column or model, raise it; do not add one yourself.
+- `prisma/schema.prisma` and `prisma/seed.ts`: schema and seed. **Only Cam edits these without coordination.** Track A landed the foundational batch; if a downstream track discovers it needs another column or model, raise it before adding.
+- `prisma/migrations/`: never edit an existing migration after it has been applied to a teammate's DB. New schema changes go in new migrations created via `npx prisma migrate dev`.
 - `src/middleware.ts`: auth gate. Do not modify unless you understand the JWT cookie flow.
 - `src/lib/prisma.ts`: the Prisma client singleton. Do not modify.
 - `src/lib/admin-session.ts`: JWT issue/verify. Do not modify.
-- `src/components/layout/Navbar.tsx`: shared across every page. Multiple tracks need to change it (Track E removes Donations, Track L wires up search). Coordinate.
-- `src/components/layout/Footer.tsx`: shared. Coordinate.
+- `src/components/layout/Navbar.tsx`: shared across every page. Multiple tracks need to change it (Track E removes Donations from the top utility bar and the search-overlay Popular Searches list, Track L wires up search). Karandeep recently redesigned the dropdown and search-overlay animations here, so coordinate before non-trivial edits.
+- `src/components/layout/Footer.tsx`: shared. Coordinate. The mailing-list signup that used to sit in the footer has been removed entirely.
+- `src/components/sections/HomepageHero.tsx`, `HomepageAboutUs.tsx`, `HomepageStudies.tsx`: home page (Karandeep, Track G). Don't edit unless you're on Track G.
 - `src/app/globals.css`: brand tokens. Do not add unrelated style rules here.
 - `package.json`: see §9.4 on dependencies.
 
@@ -75,10 +78,11 @@ These rules are not up for discussion within the remaining time. Do not relitiga
 4. **Bilingual content (English + Simplified Chinese) only applies to per-study text** (`Study.fullDescriptionEn/Zh`, `eligibilityEn/Zh`, `compensationEn/Zh`, `contactPhone`/`contactPhoneZh`). Do not add bilingual fields elsewhere in the schema.
 5. **The site must work on mobile (390px wide minimum).** The client has not explicitly asked for this; it is assumed. The admin/CMS surface is desktop-only and that is fine.
 6. **No new external dependencies without discussion.** See §9.4.
-7. **No new schema migrations outside Track A.** If your work needs a new field, raise it on the team chat first.
-8. **No work on the admin/CMS pages by anyone other than the admin/CMS track owner.** If you find a bug in admin code while doing other work, flag it; do not fix it. Same for publications.
-9. **Do not add a JoinStudyForm-style duplicate contact form anywhere.** The single canonical contact form lives on `/contact`. Participants go to REDCap; everyone else uses the contact form.
-10. **The CMS is intentionally not all-encompassing.** The head client is not technically confident. Only the surfaces listed in `CLIENT_REQUIREMENTS.md` §4 are editable; do not extend the admin UI to other things without checking.
+7. **No new schema migrations without coordinating with Cam.** Track A's batch is merged; any further schema additions still gate through Cam so they don't conflict with seed updates or in-flight work.
+8. **No work on the admin/CMS pages by anyone other than the track owner (Karandeep).** If you find a bug in admin code while doing other work, flag it; do not fix it. Same for publications (Cam).
+9. **No mailing list, anywhere.** The mailing-list signup, public API, admin API, model, and tests have all been removed. Do not re-add a mailing-list signup component, route, model, or schema column.
+10. **Do not add a JoinStudyForm-style duplicate contact form anywhere.** The single canonical contact form lives on `/contact`. Participants go to REDCap; everyone else uses the contact form.
+11. **The CMS is intentionally not all-encompassing.** The head client is not technically confident. Only the surfaces tied to schema models intended for editing (`Study`, `StudyPdf`, `TeamMember`, `PartnerLogo`, `ContactRecipient`, `Publication`, `PublicationCategory`, and the still-to-be-added `HeroHighlight`) are editable. Do not extend the admin UI to other things without checking.
 
 ---
 
@@ -111,36 +115,71 @@ Page-level files (`src/app/<route>/page.tsx`) are **server components by default
 
 The reasoning: server components keep the bundle small, the markup ships fast, and they are simpler to reason about. If you find yourself adding `'use client'` to a component, double-check that you actually need state or effects. If you do not, leave it as a server component.
 
-The current client components are: `Navbar`, `StudiesOverview`, `JoinStudyForm` (being deleted by Track E), `ContactEmailForm`, `MailingListSignup`, `StudyContent`. New components should default to server unless they need interactivity.
+The current client components are: `Navbar`, `StudiesOverview`, `JoinStudyForm` (being deleted by Track E), `ContactEmailForm`, `StudyContent`, and the three homepage components (`HomepageHero`, `HomepageAboutUs`, `HomepageStudies`). `MailingListSignup` has been removed. New components should default to server unless they need interactivity.
 
 ---
 
 ## 4. Data layer
 
-### 4.1 Schema rules
+### 4.1 Schema overview (post-Track A)
 
-The schema is at `prisma/schema.prisma`. The current models, their roles, and the constraints on each are documented in `PROJECT_STATE.md` §3. **Read that section before assuming anything about the schema.**
+The schema is at `prisma/schema.prisma`. The migration history is small and clean. Models currently in the schema:
 
-Rules:
+| Model | Role |
+| ----- | ---- |
+| `Study` | Public studies. Tri-state lifecycle (`status`), separate soft-hide (`isActive`), bilingual content fields, REDCap URL, contact details, optional `category` tag, optional `publishedAt`. Has `pdfs StudyPdf[]`. |
+| `StudyPdf` | CMS-uploaded PDFs attached to a study (info sheets, ethics docs). Cascade-deletes with the parent study. |
+| `TeamMember` | Person on the team. Section is the `TeamSection` enum (`BoardOfDirectors`, `ResearchTeam`, `Alumni`). Optional `orcidId`, `profileUrl`, `yearsActive`. |
+| `TeamSection` (enum) | `BoardOfDirectors`, `ResearchTeam`, `Alumni`. |
+| `PartnerLogo` | Marquee logos. `group` is `"Collaborating"` or `"Industry"`. |
+| `ContactSubmission` | Stored contact-form submissions. |
+| `ContactRecipient` | Per-inquiry-type recipient email mapping (six canonical categories, see §5.4). `category` is unique. |
+| `Publication`, `PublicationCategory`, `PublicationAuthor` | Publications system schema (Track I will wire the API and UI). `Publication.status` is `"Pending"` / `"Approved"` / `"Rejected"`. Authors are linked to `TeamMember` via the `PublicationAuthor` junction. |
+| `CaseStudy` | Legacy table; the public page that used it has been deleted but the model is kept for now. |
 
-- **Schema changes only happen in Track A's migration batch.** If your work needs a new field, raise it.
-- **Every text column representing meaningful content has a paired bilingual `En`/`Zh` version only on `Study`.** Do not add `Zh` versions on other models; that is not what the client requires.
-- **Composite indexes match query patterns.** `Study(isActive, order)`, `TeamMember(section, order)` and `(isVisible, order)`, `PartnerLogo(order)`. If you add a new query pattern, add the matching index.
-- **Soft-hide vs lifecycle status:** the `Study` model has both `isActive: Boolean` and `status: String`. These are not the same thing. `status` is the lifecycle stage shown to the public (Recruiting / Active / Completed). `isActive` is whether the study is shown on the site at all. An admin can hide a study entirely with `isActive: false` without having to push it to Completed. Keep these semantics separate.
+Notable absences:
 
-### 4.2 Why a string for `Study.status` rather than a Prisma enum
+- **No `MailingListEntry`.** The mailing list is gone permanently.
+- **No `HeroHighlight` yet.** The homepage above-the-fold dynamic section is being designed by Karandeep as part of Track G/D; when he adds the model it will go in via a separate migration coordinated with Cam.
 
-Prisma 7 does support enums on SQLite via the adapter, but the existing API route handlers use simple string allow-lists for similar fields (`category` on `ContactSubmission`, for example). For consistency we keep `status` as a string column with allowed values enforced in the API route (`"Recruiting" | "Active" | "Completed"`). TypeScript can still narrow the string via a union type at the application layer.
+### 4.2 Schema rules
 
-### 4.3 Prisma client
+- **No new migrations without coordinating with Cam.** Track A merged a single batch; further additions go in a new migration coordinated to avoid seed-script conflicts.
+- **Bilingual `En`/`Zh` pairs only exist on `Study`.** Do not add `Zh` columns elsewhere; that is not what the client requires.
+- **Composite indexes match query patterns.** Current ones: `Study(isActive, order)`, `Study(status)`, `TeamMember(section, order)`, `TeamMember(isVisible, order)`, `PartnerLogo(group, order)`, `PartnerLogo(order)`, `StudyPdf(studyId, order)`, `Publication(status, year)`, `Publication(categoryId)`, `PublicationAuthor(teamMemberId)`. If you add a new query pattern, add the matching index.
+- **Soft-hide vs lifecycle status.** `Study` has both `isActive: Boolean` and `status: String` and they are **not the same thing**.
+  - `status` is the public lifecycle stage: `"Recruiting"` (REDCap "Apply to Participate" button shown), `"Active"` (running, REDCap hidden), `"Completed"` (past, REDCap hidden).
+  - `isActive` controls whether the study is rendered on the site at all.
+  - An admin can hide a study entirely with `isActive: false` without having to push it to Completed.
+  - The studies index queries on `isActive` to decide what to list, and renders the `status` badge on each card.
+
+### 4.3 Why a string for `Study.status` and `Publication.status` rather than a Prisma enum
+
+Prisma 7 does support enums on SQLite via the adapter, but the existing API route handlers use simple string allow-lists for similar fields (`category` on `ContactSubmission`, for example). For consistency we keep status fields as string columns with allowed values enforced in the API route (`"Recruiting" | "Active" | "Completed"` for `Study`; `"Pending" | "Approved" | "Rejected"` for `Publication`). TypeScript can narrow the string via a union type at the application layer.
+
+### 4.4 Prisma client
 
 `src/lib/prisma.ts` exports a singleton client. It uses the `globalThis` stash so the Next dev server's hot reload does not leak connections. **Do not instantiate `new PrismaClient()` elsewhere.** Always import from `@/lib/prisma`.
 
-### 4.4 Bilingual content handling
+### 4.5 After pulling new schema changes
+
+When you pull a branch that includes a schema change (Track A or any future migration), run:
+
+```
+npx prisma migrate dev   # applies pending migrations to your local dev.db
+npx prisma generate      # regenerates the typed Prisma client
+npm run seed             # re-seeds with the latest data
+```
+
+If you skip `prisma generate`, TypeScript will not see new model accessors (e.g. `prisma.contactRecipient`) and the build will fail.
+
+### 4.6 Bilingual content handling
 
 Per-study bilingual fields are paired columns (`fullDescriptionEn` / `fullDescriptionZh`, etc.). The dynamic study route (`src/app/studies/[slug]/page.tsx`) fetches the full record and passes both versions to `StudyContent.tsx`, which is a client component holding a language toggle (`'en' | 'zh'`). The toggle is local state, not URL-driven; if you need the choice to persist across pages, that is a future enhancement and not scoped now.
 
-### 4.5 Why no autotranslation
+> **Track C note:** there are still three hardcoded folders at `src/app/studies/nz-synergy/`, `food-beverage/`, and `ferdinand/` that shadow this dynamic route and prevent the bilingual page from loading for those slugs. Teammate 1 is deleting them as part of Track C. Do not edit their contents — they're going.
+
+### 4.7 Why no autotranslation
 
 This is worth restating because it is the kind of thing an AI agent might "helpfully" add. HNU is required to submit recruitment material translations to an ethics committee for approval. Auto-translating that text would violate the approval process. The CMS is the only place translated text enters the system; the front end never translates anything itself.
 
@@ -178,9 +217,24 @@ Established patterns to follow when adding a route:
 - Logout overwrites the cookie with `value: ""` and `maxAge: 0`.
 - Do not introduce a separate "user" model. The prototype has one admin role.
 
-### 5.4 Why no rate limiting today (and what to add)
+### 5.4 Contact form recipient routing
 
-There is no rate limiting on public endpoints yet. Track E adds basic protection: an in-memory IP-based rate limit and a honeypot field on both forms. The in-memory limit is acceptable because the app runs as a single instance for the prototype. If we ever deploy multi-instance, this needs to move to a shared store (Redis) but that is future work.
+`/api/contact` accepts a payload with `category` from a fixed allow-list of six values, in this exact form:
+
+1. `"Study Participant Enquiry"`
+2. `"Industry Partnership"`
+3. `"Internship or PhD Opportunity"`
+4. `"Donation"`
+5. `"General Enquiry"`
+6. `"Other"`
+
+Track E rewires this route to look up the destination email from `ContactRecipient` keyed by `category`. The submission is still persisted to `ContactSubmission` like today; actually sending email is out of scope. The seed pre-populates `ContactRecipient` with the six categories and `TODO_*@auckland.ac.nz` placeholder addresses — the client replaces them through the CMS.
+
+### 5.5 Rate limiting and anti-spam
+
+Public form endpoints get an in-memory IP-based rate limit (~5 submissions per IP per 10 minutes) plus a honeypot hidden field. Track E adds both to `/api/contact`. The in-memory limit is acceptable because the app runs as a single instance for the prototype; if it ever moves to multi-instance, swap for a shared store (Redis), but that's future work.
+
+The mailing-list endpoint that used to exist is gone — there are no mailing-list forms to rate-limit.
 
 ---
 
@@ -198,11 +252,17 @@ If you create a section that is one-off (used on one page), put it in `sections/
 
 ### 6.2 Styling
 
+`BRAND.md` is the authoritative source for tokens and component patterns. Summary:
+
 - **Tailwind utility classes** are the primary styling mechanism. Use them inline on components.
-- **Brand colour tokens** are declared in `src/app/globals.css` as CSS variables (`--uoa-waitemata: #0c0c48`, `--uoa-azure: #1f2bd4`, `--uoa-mahina: #00caef`). The recurring secondary navy `#0a4479` is not in the variables and is used as an inline value across many components. This inconsistency exists; do not introduce a third navy.
-- **Use these colours**: `#0c0c48` for navbar, primary buttons, primary headings. `#0a4479` for body text, secondary headings, decorative dividers. `#eee` / `#eeeeee` for light grey section bands. Refer to the existing components for the right combinations rather than choosing.
-- **Do not introduce new fonts.** Inter is the body font, loaded as local OTF files.
+- **Two navy tokens.** `#0c0c48` is the Waitematā navy — use it for the framing layer (top utility bar text, dark overlays like the search overlay background, study-card titles, breadcrumbs). `#0a4479` is the workhorse secondary — use it for everything on white surfaces (body copy, headings, form labels, submit-button fill, category-pill borders, icon fills). Don't introduce a third navy.
+- **The Figma design does not use Azure `#1f2bd4` or Māhina `#00caef`.** Those were corporate-UoA secondaries listed in the old brand doc. `globals.css` currently still defines `--uoa-azure` and `--uoa-mahina` as CSS variables but no component renders them; treat them as legacy and don't reach for them in new code.
+- **Section bands**: light grey `rgba(238, 238, 238, 0.93)` for the publication band background.
+- **Form input border / placeholder text**: `#cac7c7`.
+- **Do not introduce new fonts.** Inter is the body font, loaded as local files from `public/fonts/`.
 - **Rounded card pattern**: `rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] bg-white`. This is the dominant card shape; use it for new cards.
+- **Form input pattern**: 30px radius, 60px tall, `border-2 border-[#cac7c7]`, 20px Regular text, `#cac7c7` placeholder.
+- **Category pill pattern**: fully rounded, `border-3 border-[#0a4479]`, white fill, 24px Bold `#0a4479` text — used for the Research focus areas and intended for study status badges.
 - **Hero gradient**: `linear-gradient(112deg, #092d65 0%, #06699b 50%, #02a8d0 100%)`. Exported as `SUBPAGE_HERO_GRADIENT` from `src/components/layout/SubpageHero.tsx`.
 - **Navbar height constants**: `NAVBAR_HEIGHT = 180` and `UTILITY_BAR_HEIGHT = 40`. Use the exports, do not duplicate the numbers.
 
@@ -235,7 +295,7 @@ Storybook's a11y addon is configured but in `test: 'todo'` mode; violations surf
 
 ## 7. Admin / CMS architecture
 
-The admin surface is being built fresh in Track D. Everything in `src/app/admin/` and `src/components/admin/` is owned by Cam. Do not add files in these paths if you are not on Track D.
+The admin surface is owned by **Karandeep** (Track D). Everything in `src/app/admin/`, `src/components/admin/`, and the admin API routes under `src/app/api/admin/` is his to design and build. **Do not add files in these paths if you are not on Track D**, and do not "fix up" existing admin files (e.g. rebranding the colours, replacing emoji icons) — flag what you see and let Karandeep decide. Currently the shell uses generic Tailwind palette colours (`bg-blue-*`, `bg-green-*`, `bg-purple-*`) and emoji icons; the brand-token pass is on his roadmap.
 
 ### 7.1 Shell pattern
 
@@ -243,9 +303,21 @@ The admin surface is being built fresh in Track D. Everything in `src/app/admin/
 
 ### 7.2 Shared admin primitives
 
-Form and list primitives live in `src/components/admin/`. The intent is that each per-entity page is a thin composition of primitives plus the entity-specific schema. Do not duplicate form-field markup across admin pages; if a primitive does not yet exist for what you need, add one.
+Form and list primitives live in `src/components/admin/`. Currently `AdminForm.tsx` provides the form wrapper plus `FormField` and `FormCheckbox` building blocks. The intent is that each per-entity page is a thin composition of primitives plus the entity-specific schema. Do not duplicate form-field markup across admin pages; if a primitive does not yet exist for what you need, add one (if you're on Track D) or flag it (if you're not).
 
-### 7.3 Why a single shared password
+### 7.3 CMS surfaces (in priority order)
+
+The following surfaces need admin coverage. Karandeep owns prioritisation but this is the working list:
+
+1. **Studies** — full CRUD including bilingual content, REDCap URL, contact details, image, attached `StudyPdf` downloads, `status` and `category`, `isActive`, `order`. List + create + edit + delete.
+2. **Home page hero highlight** — singleton-style: title, description, link URL, link text, visibility toggle. The schema model (`HeroHighlight`) is not yet in place; Karandeep will add it via a coordinated migration when ready.
+3. **Team members** — Directors, Research Team, Alumni. Per the schema, fields are `name`, `title`, `section`, `bio`, `photoPath`, optional `orcidId`, `profileUrl`, `yearsActive`, `order`, `isVisible`.
+4. **Partner logos** — both groups (`Collaborating` and `Industry`). Name, logo image, optional `websiteUrl`, `group`, `order`.
+5. **Contact recipient mapping** (`ContactRecipient`) — admin can edit the email for each of the six inquiry types.
+6. **Contact submissions viewer** — read + filter by category.
+7. **Publications and publication categories** — separate large piece, mostly Track I (Cam) but the CMS surface lives in admin.
+
+### 7.4 Why a single shared password
 
 The client is one organisation with shared editorial access. No user accounts are needed. JWT cookie auth is sufficient. Do not over-engineer this.
 
@@ -253,13 +325,14 @@ The client is one organisation with shared editorial access. No user accounts ar
 
 ## 8. Publications system
 
-Track I (publications) is owned by Cam. The full design is in `IMPLEMENTATION_PLAN.md` Track I and `CLIENT_REQUIREMENTS.md` §3.2. Key architectural facts:
+Track I (publications) is owned by Cam. The schema landed with Track A; the API and UI are next. Key architectural facts:
 
 - **The system is hybrid: ORCID fetch + affiliation filter + CMS review.** Approved publications are the persistent layer; the ORCID API is the source of candidates.
 - **The affiliation filter is "HNU + Auckland".** A publication's affiliation text must mention `Human Nutrition Unit` or `HNU` AND `Auckland` to pass the filter. Case-insensitive. Word-boundary check on `HNU` to avoid false positives.
 - **Refresh is admin-triggered, not automated.** A button in the admin UI runs the fetch.
-- **De-duplication is by DOI.** The same publication can be returned via multiple team-member ORCID lookups; the unique key across team members is the DOI (with title+year as a fallback).
-- **Publication.status:** `PendingReview` (new from refresh, awaiting admin) | `Approved` (visible on public page) | `Rejected` (hidden, will not be re-prompted on subsequent refreshes).
+- **De-duplication is by DOI.** The same publication can be returned via multiple team-member ORCID lookups; the unique key across team members is the DOI (with title+year as a fallback). `Publication.doi` is unique in the schema.
+- **`Publication.status`**: `"Pending"` (new from refresh, awaiting admin) | `"Approved"` (visible on public page) | `"Rejected"` (hidden, will not be re-prompted on subsequent refreshes).
+- **Authors link via `PublicationAuthor`**, which joins `Publication` to `TeamMember` and cascades on delete from either side. `orcidSource` on `Publication` records which team member's ORCID surfaced the publication.
 
 If you are not on Track I, **do not add publication-related code**. If you find a bug in the publications system while doing your assigned work, flag it.
 
@@ -309,18 +382,28 @@ The reason: silent scope creep makes PRs hard to review, can introduce subtle co
 
 ### 9.5 Migrations
 
-The current migration history is small and clean. Track A is doing one batched migration that covers every new field needed across the project. **Do not run `prisma migrate dev` to create your own migration outside Track A**, because:
+The current migration history:
 
-- A second migration on a branch that diverges from the Track A migration creates a hard-to-resolve conflict.
+```
+20260421112607_init
+20260430035715_add_contact_phone_zh
+20260513093047_add_study_image_path
+20260516135908_track_a_schema_foundation   # ← Track A batch
+```
+
+Track A merged a single foundation migration that covers most of what the rest of the project needs. **Do not run `prisma migrate dev` to create your own migration without coordinating with Cam**, because:
+
+- A second migration on a branch that diverges from `main` can create a hard-to-resolve conflict if the order matters.
 - Schema changes scattered across multiple PRs make the seed script unstable.
 
-If you need a new schema field, message Cam and add it to Track A's migration.
+If you need a new schema field, message Cam first. After Track A, the most likely remaining additions are `HeroHighlight` (Karandeep, for the homepage dynamic section) and any small `Publication`-related tweaks (Cam, Track I).
 
 ### 9.6 Testing
 
 - API tests live in `src/app/api/test/`. When you add or change a route, add or update its test.
 - Vitest runs both an API project (Node) and a Storybook project (Playwright). Both should pass before merging.
-- Storybook stories exist for `Footer`, `Navbar` (four variants), `SectionContainer`, `AudiencePathway`, `Button`. New shared UI components should get a story.
+- Storybook stories exist for `Footer`, `Navbar` (four variants), `SectionContainer`, `HomepageStudies`, `Button`. The `AudiencePathway` story has been renamed to `HomepageStudies` after the homepage refactor; new shared UI components should get a story.
+- The mailing-list test (`src/app/api/test/mailing-list.test.ts`) has been deleted along with the mailing list; don't recreate it.
 
 ### 9.7 Visual verification
 
@@ -334,17 +417,18 @@ These files / areas should not be modified by anyone outside the track that owns
 
 | Path | Owner / reason |
 | ---- | -------------- |
-| `prisma/schema.prisma`, `prisma/migrations/*`, `prisma/seed.ts` | Cam / Track A. Coordinate any schema change. |
-| `src/app/admin/**` | Cam / Track D. Do not add admin pages. |
-| `src/components/admin/**` | Cam / Track D. Do not add admin components. |
-| `src/app/api/admin/**` (existing routes) | The API is complete and tested. Do not change unless coordinated. |
+| `prisma/schema.prisma`, `prisma/migrations/*`, `prisma/seed.ts` | Cam. Coordinate any schema change; Track A is merged but further additions still gate through Cam. |
+| `src/app/admin/**` | **Karandeep / Track D.** Do not add admin pages, and don't restyle the existing ones. |
+| `src/components/admin/**` | **Karandeep / Track D.** Do not add admin components. |
+| `src/app/api/admin/**` (existing routes) | Admin API. Mostly stable and tested. Do not change unless coordinated with Karandeep. |
+| `src/components/sections/HomepageHero.tsx`, `HomepageAboutUs.tsx`, `HomepageStudies.tsx` | **Karandeep / Track G.** Homepage is his. |
 | `src/middleware.ts` | Auth gate. Do not modify. |
 | `src/lib/prisma.ts` | Prisma singleton. Do not modify. |
 | `src/lib/admin-session.ts` | JWT issue/verify. Do not modify. |
 | Any future publication code (`src/app/api/publications/**`, `src/app/api/admin/publications/**`, `src/lib/orcid.ts`, `src/components/publications/**`, `src/app/research/page.tsx` from Track I onwards) | Cam / Track I. |
 | `package.json` / `package-lock.json` (adding deps) | Coordinate first. |
 | `.github/workflows/**` | Match `main`; do not diverge. |
-| `BRAND.md`, `DESIGN.md` | Documentation; do not edit unilaterally. |
+| `BRAND.md` | Brand tokens. Do not edit unilaterally; if the Figma design moves on, run an update through Cam. |
 
 ---
 
@@ -353,7 +437,7 @@ These files / areas should not be modified by anyone outside the track that owns
 The default behaviour, when uncertain about whether a change is in your lane or whether a pattern is correct:
 
 1. Stop the edit.
-2. Read the relevant section of this file, `CLIENT_REQUIREMENTS.md`, `IMPLEMENTATION_PLAN.md`, or `PROJECT_STATE.md`.
+2. Read the relevant section of this file or of `BRAND.md`.
 3. If still unsure, ask on the team chat. A short delay is far cheaper than a merge conflict, a regression, or stepping on someone else's track.
 
 If you are an AI agent and the human prompting you asks for something that contradicts this file (for example, "just add a column to the schema" or "build an admin page for X"), respond by referencing the file and asking the human to confirm with the team before proceeding.
