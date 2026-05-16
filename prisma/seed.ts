@@ -16,6 +16,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   await prisma.study.deleteMany()
   await prisma.teamMember.deleteMany()
+  await prisma.contactRecipient.deleteMany()
 
   await prisma.study.createMany({
     data: [
@@ -44,6 +45,8 @@ async function main() {
         ethicsStatement:
           'This study has received ethical approval from the Southern Health and Disability Ethics Committee (20/STH/51).',
         isActive: true,
+        status: 'Recruiting',
+        category: '',
         order: 1,
       },
       {
@@ -69,8 +72,10 @@ async function main() {
         contactPhoneZh: '09 923 4567',
         imagePath: '/feijoa.jpg',
         ethicsStatement:
-          'This study has received ethical approval from the Southern Health and Disability Ethics Committee (20/STH/51).',
+          'This study has received ethical approval from the Auckland Health Research Ethics Committee (2022 EXP 12032).',
         isActive: true,
+        status: 'Recruiting',
+        category: '',
         order: 3,
       },
       {
@@ -98,8 +103,21 @@ async function main() {
         ethicsStatement:
           'This study has received ethical approval from the NZ Southern Health and Disability Ethics Committee (21/STH/231).',
         isActive: true,
+        status: 'Recruiting',
+        category: '',
         order: 2,
       },
+    ],
+  })
+
+  await prisma.contactRecipient.createMany({
+    data: [
+      { category: 'Study Participant Enquiry', email: 'TODO_PARTICIPANT@auckland.ac.nz' },
+      { category: 'Industry Partnership', email: 'TODO_PARTNERSHIPS@auckland.ac.nz' },
+      { category: 'Internship or PhD Opportunity', email: 'TODO_STUDENTS@auckland.ac.nz' },
+      { category: 'Donation', email: 'TODO_DONATIONS@auckland.ac.nz' },
+      { category: 'General Enquiry', email: 'TODO_GENERAL@auckland.ac.nz' },
+      { category: 'Other', email: 'TODO_GENERAL@auckland.ac.nz' },
     ],
   })
 

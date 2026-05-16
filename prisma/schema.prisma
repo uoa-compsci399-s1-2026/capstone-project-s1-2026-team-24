@@ -9,44 +9,56 @@ datasource db {
 enum TeamSection {
   BoardOfDirectors
   ResearchTeam
+  Alumni
 }
 
 model Study {
-  id               Int      @id @default(autoincrement())
-  slug             String   @unique
-  title            String
-  shortDescription String
+  id                Int       @id @default(autoincrement())
+  slug              String    @unique
+  title             String
+  shortDescription  String
   fullDescriptionEn String
   fullDescriptionZh String
-  eligibilityEn    String
-  eligibilityZh    String
-  compensationEn   String
-  compensationZh   String
-  redcapUrl        String
-  contactEmail     String
-  contactPhone     String
-  contactPhoneZh   String
-  ethicsStatement  String
-  imagePath        String   @default("")
-  isActive         Boolean  @default(true)
-  order            Int      @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  eligibilityEn     String
+  eligibilityZh     String
+  compensationEn    String
+  compensationZh    String
+  redcapUrl         String
+  contactEmail      String
+  contactPhone      String
+  contactPhoneZh    String
+  ethicsStatement   String
+  imagePath         String    @default("")
+  isActive          Boolean   @default(true)
+  status            String    @default("Recruiting")
+  category          String    @default("")
+  publishedAt       DateTime?
+  order             Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  pdfs StudyPdf[]
 
   @@index([isActive, order])
+  @@index([status])
 }
 
 model TeamMember {
-  id        Int         @id @default(autoincrement())
-  name      String
-  title     String
-  section   TeamSection
-  bio       String
-  photoPath String
-  order     Int         @default(0)
-  isVisible Boolean     @default(true)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id          Int         @id @default(autoincrement())
+  name        String
+  title       String
+  section     TeamSection
+  bio         String
+  photoPath   String
+  orcidId     String?
+  profileUrl  String?
+  yearsActive String?
+  order       Int         @default(0)
+  isVisible   Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  publicationAuthors PublicationAuthor[]
 
   @@index([section, order])
   @@index([isVisible, order])
@@ -69,19 +81,82 @@ model ContactSubmission {
   submittedAt DateTime @default(now())
 }
 
-model MailingListEntry {
-  id       Int      @id @default(autoincrement())
-  email    String   @unique
-  joinedAt DateTime @default(now())
-}
-
 model PartnerLogo {
   id            Int     @id @default(autoincrement())
   name          String
   logoPath      String
   websiteUrl    String
   isPlaceholder Boolean @default(false)
+  group         String  @default("Collaborating")
   order         Int     @default(0)
 
+  @@index([group, order])
   @@index([order])
+}
+
+model ContactRecipient {
+  id        Int      @id @default(autoincrement())
+  category  String   @unique
+  email     String
+  updatedAt DateTime @updatedAt
+}
+
+model StudyPdf {
+  id         Int      @id @default(autoincrement())
+  studyId    Int
+  title      String
+  pdfPath    String
+  order      Int      @default(0)
+  uploadedAt DateTime @default(now())
+
+  study Study @relation(fields: [studyId], references: [id], onDelete: Cascade)
+
+  @@index([studyId, order])
+}
+
+model PublicationCategory {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  order Int    @default(0)
+
+  publications Publication[]
+
+  @@index([order])
+}
+
+model Publication {
+  id          Int      @id @default(autoincrement())
+  title       String
+  authorsRaw  String   @default("")
+  journal     String?
+  year        Int?
+  doi         String?  @unique
+  pubType     String   @default("Journal Article")
+  url         String?
+  abstract    String?
+  affiliation String?
+  orcidSource String?
+  status      String   @default("Pending")
+  categoryId  Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category PublicationCategory? @relation(fields: [categoryId], references: [id])
+  authors  PublicationAuthor[]
+
+  @@index([status, year])
+  @@index([categoryId])
+}
+
+model PublicationAuthor {
+  id            Int @id @default(autoincrement())
+  publicationId Int
+  teamMemberId  Int
+  order         Int @default(0)
+
+  publication Publication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  teamMember  TeamMember  @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+
+  @@unique([publicationId, teamMemberId])
+  @@index([teamMemberId])
 }
