@@ -28,6 +28,9 @@
 CLAUDE.md
 AGENTS.md
 
+# Local planning / context — never push
+keep-local-claude-made-for-personal-planning-and-context/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
