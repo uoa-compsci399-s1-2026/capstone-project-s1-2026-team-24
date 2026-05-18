@@ -1,27 +1,70 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const ALLOWED_CATEGORIES = [
-  "Study Participant Inquiry",
+  "Study Participant Enquiry",
   "Industry Partnership",
-  "Media & Press",
+  "Internship or PhD Opportunity",
+  "Donation",
   "General Enquiry",
   "Other",
 ] as const;
+
+function asTrimmedString(value: unknown) {
+  return typeof value === "string" ? value.trim() : "";
+}
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-export async function POST(request: Request) {
+function getClientIp(request: NextRequest) {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return forwardedFor.split(",")[0]?.trim() || "unknown";
+  }
+
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) {
+    return realIp.trim();
+  }
+
+  return "unknown";
+}
+
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null);
-    const name = typeof body?.name === "string" ? body.name.trim() : "";
-    const email = typeof body?.email === "string" ? body.email.trim() : "";
-    const category =
-      typeof body?.category === "string" ? body.category.trim() : "";
-    const message =
-      typeof body?.message === "string" ? body.message.trim() : "";
+
+    const name = asTrimmedString(body?.name);
+    const email = asTrimmedString(body?.email);
+    const category = asTrimmedString(body?.category);
+    const message = asTrimmedString(body?.message);
+    const honeypot = asTrimmedString(body?.honeypot);
+
+    if (honeypot) {
+      return NextResponse.json({ ok: true }, { status: 201 });
+    }
+
+    const ip = getClientIp(request);
+    const rateLimit = checkRateLimit(ip);
+
+    if (!rateLimit.allowed) {
+      const response = NextResponse.json(
+        { error: "Too many submissions. Please try again later." },
+        { status: 429 },
+      );
+
+      if (rateLimit.retryAfterSeconds) {
+        response.headers.set(
+          "Retry-After",
+          String(rateLimit.retryAfterSeconds),
+        );
+      }
+
+      return response;
+    }
 
     if (!name || !email || !category || !message) {
       return NextResponse.json(
@@ -48,6 +91,17 @@ export async function POST(request: Request) {
       );
     }
 
+    const recipient = await prisma.contactRecipient.findUnique({
+      where: { category },
+    });
+
+    if (!recipient) {
+      return NextResponse.json(
+        { error: "No recipient configured for this inquiry type." },
+        { status: 500 },
+      );
+    }
+
     await prisma.contactSubmission.create({
       data: {
         name,
@@ -57,7 +111,7 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true }, { status: 201 });
+    return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
     console.error("POST /api/contact failed:", error);
     return NextResponse.json(
@@ -66,3 +120,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+
