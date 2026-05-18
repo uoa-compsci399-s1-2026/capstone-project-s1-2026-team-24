@@ -26,25 +26,7 @@ const DIRECTORS: Director[] = [
   },
 ];
 
-function PersonIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
-function MailIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-  );
-}
-
-function DirectorCard({ name, role, imageSrc, linkedinUrl, email }: Director) {
+function DirectorCard({ name, role, imageSrc }: Director) {
   return (
     <div
       style={{
@@ -103,23 +85,6 @@ function DirectorCard({ name, role, imageSrc, linkedinUrl, email }: Director) {
       >
         {role}
       </p>
-
-      <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-        {linkedinUrl ? (
-          <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" aria-label={`${name} profile`}>
-            <PersonIcon />
-          </a>
-        ) : (
-          <span style={{ opacity: 0.4 }}><PersonIcon /></span>
-        )}
-        {email ? (
-          <a href={`mailto:${email}`} aria-label={`Email ${name}`}>
-            <MailIcon />
-          </a>
-        ) : (
-          <span style={{ opacity: 0.4 }}><MailIcon /></span>
-        )}
-      </div>
     </div>
   );
 }
