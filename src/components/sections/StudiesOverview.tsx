@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
+const STUDY_IMAGE_FALLBACK = '/images/team/placeholder.jpg';
+
 type Study = {
   id: number;
   slug: string;
@@ -11,6 +13,11 @@ type Study = {
   shortDescription: string | null;
   imagePath: string | null;
 };
+
+function studyImageSrc(imagePath: string | null): string {
+  const trimmed = imagePath?.trim();
+  return trimmed ? trimmed : STUDY_IMAGE_FALLBACK;
+}
 
 function isStudy(data: unknown): data is Study {
   if (typeof data !== 'object' || data === null) {
@@ -120,7 +127,7 @@ export default function StudiesOverview() {
               <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] overflow-hidden hover:shadow-[0px_0px_40px_0px_rgba(0,0,0,0.3)] transition-shadow h-full">
                 <div className="relative h-[260px] sm:h-[311px] mx-4 sm:mx-5 mt-4 sm:mt-5 rounded-[10px] overflow-hidden">
                   <Image
-                    src={study.imagePath ?? '/placeholder-study.jpg'}
+                    src={studyImageSrc(study.imagePath)}
                     alt={study.title}
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
