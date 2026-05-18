@@ -1,7 +1,7 @@
 // Site identity
 export const SITE_NAME = "HNU Auckland";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-export const CONTACT_EMAIL = "HNU_SYNERGY@auckland.ac.nz";
+
 
 // UoA brand colours (source: BRAND.md)
 export const BRAND_COLORS = {
