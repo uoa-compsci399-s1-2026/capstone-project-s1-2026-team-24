@@ -20,7 +20,7 @@ export default function DiscoverCapabilities() {
           }}
         />
         <img
-          src="/capabilities.jpg"
+          src="/Our Research.jpg"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover"
@@ -53,7 +53,7 @@ export default function DiscoverCapabilities() {
       {/* Mobile / tablet: image stacked below text in normal flow */}
       <div className="lg:hidden w-full h-[260px] sm:h-[360px]">
         <img
-          src="/capabilities.jpg"
+          src="/Our Research.jpg"
           alt="Research capabilities"
           className="w-full h-full object-cover"
         />

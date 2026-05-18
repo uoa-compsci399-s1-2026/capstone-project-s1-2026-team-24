@@ -1,28 +1,194 @@
-import Link from 'next/link';
+"use client";
+
+import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 
 export default function DiscoverVideo() {
-  return (
-    <section className="bg-white py-8 sm:py-10 lg:py-12 px-4 sm:px-8 lg:px-[93px]">
-      <div className="max-w-[1512px] mx-auto">
-        {/* Breadcrumb */}
-        <nav className="mb-8 sm:mb-10 lg:mb-12 text-sm sm:text-base lg:text-[20px] tracking-[0.4px] text-[#0c0c48]">
-          <Link href="/about" className="hover:underline">About</Link>
-          <span className="mx-2">{`>`}</span>
-          <strong>Discover HNU</strong>
-        </nav>
+  const [muted, setMuted] = useState(true);
+  const [playing, setPlaying] = useState(true);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
 
-        {/* Video embed */}
-        <div className="w-full rounded-[20px] sm:rounded-[30px] overflow-hidden shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)]">
-          <div className="relative w-full aspect-video">
+  const src = `https://www.youtube.com/embed/FSvG3KU8-uo?autoplay=1&mute=1&loop=1&playlist=FSvG3KU8-uo&controls=0&showinfo=0&rel=0&modestbranding=1&enablejsapi=1`;
+
+  function postMessage(command: string) {
+    iframeRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func: command, args: [] }),
+      "*",
+    );
+  }
+
+  function toggleMute() {
+    if (muted) {
+      postMessage("unMute");
+    } else {
+      postMessage("mute");
+    }
+    setMuted((m) => !m);
+  }
+
+  function togglePlay() {
+    if (playing) {
+      postMessage("pauseVideo");
+    } else {
+      postMessage("playVideo");
+    }
+    setPlaying((p) => !p);
+  }
+
+  // Unmute when scrolled into view
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && muted) {
+          postMessage("unMute");
+          setMuted(false);
+        }
+      },
+      { threshold: 0.5 },
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, [muted]);
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden"
+    >
+      <div className="max-w-[1512px] mx-auto">
+        <div className="relative flex flex-col lg:flex-row items-center gap-0">
+          {/* Video */}
+          <div
+            className="relative rounded-[28px] overflow-hidden flex-1 -mr-65"
+            style={{ height: "550px" }}
+          >
             <iframe
-              className="absolute inset-0 w-full h-full"
-              src="https://www.youtube.com/embed/FSvG3KU8-uo?si=5JpFdOO8fRKduDmJ"
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
+              ref={iframeRef}
+              className="absolute w-[130%] h-[130%]"
+              style={{
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                border: "none",
+              }}
+              src={src}
+              title="HNU video"
+              allow="autoplay; encrypted-media"
             />
+          </div>
+
+          {/* Blue text card */}
+          <div
+            className="relative z-10 flex-shrink-0 w-[340px] sm:w-[400px] lg:w-[550px] p-15 pl-20 flex flex-col gap-6"
+            style={{
+              backgroundColor: "#0a4379f2",
+              borderRadius: "80px 0 80px 0",
+            }}
+          >
+            <h2
+              className="text-white font-bold"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "32px",
+                lineHeight: 1.2,
+              }}
+            >
+             Who are we
+            </h2>
+
+            <p
+              className="text-white/85"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "16px",
+                lineHeight: 1.6,
+              }}
+            >
+              HNU is a University of Auckland research facility, established in 1998 as a
+              collaboration between the School of Biological Sciences and the Department of
+              Medicine at the University of Auckland.
+            </p>
+            <p>
+              It is New Zealand&apos;s only live-in nutrition trials facility which has the
+              capability to carry out long-term human residential studies.
+            </p>
+
+            {/* Controls */}
+            <div className="flex items-center gap-3 hidden">
+              {/* Play/Pause */}
+              <button
+                onClick={togglePlay}
+                className="flex items-center gap-2 w-fit bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-full"
+              >
+                {playing ? (
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                  </svg>
+                ) : (
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+                {playing ? "Pause" : "Play"}
+              </button>
+
+              {/* Mute/Unmute */}
+              <button
+                onClick={toggleMute}
+                className="flex items-center gap-2 w-fit bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-full"
+              >
+                {muted ? (
+                  <>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                      />
+                    </svg>
+                    Unmute
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.536 8.464a5 5 0 010 7.072M12 6v12m-3.536-9.536a5 5 0 000 7.072M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                      />
+                    </svg>
+                    Mute
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>

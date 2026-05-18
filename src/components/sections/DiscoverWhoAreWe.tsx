@@ -22,8 +22,8 @@ export default function DiscoverWhoAreWe() {
           }}
         />
         <img
-          src="/hnu-house-sketch.jpg"
-          alt=""
+          src="/Discover HNU.jpg"
+          alt="HNU building"
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover"
         />
@@ -52,7 +52,7 @@ export default function DiscoverWhoAreWe() {
       {/* Mobile / tablet: image stacked below text in normal flow */}
       <div className="lg:hidden w-full h-[260px] sm:h-[360px]">
         <img
-          src="/hnu-house-sketch.jpg"
+          src="/Discover HNU.jpg"
           alt="HNU building"
           className="w-full h-full object-cover"
         />
