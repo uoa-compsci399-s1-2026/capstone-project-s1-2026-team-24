@@ -11,7 +11,7 @@ export default function HomepageStudies() {
           description="We will investigate whether the foods you eat alter blood markers associated with the risk of developing type 2 diabetes."
           buttonHref="/studies/nz-synergy"
           buttonLabel="Find out more >"
-          imageSrc="/NZ synergy Study.jpg"
+          imageSrc="/NZ Synergy Study.jpg"
           imageAlt="NZ Synergy Study"
         />
         <StudyCard
@@ -20,7 +20,7 @@ export default function HomepageStudies() {
           description="We will investigate whether daily consumption of feijoa whole fruit powder alters risk of developing type 2 diabetes."
           buttonHref="/studies/food-beverage"
           buttonLabel="Find out more >"
-          imageSrc="/food-bev.jpg"
+          imageSrc="/NZ Food & Beverage Study.jpg"
           imageAlt="NZ Food and Beverage Study"
         />
       </div>
