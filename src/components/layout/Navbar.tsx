@@ -13,7 +13,6 @@ const ABOUT_ITEMS = [
 ] as const;
 
 const TOP_BAR_LINKS = [
-  { label: "DONATIONS", href: "/collaborations/funding" },
   { label: "CONTACT", href: "/contact" },
 ] as const;
 
@@ -25,7 +24,6 @@ const STUDIES_ITEMS = [
 ] as const;
 
 const POPULAR_SEARCHES = [
-  { label: "Donations", href: "/collaborations/funding" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
@@ -426,7 +424,7 @@ export default function Navbar() {
                     }}
                   >
                     <div className="absolute bottom-10 right-10 flex space-x-4">
-                      {STUDIES_ITEMS.slice(1).map((item, index) => (
+                      {STUDIES_ITEMS.slice(1).map((item) => (
                         <Link
                           key={item.href}
                           href={item.href}
@@ -782,3 +780,4 @@ export default function Navbar() {
     </>
   );
 }
+
