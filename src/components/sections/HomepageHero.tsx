@@ -9,7 +9,7 @@ export default function HomepageHero() {
         width: "full",
         marginLeft: 0,
         marginRight: 0,
-        marginTop: `-${NAVBAR_HEIGHT}px`,
+        marginTop:0,
         marginBottom: "0px",
       }}
       aria-label="Human Nutrition Unit hero section"

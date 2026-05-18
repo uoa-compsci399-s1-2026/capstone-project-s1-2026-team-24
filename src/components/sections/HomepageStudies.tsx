@@ -1,80 +1,28 @@
-import Image from "next/image";
-import Link from "next/link";
+// src/components/sections/HomepageStudies.tsx
+import StudyCard from "@/components/ui/StudyCard";
 
 export default function HomepageStudies() {
-  const studies = [
-    {
-      title: "NZ Synergy",
-      href: "/studies/nz-synergy",
-    },
-    {
-      title: "NZ Food & Beverage",
-      href: "/studies/food-beverage",
-    },
-    {
-      title: "Ferdinand",
-      href: "/studies/ferdinand",
-    },
-  ].map((study) => ({
-    ...study,
-    imageSrc: `/${study.title} Study.jpg`,
-  }));
-
   return (
-    <section
-      style={{
-        width: "100vw",
-        marginLeft: "calc(-50vw + 50%)",
-        marginTop: "0px",
-        marginBottom: "0px",
-      }}
-      aria-label="Homepage studies section"
-      className="overflow-visible"
-    >
-      
-      <div className="w-full bg-white px-7 pb-2 pt-50 md:px-12 lg:px-16">
-        <div className="mx-auto max-w-[1400px]">
-          <h3
-            className="text-center text-[#0c4b89]"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontSize: "64px",
-              fontWeight: 800,
-            }}
-          >
-            Check out these studies
-          </h3>
-
-          <div className="mt-10 grid gap-8 md:grid-cols-3">
-            {studies.map((study) => (
-              <Link
-                key={study.title}
-                href={study.href}
-                aria-label={`Open the ${study.title} study page`}
-                className="block rounded-[30px] bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition hover:-translate-y-1 hover:shadow-[0_14px_34px_rgba(0,0,0,0.18)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0a4479]"
-              >
-                <div className="w-[375px] h-[300px] mx-auto overflow-hidden rounded-[10px]">
-                  <img
-                    src={study.imageSrc}
-                    className="w-full h-full object-cover"
-                    alt={study.title}
-                  />
-                </div>
-
-                <p
-                  className="pt-5 text-center text-[#17174f]"
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: "28px",
-                    fontWeight: 700,
-                  }}
-                >
-                  {study.title}
-                </p>
-              </Link>
-            ))}
-          </div>
-        </div>
+    <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
+        <StudyCard
+          title="NZ Synergy"
+          subtitle="A Two-Week Nutrition Study for Diabetes Prevention"
+          description="We will investigate whether the foods you eat alter blood markers associated with the risk of developing type 2 diabetes."
+          buttonHref="/studies/nz-synergy"
+          buttonLabel="Find out more >"
+          imageSrc="/NZ synergy Study.jpg"
+          imageAlt="NZ Synergy Study"
+        />
+        <StudyCard
+          title="NZ Food and Beverage"
+          subtitle="A Weight Loss Study for Diabetes Prevention"
+          description="We will investigate whether daily consumption of feijoa whole fruit powder alters risk of developing type 2 diabetes."
+          buttonHref="/studies/food-beverage"
+          buttonLabel="Find out more >"
+          imageSrc="/food-bev.jpg"
+          imageAlt="NZ Food and Beverage Study"
+        />
       </div>
     </section>
   );

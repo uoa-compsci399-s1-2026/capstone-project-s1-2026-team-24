@@ -32,10 +32,6 @@ export default function OurPartners() {
 
   return (
     <section className="bg-white py-14 sm:py-18 lg:py-24">
-      <h2 className="text-2xl sm:text-3xl lg:text-[48px] font-bold text-[#0a4479] tracking-[0.96px] text-center mb-10 sm:mb-14 lg:mb-16">
-        OUR PARTNERS
-      </h2>
-
       {/* Marquee track */}
       <div className="overflow-hidden w-full" aria-label="Our partners">
         <div
