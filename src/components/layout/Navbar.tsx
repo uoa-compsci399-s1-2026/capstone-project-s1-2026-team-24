@@ -49,6 +49,32 @@ export default function Navbar() {
   const searchDialogRef = useRef<HTMLDivElement>(null);
   const previousBodyOverflowRef = useRef<string | null>(null);
   const wasSearchOpenRef = useRef(false);
+  const [scrolled, setScrolled] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.scrollY > 10;
+    }
+    return false;
+  });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    if (window.scrollY > 10) setScrolled(true);
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      requestAnimationFrame(() => {
+        if (window.scrollY > 10) {
+          setScrolled(true);
+        } else if (window.scrollY < 5) {
+          setScrolled(false);
+        }
+      });
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -193,7 +219,11 @@ export default function Navbar() {
 
   return (
     <>
-      <header ref={headerRef} className="relative z-50">
+      <header
+        ref={headerRef}
+        className="z-50"
+        style={{ position: "fixed", top: 0, left: 0, right: 0 }}
+      >
         {/* Top utility bar */}
         <div className="bg-white">
           <div className="max-w-[1512px] mx-auto px-12 flex items-center justify-end h-9.5">
@@ -262,37 +292,59 @@ export default function Navbar() {
         {/* Main nav */}
         <nav
           style={mainNavStyle}
-          className="transition-[background] duration-300"
+          className="transition-all duration-300"
           aria-label="Main navigation"
         >
-          <div className="max-w-[1512px] mx-[-10px] px-17 flex items-center justify-between h-[120px]">
+          <div
+            style={{
+              maxWidth: scrolled ? "900px" : "1512px",
+              margin: "0 auto",
+              padding: scrolled ? "0 32px" : "0 48px",
+              height: scrolled ? "80px" : "120px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              backgroundColor: scrolled
+                ? "rgba(12, 12, 72, 0.75)"
+                : "transparent",
+              backdropFilter: scrolled ? "blur(15px)" : "none",
+              borderRadius: scrolled ? "9999px" : "0",
+              transition: "all 0.4s ease",
+              marginTop: scrolled ? "8px" : "0",
+              marginBottom: scrolled ? "8px" : "0",
+              overflow: "visible",
+            }}
+          >
             {/* Logos */}
             <div className="flex items-center">
-              <Link href="/" aria-label="University of Auckland — Home">
-                <Image
-                  src="/images/logos/UoA-Logo-Primary-RGB-Reversed-Small.png"
-                  alt="University of Auckland"
-                  width={164}
-                  height={78}
-                  priority
-                  className="object-contain"
-                />
-              </Link>
-              <div
-                className="w-[2px] h-16 bg-white/60 mx-2"
-                aria-hidden="true"
-              />
+              {(!mounted || !scrolled) && (
+                <>
+                  <Link href="/" aria-label="University of Auckland — Home">
+                    <Image
+                      src="/images/logos/UoA-Logo-Primary-RGB-Reversed-Small.png"
+                      alt="University of Auckland"
+                      width={164}
+                      height={78}
+                      priority
+                      className="object-contain"
+                    />
+                  </Link>
+                  <div
+                    className="w-[2px] h-16 bg-white/60 mx-2"
+                    aria-hidden="true"
+                  />
+                </>
+              )}
               <Link href="/" aria-label="HNU — Home">
                 <Image
                   src="/images/logos/hnu-logo.svg"
                   alt="HNU"
-                  width={200}
-                  height={70}
+                  width={scrolled ? 150 : 200}
+                  height={scrolled ? 52 : 70}
                   className="object-contain ml-[-10px]"
                 />
               </Link>
             </div>
-
             {/* Desktop nav items */}
             <div className="hidden lg:flex items-center gap-8">
               {/* About dropdown */}
@@ -336,39 +388,43 @@ export default function Navbar() {
                   <div
                     id="about-dropdown"
                     role="menu"
-                    className={`absolute inset-x-[-842.5px] z-[-20] overflow-hidden ${aboutClosing ? "dropdown-closing" : "dropdown-open"}`}
+                    className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${aboutClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
                     style={{
                       backgroundColor: "#0c0c48",
-                      top: -55,
-                      height: "375px",
-                      width: "100vw",
+                      height: scrolled ? "350px" : "400px",
+                      paddingTop: scrolled
+                        ? `${searchContentTopOffset - 40}px`
+                        : `${searchContentTopOffset}px`,
+                      borderRadius: scrolled ? "40px" : "0",
                     }}
                   >
-                    <div className="absolute bottom-10 right-10 flex space-x-4">
-                      {ABOUT_ITEMS.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => {
-                            setAboutClosing(true);
-                            setTimeout(() => {
-                              setAboutOpen(false);
-                              setAboutClosing(false);
-                            }, 300);
-                          }}
-                          className="relative group block transition-transform duration-300 hover:scale-105"
-                        >
-                          <img
-                            src={`/${item.label}.jpg`}
-                            className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                            alt={item.label}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 transition-opacity rounded-[30px]" />
-                          <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
-                            {item.label}
-                          </p>
-                        </Link>
-                      ))}
+                    <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
+                      <div className="flex space-x-4">
+                        {ABOUT_ITEMS.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => {
+                              setAboutClosing(true);
+                              setTimeout(() => {
+                                setAboutOpen(false);
+                                setAboutClosing(false);
+                              }, 300);
+                            }}
+                            className="relative group block transition-transform duration-300 hover:scale-105"
+                          >
+                            <img
+                              src={`/${item.label}.jpg`}
+                              className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                              alt={item.label}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 rounded-[30px]" />
+                            <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
+                              {item.label}
+                            </p>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -417,39 +473,43 @@ export default function Navbar() {
                   <div
                     id="studies-dropdown"
                     role="menu"
-                    className={`absolute inset-x-[-953px] z-[-20] overflow-hidden ${studiesClosing ? "dropdown-closing" : "dropdown-open"}`}
+                    className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${studiesClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
                     style={{
                       backgroundColor: "#0c0c48",
-                      top: -55,
-                      height: "375px",
-                      width: "100vw",
+                      height: scrolled ? "350px" : "400px",
+                      paddingTop: scrolled
+                        ? `${searchContentTopOffset - 40}px`
+                        : `${searchContentTopOffset}px`,
+                      borderRadius: scrolled ? "40px" : "0",
                     }}
                   >
-                    <div className="absolute bottom-10 right-10 flex space-x-4">
-                      {STUDIES_ITEMS.slice(1).map((item, index) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => {
-                            setStudiesClosing(true);
-                            setTimeout(() => {
-                              setStudiesOpen(false);
-                              setStudiesClosing(false);
-                            }, 300);
-                          }}
-                          className="relative group block transition-transform duration-300 hover:scale-105"
-                        >
-                          <img
-                            src={`/${item.label}.jpg`}
-                            className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                            alt={item.label}
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 transition-opacity rounded-[30px]" />
-                          <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
-                            {item.label}
-                          </p>
-                        </Link>
-                      ))}
+                    <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
+                      <div className="flex space-x-4">
+                        {STUDIES_ITEMS.slice(1).map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => {
+                              setStudiesClosing(true);
+                              setTimeout(() => {
+                                setStudiesOpen(false);
+                                setStudiesClosing(false);
+                              }, 300);
+                            }}
+                            className="relative group block transition-transform duration-300 hover:scale-105"
+                          >
+                            <img
+                              src={`/${item.label}.jpg`}
+                              className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                              alt={item.label}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 rounded-[30px]" />
+                            <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
+                              {item.label}
+                            </p>
+                          </Link>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
