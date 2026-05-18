@@ -1,21 +1,5 @@
 import Link from 'next/link';
 
-function EmailIcon() {
-  return (
-    <svg
-      className="shrink-0 mt-1"
-      width="26"
-      height="26"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-    >
-      <rect x="2" y="4" width="20" height="16" rx="2" stroke="#0a4479" strokeWidth="2" />
-      <path d="M2 7l10 7 10-7" stroke="#0a4479" strokeWidth="2" />
-    </svg>
-  );
-}
-
 function PhoneIcon() {
   return (
     <svg
@@ -88,17 +72,11 @@ export default function StudiesContactPanel() {
         </h3>
         <p className="text-[#0a4479] text-base sm:text-[20px] font-normal leading-normal">
           See our current studies or express your interest to participate in a
-          future study by emailing us.
+          future study through our contact form.
         </p>
       </div>
 
       <div className="flex flex-col gap-5">
-        <div className="flex items-start gap-4">
-          <EmailIcon />
-          <p className="text-[#0a4479] text-base sm:text-[20px] tracking-[0.4px]">
-            HNU_SYNERGY@auckland.ac.nz
-          </p>
-        </div>
         <div className="flex items-start gap-4">
           <PhoneIcon />
           <p className="text-[#0a4479] text-base sm:text-[20px] tracking-[0.4px]">

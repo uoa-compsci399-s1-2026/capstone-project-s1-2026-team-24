@@ -4,38 +4,55 @@ import { useState } from 'react';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
-const STUDY_CATEGORIES = [
-  'General Inquiry',
-  'Clinical Trials',
-  'MSc/PhD Opportunities',
-  'Internship Opportunities',
-  'Study Participation',
-  'Research Partnerships',
+const INQUIRY_TYPES = [
+  'Study Participant Enquiry',
+  'Industry Partnership',
+  'Internship or PhD Opportunity',
+  'Donation',
+  'General Enquiry',
   'Other',
-];
+] as const;
 
 const inputClass =
   'w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors';
 
-const labelClass = 'block font-bold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2';
+const labelClass =
+  'block font-bold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2';
+
+const textareaClass =
+  'w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none';
+
+function isValidEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
 
 export default function ContactEmailForm() {
   const [name, setName] = useState('');
-  const [contact, setContact] = useState('');
+  const [email, setEmail] = useState('');
   const [category, setCategory] = useState('');
   const [message, setMessage] = useState('');
+  const [honeypot, setHoneypot] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
   function clearError() {
-    if (state === 'error') setState('idle');
+    if (state === 'error') {
+      setState('idle');
+      setErrorMsg('');
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!name.trim() || !contact.trim() || !category || !message.trim()) {
+    if (!name.trim() || !email.trim() || !category || !message.trim()) {
       setErrorMsg('Please fill in all fields.');
+      setState('error');
+      return;
+    }
+
+    if (!isValidEmail(email.trim())) {
+      setErrorMsg('Please enter a valid email address.');
       setState('error');
       return;
     }
@@ -49,9 +66,10 @@ export default function ContactEmailForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
-          email: contact.trim(),
+          email: email.trim(),
           category,
           message: message.trim(),
+          honeypot: honeypot.trim(),
         }),
       });
 
@@ -90,7 +108,10 @@ export default function ContactEmailForm() {
           id="contact-name"
           type="text"
           value={name}
-          onChange={e => { setName(e.target.value); clearError(); }}
+          onChange={e => {
+            setName(e.target.value);
+            clearError();
+          }}
           placeholder="Enter your name"
           className={inputClass}
           disabled={state === 'loading'}
@@ -98,15 +119,18 @@ export default function ContactEmailForm() {
       </div>
 
       <div>
-        <label htmlFor="contact-contact" className={labelClass}>
-          Email / Phone
+        <label htmlFor="contact-email" className={labelClass}>
+          Email
         </label>
         <input
-          id="contact-contact"
-          type="text"
-          value={contact}
-          onChange={e => { setContact(e.target.value); clearError(); }}
-          placeholder="example@gmail.com  /  012 3456 789"
+          id="contact-email"
+          type="email"
+          value={email}
+          onChange={e => {
+            setEmail(e.target.value);
+            clearError();
+          }}
+          placeholder="example@gmail.com"
           className={inputClass}
           disabled={state === 'loading'}
         />
@@ -114,28 +138,43 @@ export default function ContactEmailForm() {
 
       <div>
         <label htmlFor="contact-category" className={labelClass}>
-          What study are you interested in?
+          Inquiry Type
         </label>
         <div className="relative">
           <select
             id="contact-category"
             value={category}
-            onChange={e => { setCategory(e.target.value); clearError(); }}
+            onChange={e => {
+              setCategory(e.target.value);
+              clearError();
+            }}
             className={`${inputClass} appearance-none pr-12 cursor-pointer`}
             disabled={state === 'loading'}
           >
             <option value="" disabled>
               Select
             </option>
-            {STUDY_CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>
-                {cat}
+            {INQUIRY_TYPES.map(type => (
+              <option key={type} value={type}>
+                {type}
               </option>
             ))}
           </select>
           <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none">
-            <svg width="20" height="12" viewBox="0 0 20 12" fill="none" aria-hidden="true">
-              <path d="M1 1L10 11L19 1" stroke="#0a4479" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              width="20"
+              height="12"
+              viewBox="0 0 20 12"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M1 1L10 11L19 1"
+                stroke="#0a4479"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </div>
         </div>
@@ -148,11 +187,29 @@ export default function ContactEmailForm() {
         <textarea
           id="contact-message"
           value={message}
-          onChange={e => { setMessage(e.target.value); clearError(); }}
+          onChange={e => {
+            setMessage(e.target.value);
+            clearError();
+          }}
           placeholder="Write your message here..."
           rows={6}
-          className="w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none"
+          className={textareaClass}
           disabled={state === 'loading'}
+        />
+      </div>
+
+      <div
+        className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden"
+        aria-hidden="true"
+      >
+        <label htmlFor="contact-website">Website</label>
+        <input
+          id="contact-website"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={e => setHoneypot(e.target.value)}
         />
       </div>
 
@@ -172,3 +229,4 @@ export default function ContactEmailForm() {
     </form>
   );
 }
+
