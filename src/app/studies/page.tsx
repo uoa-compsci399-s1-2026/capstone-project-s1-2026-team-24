@@ -3,7 +3,6 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StudiesHero from "@/components/layout/StudiesHero";
 import StudiesOverview from "@/components/sections/StudiesOverview";
-import JoinStudyForm from "@/components/sections/JoinStudyForm";
 import StudiesContactPanel from "@/components/sections/StudiesContactPanel";
 import TrialDesign from "@/components/sections/TrialDesign";
 
@@ -28,16 +27,8 @@ export default function StudiesPage() {
 
         <TrialDesign />
 
-        {/* Join a study + Contact us — two-column card layout */}
         <section className="bg-white px-4 sm:px-8 lg:px-[71px] pb-16 lg:pb-24">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-7 max-w-[1370px] mx-auto">
-            <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] px-8 sm:px-12 py-12">
-              <h2 className="text-[#0a4479] text-3xl sm:text-[40px] font-bold text-center tracking-[0.8px] mb-10">
-                Join a study
-              </h2>
-              <JoinStudyForm />
-            </div>
-
+          <div className="max-w-[920px] mx-auto">
             <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] px-8 sm:px-12 py-12">
               <h2 className="text-[#0a4479] text-3xl sm:text-[40px] font-bold text-center tracking-[0.8px] mb-10">
                 Contact us
@@ -51,3 +42,4 @@ export default function StudiesPage() {
     </>
   );
 }
+
