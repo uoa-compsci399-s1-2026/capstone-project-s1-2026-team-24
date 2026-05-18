@@ -1,15 +1,15 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import TeamHero from '@/components/team/TeamHero';
-import BoardOfDirectors from '@/components/team/BoardOfDirectors';
-import ResearchTeam from '@/components/team/ResearchTeam';
+import type { Metadata } from "next";
+import Link from "next/link";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import TeamHero from "@/components/team/TeamHero";
+import ResearchTeam from "@/components/team/ResearchTeam";
+import DirectorCard from "@/components/team/DirectorCard";
 
 export const metadata: Metadata = {
-  title: 'Our Team | HNU Auckland',
+  title: "Our Team | HNU Auckland",
   description:
-    'Meet the people behind the Human Nutrition Unit — our board of directors and research team.',
+    "Meet the people behind the Human Nutrition Unit — our board of directors and research team.",
 };
 
 export default function TeamPage() {
@@ -24,17 +24,8 @@ export default function TeamPage() {
       */}
       <TeamHero />
       <main id="main-content">
-        <div className="bg-white px-4 sm:px-8 lg:px-13 py-5">
-          <p className="text-sm sm:text-base lg:text-[20px] text-black tracking-[0.4px]">
-            <Link href="/about" className="hover:underline">
-              About
-            </Link>
-            <span className="mx-2">{`>`}</span>
-            <strong>Our Team</strong>
-          </p>
-        </div>
 
-        <BoardOfDirectors />
+        <DirectorCard />
         <ResearchTeam />
       </main>
       <Footer />

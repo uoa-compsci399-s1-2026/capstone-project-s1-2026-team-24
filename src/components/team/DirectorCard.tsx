@@ -1,6 +1,6 @@
-import Image from 'next/image';
+import Image from "next/image";
 
-interface DirectorCardProps {
+interface Director {
   name: string;
   role: string;
   imageSrc: string;
@@ -8,94 +8,152 @@ interface DirectorCardProps {
   email?: string;
 }
 
-function LinkedInIcon() {
+const DIRECTORS: Director[] = [
+  {
+    name: "Dr Jennifer Miles Chan",
+    role: "Managing Director",
+    imageSrc: "/images/team/jennifer-miles-chan.jpeg",
+  },
+  {
+    name: "Professor Sally Poppitt",
+    role: "Founding Director",
+    imageSrc: "/images/team/Sally-poppitt.png",
+  },
+  {
+    name: "Professor Garth Cooper",
+    role: "Co-Director",
+    imageSrc: "/images/team/Garth-cooper.png",
+  },
+];
+
+function PersonIcon() {
   return (
-    <svg
-      width="37"
-      height="37"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   );
 }
 
-function EmailIcon() {
+function MailIcon() {
   return (
-    <svg
-      width="40"
-      height="40"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      aria-hidden="true"
-    >
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="4" width="20" height="16" rx="2" />
       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
     </svg>
   );
 }
 
-export default function DirectorCard({
-  name,
-  role,
-  imageSrc,
-  linkedinUrl,
-  email,
-}: DirectorCardProps) {
+function DirectorCard({ name, role, imageSrc, linkedinUrl, email }: Director) {
   return (
-    <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] flex flex-col items-center pt-8 pb-12 lg:pt-[42px] lg:pb-[67px] w-full md:max-w-[350px] lg:max-w-[450px] mx-auto md:mx-0">
-      <div className="w-[200px] h-[200px] sm:w-[250px] sm:h-[250px] lg:w-[300px] lg:h-[300px] rounded-full overflow-hidden flex-shrink-0">
+    <div
+      style={{
+        backgroundColor: "white",
+        borderRadius: "20px",
+        boxShadow: "0 0 20px rgba(0,0,0,0.25)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        padding: "40px 32px 32px",
+        flex: 1,
+        minWidth: 0,
+      }}
+    >
+      <div
+        style={{
+          width: "250px",
+          height: "250px",
+          borderRadius: "50%",
+          overflow: "hidden",
+          flexShrink: 0,
+          marginBottom: "28px",
+        }}
+      >
         <Image
           src={imageSrc}
           alt={name}
-          width={300}
-          height={300}
-          className="w-full h-full object-cover"
+          width={180}
+          height={180}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
         />
       </div>
 
-      <div className="mt-8 lg:mt-[59px] flex flex-col items-center text-center px-6 lg:px-8">
-        <h3 className="text-2xl lg:text-[32px] font-bold text-[#0c0c48] tracking-[0.64px] leading-normal">
-          {name}
-        </h3>
-        <p className="mt-4 lg:mt-[21px] text-xl lg:text-[24px] text-black tracking-[0.48px] leading-normal">
-          {role}
-        </p>
-        <div className="mt-8 lg:mt-[47px] flex items-center gap-[28px] text-black opacity-50">
-          {linkedinUrl ? (
-            <a
-              href={linkedinUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={`${name} on LinkedIn`}
-              className="hover:opacity-100 transition-opacity"
-            >
-              <LinkedInIcon />
-            </a>
-          ) : (
-            <span>
-              <LinkedInIcon />
-            </span>
-          )}
-          {email ? (
-            <a
-              href={`mailto:${email}`}
-              aria-label={`Email ${name}`}
-              className="hover:opacity-100 transition-opacity"
-            >
-              <EmailIcon />
-            </a>
-          ) : (
-            <span>
-              <EmailIcon />
-            </span>
-          )}
-        </div>
+      <p
+        style={{
+          fontFamily: "Inter, sans-serif",
+          fontSize: "20px",
+          fontWeight: 700,
+          color: "#0c0c48",
+          textAlign: "center",
+          marginBottom: "6px",
+        }}
+      >
+        {name}
+      </p>
+
+      <p
+        style={{
+          fontFamily: "Inter, sans-serif",
+          fontSize: "16px",
+          fontWeight: 400,
+          color: "#4b5563",
+          textAlign: "center",
+          marginBottom: "24px",
+        }}
+      >
+        {role}
+      </p>
+
+      <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+        {linkedinUrl ? (
+          <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" aria-label={`${name} profile`}>
+            <PersonIcon />
+          </a>
+        ) : (
+          <span style={{ opacity: 0.4 }}><PersonIcon /></span>
+        )}
+        {email ? (
+          <a href={`mailto:${email}`} aria-label={`Email ${name}`}>
+            <MailIcon />
+          </a>
+        ) : (
+          <span style={{ opacity: 0.4 }}><MailIcon /></span>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function BoardOfDirectors() {
+  return (
+    <section style={{ backgroundColor: "white", padding: "60px 48px" }}>
+      <h2
+        style={{
+          fontFamily: "Inter, sans-serif",
+          fontSize: "48px",
+          fontWeight: 800,
+          color: "#0c0c48",
+          textAlign: "center",
+          marginBottom: "48px",
+        }}
+      >
+        Board of Directors
+      </h2>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "24px",
+          maxWidth: "1100px",
+          margin: "0 auto",
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        {DIRECTORS.map((director) => (
+          <DirectorCard key={director.name} {...director} />
+        ))}
+      </div>
+    </section>
   );
 }
