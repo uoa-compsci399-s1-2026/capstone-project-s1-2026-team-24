@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import StudiesHero from "@/components/sections/StudiesHero";
+import StudiesHero from "@/components/layout/StudiesHero";
 import StudiesOverview from "@/components/sections/StudiesOverview";
 import JoinStudyForm from "@/components/sections/JoinStudyForm";
 import StudiesContactPanel from "@/components/sections/StudiesContactPanel";

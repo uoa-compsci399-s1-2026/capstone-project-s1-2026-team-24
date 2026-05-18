@@ -5,7 +5,6 @@ import type { CSSProperties, ReactNode } from 'react';
 // sits behind the (partially transparent) main nav, letting both gradients
 // blend smoothly per the Figma combined design.
 export const NAVBAR_HEIGHT = 180;
-export const UTILITY_BAR_HEIGHT = 40;
 
 // Diagonal subpage hero gradient sampled from the Figma "Team page hero"
 // component (node 2008:275 / 146:6446). #092d65 at the top-left through to
@@ -32,7 +31,7 @@ export default function SubpageHero({
     <section
       className="relative w-full overflow-hidden flex flex-col justify-center h-[380px] sm:h-[480px] lg:h-[554px]"
       style={{
-        marginTop: `-${NAVBAR_HEIGHT}px`,
+        marginTop: `0`,
         paddingTop: `${NAVBAR_HEIGHT / 2}px`,
         backgroundImage: SUBPAGE_HERO_GRADIENT,
         backgroundColor: '#092d65',

@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import StudiesHero from "@/components/layout/StudiesHero";
+import StudyDetail from "@/components/sections/StudyDetail";
 
 export const metadata: Metadata = {
   title: "NZ Synergy | HNU Auckland",
@@ -17,149 +19,39 @@ export default function NZSynergyPage() {
     <>
       <Navbar />
 
-      {/* Hero — image extends up behind the main nav portion of the navbar */}
-      <section
-        className="relative w-full overflow-hidden h-[380px] sm:h-[480px] lg:h-[554px]"
-        style={{ marginTop: `-${NAVBAR_HEIGHT}px` }}
-        aria-label="NZ Synergy study hero"
-      >
-        <Image
-          src="/services-and-expertise.jpg"
-          alt=""
-          fill
-          className="object-cover"
-          style={{ objectPosition: "center 40px" }}
-          priority
-          aria-hidden="true"
-        />
-        <div className="absolute inset-0 bg-black/50" aria-hidden="true" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <h1 className="text-4xl sm:text-5xl lg:text-[76px] font-extrabold text-white text-center tracking-[1.52px] leading-normal px-4">
-            NZ Synergy
-          </h1>
-        </div>
-      </section>
+      <StudiesHero
+        imageSrc="/NZ Synergy study.jpg"
+        imageAlt="NZ Synergy Study"
+        title="NZ Synergy Study"
+        imagePosition="top"
+      />
 
-      {/* Breadcrumb */}
-      <nav
-        aria-label="Breadcrumb"
-        className="bg-white px-6 sm:px-12 lg:px-[52px] py-5"
-      >
-        <ol className="flex items-center gap-2 text-[20px] text-[#0c0c48] tracking-[0.4px]">
-          <li>
-            <Link
-              href="/studies"
-              className="hover:opacity-70 transition-opacity"
-            >
-              Studies
-            </Link>
-          </li>
-          <li aria-hidden="true">&gt;</li>
-          <li>
-            <span className="font-bold">NZ Synergy</span>
-          </li>
-        </ol>
-      </nav>
-
-      {/* Content — single flowing block matching the Figma design */}
-      <main id="main-content" className="bg-white">
-        <div className="max-w-[1440px] mx-auto px-6 sm:px-12 lg:px-[92px] pt-10 lg:pt-16 pb-16 lg:pb-24">
-          <div className="text-[#0a4479] text-lg sm:text-2xl lg:text-[32px] font-normal leading-relaxed lg:leading-[50px] tracking-[0.64px]">
-            <p className="mb-0">
-              Would you like to participate in a two-week nutrition study? Are
-              you concerned about your diabetes risk?
-            </p>
-            <p className="mb-0">
-              We will investigate whether the foods that you eat (your diet)
-              alters circulating blood markers that we have recently found to be
-              associated with the risk of type 2 diabetes.
-            </p>
-            <p className="mb-0">You will be required to:</p>
-            <ol className="list-decimal mb-0 pl-12">
-              <li className="mb-0">
-                Live at the Human Nutrition Unit, Mt Eden for two weeks (you may
-                attend daily work, classes, or visit friends and family during
-                the day – but must only eat the food and drinks that we will
-                provide to you).
-              </li>
-              <li className="mb-0">
-                Avoid vigorous exercise (e.g. power walking, running, intense
-                cycling).
-              </li>
-              <li>Consume all of your meals and snacks provided.</li>
-            </ol>
-            <p className="mb-0">If you are in the Auckland area and are:</p>
-            <ol className="list-decimal mb-0 pl-12">
-              <li className="mb-0">
-                Elevated fasting blood sugar but not yet diabetic (we can check
-                this for you)
-              </li>
-              <li className="mb-0">
-                Chinese (including mainland China, Singapore, Malaysia, Hong
-                Kong, Taiwan) or European Caucasian
-              </li>
-              <li className="mb-0">Between 18-60 yrs</li>
-              <li className="mb-0">
-                Have a BMI 24-40 kg/m2 (overweight/obesity)
-              </li>
-              <li className="mb-0">
-                Happy to participate in a 2 week residential study
-              </li>
+      <StudyDetail
+        title="NZ Synergy Study"
+        status="Open"
+        deadline="31 December 2024"
+        eligibility={[
+          "Are between 18-70 years",
+          "Have a BMI between 18.5 and 30 kg/m²",
+          "Located in Tāmaki Makaurau (Auckland area)",
+          "Happy to stay at the Human Nutrition Unit for 2 weeks",
+        ]}
+        joinHref="/contact"
+        contactHref="/contact"
+        content={
+          <div>
+            <ul>
               <li>
-                Happy to eat a wide range of foods (you cannot be vegetarian or
-                vegan)
+                Would you like to participate in a residential nutrition study?
               </li>
-            </ol>
-            <p className="mb-0">You will be compensated for your time.</p>
-            <p className="mb-0">
-              IMPORTANT: You cannot be in the study if you have already been
-              diagnosed with diabetes.
-            </p>
-            <p className="mb-0">Complete the pre-screening survey </p>
-            <p className="mb-0">
-              If you want to know more information, please get in touch with us:
-              <br />
-              Phone: 02109196703 (Chinese speakers) / 02109195443 (English
-              speakers)
-              <br />
-              Email:{" "}
-              <a
-                href={`mailto:HNU_SYNERGY@auckland.ac.nz}`}
-                className="underline hover:opacity-70 transition-opacity"
-              >
-                HNU_SYNERGY@auckland.ac.nz
-              </a>
-            </p>
-            <p className="mb-0">
-              Statement of ethics approval
-              <br />
-              This study has received ethical approval from the NZ Southern
-              Health and Disability Ethics Committee (21/STH/231).
-            </p>
-            <p className="mb-0">
-              <a
-                href="https://www.auckland.ac.nz/en/science/our-research/research-study-recruitment/human-nutrition-unit-studies.html"
-                className="underline hover:opacity-70 transition-opacity"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                https://www.auckland.ac.nz/en/science/our-research/research-study-recru…
-              </a>
-            </p>
-            <p className="mb-0">
-              If you have any further questions, please see our
-            </p>
+              <li>Would you like to learn about how diet affects diabetes risk?</li>
+            </ul>
             <p>
-              <Link
-                href="/studies"
-                className="underline hover:opacity-70 transition-opacity"
-              >
-                FAQs
-              </Link>
+              We will investigate how different diets affect markers of diabetes risk.
             </p>
           </div>
-        </div>
-      </main>
+        }
+      />
 
       <Footer />
     </>
