@@ -13,10 +13,14 @@ npm install
 Copy the example env file and fill it in:
 
 ```bash
-cp .env.example .env.local
+# macOS / Linux
+cp .env.example .env
+
+# Windows PowerShell
+copy .env.example .env
 ```
 
-Open `.env.local` and set the values:
+Open `.env` (or `.env.local`) and set the values:
 
 - `DATABASE_URL` — leave as `file:./dev.db` unless you have a reason to change it
 - `ADMIN_PASSWORD` — any password you want to use to log in to the admin panel locally
@@ -28,11 +32,12 @@ Open `.env.local` and set the values:
 This creates your local `dev.db` file and populates it with the study and team data:
 
 ```bash
-npx prisma db push
+npx prisma migrate dev
+npx prisma generate
 npm run seed
 ```
 
-> **If the site loads but study pages show a 404**, it almost always means this step was skipped. Run the two commands above and restart the dev server.
+> **If the site loads but study pages show a 404**, it almost always means this step was skipped. Run the commands above and restart the dev server.
 
 ### 4. Run the dev server
 
