@@ -49,29 +49,23 @@ export default function Navbar() {
   const searchDialogRef = useRef<HTMLDivElement>(null);
   const previousBodyOverflowRef = useRef<string | null>(null);
   const wasSearchOpenRef = useRef(false);
-  const [scrolled, setScrolled] = useState(() => {
-    if (typeof window !== "undefined") {
-      return window.scrollY > 10;
-    }
-    return false;
-  });
+  const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    if (window.scrollY > 10) setScrolled(true);
-  }, []);
+    setScrolled(window.scrollY > 10);
+  }, [pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
-      requestAnimationFrame(() => {
-        if (window.scrollY > 10) {
-          setScrolled(true);
-        } else if (window.scrollY < 5) {
-          setScrolled(false);
-        }
-      });
+      if (window.scrollY > 10) {
+        setScrolled(true);
+      } else if (window.scrollY < 5) {
+        setScrolled(false);
+      }
     };
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -97,6 +91,9 @@ export default function Navbar() {
     setLangOpen(false);
     setMobileAboutOpen(false);
     setMobileStudiesOpen(false);
+    // Reset scroll state and re-evaluate
+    setScrolled(window.scrollY > 10);
+    setMounted(true);
   }, [pathname]);
 
   useEffect(() => {
@@ -297,22 +294,20 @@ export default function Navbar() {
         >
           <div
             style={{
-              maxWidth: scrolled ? "900px" : "1512px",
+              maxWidth: mounted && scrolled ? "900px" : "1512px",
               margin: "0 auto",
-              padding: scrolled ? "0 32px" : "0 48px",
-              height: scrolled ? "80px" : "120px",
+              padding: mounted && scrolled ? "0 32px" : "0 48px",
+              height: mounted && scrolled ? "80px" : "120px",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              backgroundColor: scrolled
-                ? "rgba(12, 12, 72, 0.75)"
-                : "transparent",
-              backdropFilter: scrolled ? "blur(15px)" : "none",
-              borderRadius: scrolled ? "9999px" : "0",
+              backgroundColor:
+                mounted && scrolled ? "rgba(0, 0, 0, 0.35)" : "transparent",
+              backdropFilter: mounted && scrolled ? "blur(15px)" : "none",
+              borderRadius: mounted && scrolled ? "9999px" : "0",
               transition: "all 0.4s ease",
-              marginTop: scrolled ? "8px" : "0",
-              marginBottom: scrolled ? "8px" : "0",
-              overflow: "visible",
+              marginTop: mounted && scrolled ? "8px" : "0",
+              marginBottom: mounted && scrolled ? "8px" : "0",
             }}
           >
             {/* Logos */}
@@ -339,8 +334,8 @@ export default function Navbar() {
                 <Image
                   src="/images/logos/hnu-logo.svg"
                   alt="HNU"
-                  width={scrolled ? 150 : 200}
-                  height={scrolled ? 52 : 70}
+                  width={mounted && scrolled ? 150 : 200}
+                  height={mounted && scrolled ? 52 : 70}
                   className="object-contain ml-[-10px]"
                 />
               </Link>
