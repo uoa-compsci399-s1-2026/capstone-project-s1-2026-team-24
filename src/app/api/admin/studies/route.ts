@@ -15,14 +15,23 @@ function asNumber(value: unknown, fallback = 0) {
   return fallback;
 }
 
+function asNullableDate(value: unknown): Date | null {
+  if (value === null || value === undefined || value === "") return null;
+  if (value instanceof Date) return value;
+  if (typeof value === "string") {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  return null;
+}
+
+const ALLOWED_STATUSES = new Set(["Recruiting", "Active", "Completed"]);
+
 export async function GET() {
   try {
     const studies = await prisma.study.findMany({
-      orderBy: {
-        order: "asc",
-      },
+      orderBy: { order: "asc" },
     });
-
     return NextResponse.json(studies, { status: 200 });
   } catch (error) {
     console.error("GET /api/admin/studies failed:", error);
@@ -52,6 +61,10 @@ export async function POST(request: Request) {
     const contactPhoneZh = asTrimmedString(body?.contactPhoneZh);
     const imagePath = asTrimmedString(body?.imagePath);
     const ethicsStatement = asTrimmedString(body?.ethicsStatement);
+    const category = asTrimmedString(body?.category);
+
+    const rawStatus = asTrimmedString(body?.status);
+    const status = ALLOWED_STATUSES.has(rawStatus) ? rawStatus : "Recruiting";
 
     if (
       !slug ||
@@ -92,6 +105,9 @@ export async function POST(request: Request) {
         imagePath,
         ethicsStatement,
         isActive: asBoolean(body?.isActive, true),
+        status,
+        category,
+        publishedAt: asNullableDate(body?.publishedAt),
         order: asNumber(body?.order, 0),
       },
     });

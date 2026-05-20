@@ -2,42 +2,26 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { AdminForm, FormErrorBanner } from "@/components/admin/AdminForm";
 import {
-  AdminForm,
-  FormField,
-  FormCheckbox,
-} from "@/components/admin/AdminForm";
+  StudyFormFields,
+  emptyStudyFormData,
+  type StudyFormData,
+} from "@/components/admin/StudyFormFields";
 
 export default function NewStudy() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    slug: "",
-    title: "",
-    shortDescription: "",
-    fullDescriptionEn: "",
-    fullDescriptionZh: "",
-    eligibilityEn: "",
-    eligibilityZh: "",
-    compensationEn: "",
-    compensationZh: "",
-    redcapUrl: "",
-    contactEmail: "",
-    contactPhone: "",
-    contactPhoneZh: "",
-    ethicsStatement: "",
-    imagePath: "",
-    isActive: true,
-    order: 0,
-  });
+  const [formData, setFormData] = useState<StudyFormData>(emptyStudyFormData);
 
-  const handleChange = (
+  function handleChange(
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
-  ) => {
-    const { name, type, value, checked } = e.target as any;
+  ) {
+    const target = e.target as HTMLInputElement;
+    const { name, type, value, checked } = target;
     setFormData((prev) => ({
       ...prev,
       [name]:
@@ -47,18 +31,22 @@ export default function NewStudy() {
             ? Number(value)
             : value,
     }));
-  };
+  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
+      const body = {
+        ...formData,
+        publishedAt: formData.publishedAt || null,
+      };
       const res = await fetch("/api/admin/studies", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
@@ -76,174 +64,20 @@ export default function NewStudy() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <AdminForm
-      title="Create New Study"
+      title="New study"
+      kicker="Studies"
+      description="Fill in the details a participant sees on the public study page, plus the recruitment status the studies index uses to display the right call-to-action."
       onSubmit={handleSubmit}
       isLoading={isLoading}
-      submitButtonLabel="Create Study"
+      submitButtonLabel="Create study"
+      cancelHref="/admin/studies"
     >
-      {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg">{error}</div>
-      )}
-
-      <FormField
-        label="Study Slug"
-        id="slug"
-        placeholder="e.g., nz-synergy"
-        value={formData.slug}
-        onChange={handleChange}
-        required
-      />
-
-      <FormField
-        label="Title"
-        id="title"
-        placeholder="Study title"
-        value={formData.title}
-        onChange={handleChange}
-        required
-      />
-
-      <FormField
-        label="Short Description"
-        id="shortDescription"
-        type="textarea"
-        placeholder="Brief description"
-        value={formData.shortDescription}
-        onChange={handleChange}
-        required
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          label="Full Description (English)"
-          id="fullDescriptionEn"
-          type="textarea"
-          value={formData.fullDescriptionEn}
-          onChange={handleChange}
-          required
-        />
-        <FormField
-          label="Full Description (Chinese)"
-          id="fullDescriptionZh"
-          type="textarea"
-          value={formData.fullDescriptionZh}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          label="Eligibility (English)"
-          id="eligibilityEn"
-          type="textarea"
-          value={formData.eligibilityEn}
-          onChange={handleChange}
-          required
-        />
-        <FormField
-          label="Eligibility (Chinese)"
-          id="eligibilityZh"
-          type="textarea"
-          value={formData.eligibilityZh}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          label="Compensation (English)"
-          id="compensationEn"
-          type="textarea"
-          value={formData.compensationEn}
-          onChange={handleChange}
-          required
-        />
-        <FormField
-          label="Compensation (Chinese)"
-          id="compensationZh"
-          type="textarea"
-          value={formData.compensationZh}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      <FormField
-        label="REDCap URL"
-        id="redcapUrl"
-        type="url"
-        placeholder="https://redcap.example.com"
-        value={formData.redcapUrl}
-        onChange={handleChange}
-        required
-      />
-
-      <FormField
-        label="Contact Email"
-        id="contactEmail"
-        type="email"
-        placeholder="contact@example.com"
-        value={formData.contactEmail}
-        onChange={handleChange}
-        required
-      />
-
-      <div className="grid grid-cols-2 gap-4">
-        <FormField
-          label="Contact Phone"
-          id="contactPhone"
-          type="tel"
-          value={formData.contactPhone}
-          onChange={handleChange}
-          required
-        />
-        <FormField
-          label="Contact Phone (Chinese)"
-          id="contactPhoneZh"
-          type="tel"
-          value={formData.contactPhoneZh}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      <FormField
-        label="Ethics Statement"
-        id="ethicsStatement"
-        type="textarea"
-        value={formData.ethicsStatement}
-        onChange={handleChange}
-        required
-      />
-
-      <FormField
-        label="Image Path"
-        id="imagePath"
-        placeholder="/images/study.jpg"
-        value={formData.imagePath}
-        onChange={handleChange}
-      />
-
-      <FormField
-        label="Order"
-        id="order"
-        type="number"
-        value={formData.order}
-        onChange={handleChange}
-      />
-
-      <FormCheckbox
-        label="Active"
-        id="isActive"
-        checked={formData.isActive}
-        onChange={handleChange}
-      />
+      {error && <FormErrorBanner message={error} />}
+      <StudyFormFields formData={formData} onChange={handleChange} />
     </AdminForm>
   );
 }
