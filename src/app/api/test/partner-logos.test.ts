@@ -25,6 +25,7 @@ describe("GET /api/partner-logos", () => {
         logoPath: "/logos/a.png",
         websiteUrl: "https://a.example.com",
         isPlaceholder: false,
+        group: "Collaborating",
       },
     ]);
 
@@ -37,6 +38,7 @@ describe("GET /api/partner-logos", () => {
         logoPath: "/logos/a.png",
         websiteUrl: "https://a.example.com",
         isPlaceholder: false,
+        group: "Collaborating",
       },
     ]);
   });

@@ -4,6 +4,9 @@ const mockPrisma = vi.hoisted(() => ({
   contactSubmission: {
     create: vi.fn(),
   },
+  contactRecipient: {
+    findUnique: vi.fn(),
+  },
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -37,6 +40,10 @@ describe("POST /api/contact", () => {
   });
 
   it("returns 201 and stores submission on valid payload", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "General Enquiry",
+      email: "general@example.com",
+    });
     mockPrisma.contactSubmission.create.mockResolvedValueOnce({});
     const request = new Request("http://localhost/api/contact", {
       method: "POST",
@@ -51,7 +58,7 @@ describe("POST /api/contact", () => {
 
     const response = await postContact(request);
     expect(response.status).toBe(201);
-    await expect(response.json()).resolves.toEqual({ success: true });
+    await expect(response.json()).resolves.toEqual({ ok: true });
     expect(mockPrisma.contactSubmission.create).toHaveBeenCalledWith({
       data: {
         name: "Alice",

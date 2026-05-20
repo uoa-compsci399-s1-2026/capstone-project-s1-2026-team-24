@@ -1,32 +1,58 @@
 import Image from "next/image";
 
-interface Director {
+export type DirectorCardProps = {
   name: string;
-  role: string;
-  imageSrc: string;
+  title: string;
+  photoPath: string;
   linkedinUrl?: string;
   email?: string;
+};
+
+function PersonIcon() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#6b7280"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
 }
 
-const DIRECTORS: Director[] = [
-  {
-    name: "Dr Jennifer Miles Chan",
-    role: "Managing Director",
-    imageSrc: "/images/team/jennifer-miles-chan.jpeg",
-  },
-  {
-    name: "Professor Sally Poppitt",
-    role: "Founding Director",
-    imageSrc: "/images/team/Sally-poppitt.png",
-  },
-  {
-    name: "Professor Garth Cooper",
-    role: "Co-Director",
-    imageSrc: "/images/team/Garth-cooper.png",
-  },
-];
+function MailIcon() {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#6b7280"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  );
+}
 
-function DirectorCard({ name, role, imageSrc }: Director) {
+export default function DirectorCard({
+  name,
+  title,
+  photoPath,
+  linkedinUrl,
+  email,
+}: DirectorCardProps) {
   return (
     <div
       style={{
@@ -52,7 +78,7 @@ function DirectorCard({ name, role, imageSrc }: Director) {
         }}
       >
         <Image
-          src={imageSrc}
+          src={photoPath}
           alt={name}
           width={180}
           height={180}
@@ -83,42 +109,35 @@ function DirectorCard({ name, role, imageSrc }: Director) {
           marginBottom: "24px",
         }}
       >
-        {role}
+        {title}
       </p>
+
+      <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+        {linkedinUrl ? (
+          <a
+            href={linkedinUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${name} profile`}
+          >
+            <PersonIcon />
+          </a>
+        ) : (
+          <span style={{ opacity: 0.4 }}>
+            <PersonIcon />
+          </span>
+        )}
+        {email ? (
+          <a href={`mailto:${email}`} aria-label={`Email ${name}`}>
+            <MailIcon />
+          </a>
+        ) : (
+          <span style={{ opacity: 0.4 }}>
+            <MailIcon />
+          </span>
+        )}
+      </div>
     </div>
   );
 }
 
-export default function BoardOfDirectors() {
-  return (
-    <section style={{ backgroundColor: "white", padding: "60px 48px" }}>
-      <h2
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: "48px",
-          fontWeight: 800,
-          color: "#0c0c48",
-          textAlign: "center",
-          marginBottom: "48px",
-        }}
-      >
-        Board of Directors
-      </h2>
-
-      <div
-        style={{
-          display: "flex",
-          gap: "24px",
-          maxWidth: "1100px",
-          margin: "0 auto",
-          flexWrap: "wrap",
-          justifyContent: "center",
-        }}
-      >
-        {DIRECTORS.map((director) => (
-          <DirectorCard key={director.name} {...director} />
-        ))}
-      </div>
-    </section>
-  );
-}

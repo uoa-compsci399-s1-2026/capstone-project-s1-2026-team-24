@@ -4,7 +4,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TeamHero from "@/components/team/TeamHero";
 import ResearchTeam from "@/components/team/ResearchTeam";
-import DirectorCard from "@/components/team/DirectorCard";
+import BoardOfDirectors from "@/components/team/BoardOfDirectors";
+import AlumniSection from "@/components/team/AlumniSection";
 
 export const metadata: Metadata = {
   title: "Our Team | HNU Auckland",
@@ -25,8 +26,9 @@ export default function TeamPage() {
       <TeamHero />
       <main id="main-content">
 
-        <DirectorCard />
+        <BoardOfDirectors />
         <ResearchTeam />
+        <AlumniSection />
       </main>
       <Footer />
     </>

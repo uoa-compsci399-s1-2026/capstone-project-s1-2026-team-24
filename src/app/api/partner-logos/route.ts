@@ -4,15 +4,14 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     const partnerLogos = await prisma.partnerLogo.findMany({
-      orderBy: {
-        order: "asc",
-      },
+      orderBy: [{ group: "asc" }, { order: "asc" }],
       select: {
         id: true,
         name: true,
         logoPath: true,
         websiteUrl: true,
         isPlaceholder: true,
+        group: true,
       },
     });
 

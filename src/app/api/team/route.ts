@@ -4,7 +4,16 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const [boardOfDirectors, researchTeam] = await Promise.all([
+    const memberSelect = {
+      id: true,
+      name: true,
+      title: true,
+      section: true,
+      bio: true,
+      photoPath: true,
+    } as const;
+
+    const [boardOfDirectors, researchTeam, alumni] = await Promise.all([
       prisma.teamMember.findMany({
         where: {
           isVisible: true,
@@ -13,14 +22,7 @@ export async function GET() {
         orderBy: {
           order: "asc",
         },
-        select: {
-          id: true,
-          name: true,
-          title: true,
-          section: true,
-          bio: true,
-          photoPath: true,
-        },
+        select: memberSelect,
       }),
       prisma.teamMember.findMany({
         where: {
@@ -30,20 +32,24 @@ export async function GET() {
         orderBy: {
           order: "asc",
         },
-        select: {
-          id: true,
-          name: true,
-          title: true,
-          section: true,
-          bio: true,
-          photoPath: true,
+        select: memberSelect,
+      }),
+      prisma.teamMember.findMany({
+        where: {
+          isVisible: true,
+          section: TeamSection.Alumni,
         },
+        orderBy: {
+          order: "asc",
+        },
+        select: memberSelect,
       }),
     ]);
 
     return NextResponse.json({
       boardOfDirectors,
       researchTeam,
+      alumni,
     });
   } catch (error) {
     console.error("GET /api/team failed:", error);
