@@ -108,7 +108,7 @@ export default function StudyContent({
         <h2 className="text-[#0c0c48] text-2xl sm:text-3xl font-bold">
           {lang === 'en' ? 'How to Sign Up' : '如何报名'}
         </h2>
-        <Button href={redcapUrl} variant="primary" size="lg">
+        <Button href={redcapUrl} variant="blue" color="dark">
           Apply via REDCap Questionnaire
         </Button>
         <p className="text-[#8e8d8d] text-sm leading-relaxed max-w-[600px]">

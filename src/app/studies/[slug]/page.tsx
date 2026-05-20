@@ -5,24 +5,18 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import StudyContent from './StudyContent';
 import TrialDesign from '@/components/sections/TrialDesign';
+import { prisma } from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 async function fetchStudy(slug: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/studies/${slug}`, { cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
-}
-
-export async function generateStaticParams() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/studies`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  const studies: { slug: string }[] = await res.json();
-  return studies.map(s => ({ slug: s.slug }));
+  return prisma.study.findFirst({
+    where: { slug },
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

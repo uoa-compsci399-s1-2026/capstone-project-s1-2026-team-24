@@ -186,10 +186,11 @@ export default function Navbar() {
   // block with no hard seam.
   const isHomePage = pathname === "/";
   const mainNavStyle = isHomePage
-    ? { backgroundColor: "#00000000" }
-    : isHomePage
-      ? undefined
-      : { backgroundColor: "#00000000" };
+    ? { backgroundColor: "transparent" }
+    : {
+        backgroundImage:
+          "linear-gradient(180deg, rgba(10,26,85,1) 0%, rgba(10,26,85,0) 100%)",
+      };
 
   return (
     <>
