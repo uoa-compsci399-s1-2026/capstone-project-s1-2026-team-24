@@ -16,10 +16,12 @@ export default function AdminContactRecipients() {
   const [savingCategory, setSavingCategory] = useState<string | null>(null);
   const [savedCategory, setSavedCategory] = useState<string | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     fetchRecipients();
     return () => {
+      isMountedRef.current = false;
       if (savedTimerRef.current !== null) {
         clearTimeout(savedTimerRef.current);
       }
@@ -62,12 +64,14 @@ export default function AdminContactRecipients() {
       if (savedTimerRef.current !== null) {
         clearTimeout(savedTimerRef.current);
       }
-      setSavedCategory(category);
-      savedTimerRef.current = setTimeout(
-        () =>
-          setSavedCategory((prev) => (prev === category ? null : prev)),
-        2500,
-      );
+      if (isMountedRef.current) {
+        setSavedCategory(category);
+        savedTimerRef.current = setTimeout(
+          () =>
+            setSavedCategory((prev) => (prev === category ? null : prev)),
+          2500,
+        );
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
