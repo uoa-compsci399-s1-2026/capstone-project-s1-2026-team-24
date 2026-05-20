@@ -29,13 +29,13 @@ export default function SubpageHero({
 }: SubpageHeroProps) {
   return (
     <section
-      className="relative w-full overflow-hidden flex flex-col justify-center h-[380px] sm:h-[480px] lg:h-[554px]"
+      className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden"
       style={{
         marginTop: `0`,
-        paddingTop: `${NAVBAR_HEIGHT / 2}px`,
+        paddingTop: 250,
         backgroundImage: SUBPAGE_HERO_GRADIENT,
         backgroundColor: '#092d65',
-        ...style,
+        height: 600,
       }}
     >
       {/* Diagonal Māori pattern overlay — matches Figma (rotate -12.38deg,
@@ -64,7 +64,7 @@ export default function SubpageHero({
       </div>
 
       {/* Content */}
-      <div className="relative px-6 sm:px-12 lg:px-[93px]">
+      <div>
         <h1 className="text-4xl sm:text-5xl lg:text-[76px] font-extrabold text-white/75 tracking-[1.52px] leading-normal">
           {title}
         </h1>
