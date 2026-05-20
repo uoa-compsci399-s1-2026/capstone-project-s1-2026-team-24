@@ -25,8 +25,10 @@ function toDiskPath(publicPath: string) {
 
 function parseSection(value: FormDataEntryValue | null) {
   if (typeof value !== "string") return null;
-  if (value === TeamSection.BoardOfDirectors) return TeamSection.BoardOfDirectors;
+  if (value === TeamSection.BoardOfDirectors)
+    return TeamSection.BoardOfDirectors;
   if (value === TeamSection.ResearchTeam) return TeamSection.ResearchTeam;
+  if (value === TeamSection.Alumni) return TeamSection.Alumni;
   return null;
 }
 
@@ -41,6 +43,13 @@ function parseOrder(value: FormDataEntryValue | null) {
   if (typeof value !== "string") return undefined;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function readOptionalString(formData: FormData, key: string) {
+  const raw = formData.get(key);
+  if (typeof raw !== "string") return undefined;
+  const trimmed = raw.trim();
+  return trimmed.length === 0 ? null : trimmed;
 }
 
 async function saveReplacementPhoto(file: File) {
@@ -59,6 +68,36 @@ async function saveReplacementPhoto(file: File) {
   return `/uploads/team/${safeFileName}`;
 }
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id: rawId } = await params;
+    const id = parseId(rawId);
+    if (!id) {
+      return NextResponse.json(
+        { error: "Invalid team member id." },
+        { status: 400 },
+      );
+    }
+    const member = await prisma.teamMember.findUnique({ where: { id } });
+    if (!member) {
+      return NextResponse.json(
+        { error: "Team member not found." },
+        { status: 404 },
+      );
+    }
+    return NextResponse.json(member);
+  } catch (error) {
+    console.error("GET /api/admin/team/[id] failed:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch team member." },
+      { status: 500 },
+    );
+  }
+}
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -67,59 +106,94 @@ export async function PATCH(
     const { id: rawId } = await params;
     const id = parseId(rawId);
     if (!id) {
-      return NextResponse.json({ error: "Invalid team member id." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid team member id." },
+        { status: 400 },
+      );
     }
 
     const existing = await prisma.teamMember.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "Team member not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Team member not found." },
+        { status: 404 },
+      );
     }
 
-    const formData = await request.formData();
+    const contentType = request.headers.get("content-type") || "";
     const updates: Record<string, unknown> = {};
 
-    const name = formData.get("name");
-    if (typeof name === "string") updates.name = name.trim();
-
-    const title = formData.get("title");
-    if (typeof title === "string") updates.title = title.trim();
-
-    const bio = formData.get("bio");
-    if (typeof bio === "string") updates.bio = bio.trim();
-
-    const section = parseSection(formData.get("section"));
-    if (section) updates.section = section;
-
-    const isVisible = parseBoolean(formData.get("isVisible"));
-    if (typeof isVisible === "boolean") updates.isVisible = isVisible;
-
-    const order = parseOrder(formData.get("order"));
-    if (typeof order === "number") updates.order = order;
-
-    const photo = formData.get("photo");
-    if (photo instanceof File && photo.size > 0) {
-      let newPhotoPath: string;
-      try {
-        newPhotoPath = await saveReplacementPhoto(photo);
-      } catch (error) {
-        return NextResponse.json(
-          { error: error instanceof Error ? error.message : "Invalid image file." },
-          { status: 400 },
-        );
+    if (contentType.includes("application/json")) {
+      const body = await request.json().catch(() => null);
+      if (body && typeof body === "object") {
+        if (typeof body.isVisible === "boolean")
+          updates.isVisible = body.isVisible;
+        if (typeof body.order === "number") updates.order = body.order;
+        if (typeof body.name === "string") updates.name = body.name.trim();
+        if (typeof body.title === "string") updates.title = body.title.trim();
+        if (typeof body.bio === "string") updates.bio = body.bio.trim();
       }
+    } else {
+      const formData = await request.formData();
 
-      updates.photoPath = newPhotoPath;
-      if (existing.photoPath.startsWith("/uploads/team/")) {
+      const name = formData.get("name");
+      if (typeof name === "string") updates.name = name.trim();
+
+      const title = formData.get("title");
+      if (typeof title === "string") updates.title = title.trim();
+
+      const bio = formData.get("bio");
+      if (typeof bio === "string") updates.bio = bio.trim();
+
+      const section = parseSection(formData.get("section"));
+      if (section) updates.section = section;
+
+      const isVisible = parseBoolean(formData.get("isVisible"));
+      if (typeof isVisible === "boolean") updates.isVisible = isVisible;
+
+      const order = parseOrder(formData.get("order"));
+      if (typeof order === "number") updates.order = order;
+
+      const orcidId = readOptionalString(formData, "orcidId");
+      if (orcidId !== undefined) updates.orcidId = orcidId;
+
+      const profileUrl = readOptionalString(formData, "profileUrl");
+      if (profileUrl !== undefined) updates.profileUrl = profileUrl;
+
+      const yearsActive = readOptionalString(formData, "yearsActive");
+      if (yearsActive !== undefined) updates.yearsActive = yearsActive;
+
+      const photo = formData.get("photo");
+      if (photo instanceof File && photo.size > 0) {
+        let newPhotoPath: string;
         try {
-          await unlink(toDiskPath(existing.photoPath));
+          newPhotoPath = await saveReplacementPhoto(photo);
         } catch (error) {
-          console.warn("Old team photo could not be removed:", error);
+          return NextResponse.json(
+            {
+              error:
+                error instanceof Error ? error.message : "Invalid image file.",
+            },
+            { status: 400 },
+          );
+        }
+
+        updates.photoPath = newPhotoPath;
+        if (existing.photoPath.startsWith("/uploads/team/")) {
+          try {
+            await unlink(toDiskPath(existing.photoPath));
+          } catch (error) {
+            console.warn("Old team photo could not be removed:", error);
+          }
         }
       }
     }
 
     if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: "No valid fields to update." }, { status: 400 });
+      return NextResponse.json(
+        { error: "No valid fields to update." },
+        { status: 400 },
+      );
     }
 
     const updated = await prisma.teamMember.update({
@@ -145,12 +219,18 @@ export async function DELETE(
     const { id: rawId } = await params;
     const id = parseId(rawId);
     if (!id) {
-      return NextResponse.json({ error: "Invalid team member id." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid team member id." },
+        { status: 400 },
+      );
     }
 
     const existing = await prisma.teamMember.findUnique({ where: { id } });
     if (!existing) {
-      return NextResponse.json({ error: "Team member not found." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Team member not found." },
+        { status: 404 },
+      );
     }
 
     await prisma.teamMember.delete({ where: { id } });

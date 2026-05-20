@@ -1,124 +1,65 @@
 import Image from "next/image";
+import { getSafeHttpUrl } from "@/lib/safe-url";
 
-interface Director {
+export type DirectorCardProps = {
   name: string;
-  role: string;
-  imageSrc: string;
-  linkedinUrl?: string;
-  email?: string;
-}
+  title: string;
+  photoPath: string;
+  profileUrl?: string | null;
+};
 
-const DIRECTORS: Director[] = [
-  {
-    name: "Dr Jennifer Miles Chan",
-    role: "Managing Director",
-    imageSrc: "/images/team/jennifer-miles-chan.jpeg",
-  },
-  {
-    name: "Professor Sally Poppitt",
-    role: "Founding Director",
-    imageSrc: "/images/team/Sally-poppitt.png",
-  },
-  {
-    name: "Professor Garth Cooper",
-    role: "Co-Director",
-    imageSrc: "/images/team/Garth-cooper.png",
-  },
-];
+export default function DirectorCard({
+  name,
+  title,
+  photoPath,
+  profileUrl,
+}: DirectorCardProps) {
+  const href = getSafeHttpUrl(profileUrl);
+  const isClickable = Boolean(href);
 
-function DirectorCard({ name, role, imageSrc }: Director) {
-  return (
-    <div
-      style={{
-        backgroundColor: "white",
-        borderRadius: "20px",
-        boxShadow: "0 0 20px rgba(0,0,0,0.25)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "40px 32px 32px",
-        flex: 1,
-        minWidth: 0,
-      }}
-    >
-      <div
-        style={{
-          width: "250px",
-          height: "250px",
-          borderRadius: "50%",
-          overflow: "hidden",
-          flexShrink: 0,
-          marginBottom: "28px",
-        }}
-      >
+  const baseClass =
+    "flex flex-col items-center bg-white rounded-[20px] px-8 pt-10 pb-8 flex-1 min-w-0";
+  const clickableClass =
+    "no-underline text-inherit cursor-pointer transition-all duration-200 shadow-[0_0_20px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(0,0,0,0.32)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48] focus-visible:ring-offset-2";
+  const staticClass = "shadow-[0_0_20px_rgba(0,0,0,0.25)]";
+
+  const inner = (
+    <>
+      <div className="w-[250px] h-[250px] rounded-full overflow-hidden flex-shrink-0 mb-7">
         <Image
-          src={imageSrc}
+          src={photoPath}
           alt={name}
-          width={180}
-          height={180}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          width={250}
+          height={250}
+          className="w-full h-full object-cover"
         />
       </div>
 
       <p
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: "20px",
-          fontWeight: 700,
-          color: "#0c0c48",
-          textAlign: "center",
-          marginBottom: "6px",
-        }}
+        className={`text-[20px] font-bold text-[#0c0c48] text-center mb-1.5 ${
+          isClickable ? "group-hover:underline" : ""
+        }`}
       >
         {name}
       </p>
 
-      <p
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: "16px",
-          fontWeight: 400,
-          color: "#4b5563",
-          textAlign: "center",
-          marginBottom: "24px",
-        }}
-      >
-        {role}
-      </p>
-    </div>
+      <p className="text-[16px] text-[#4b5563] text-center">{title}</p>
+    </>
   );
-}
 
-export default function BoardOfDirectors() {
-  return (
-    <section style={{ backgroundColor: "white", padding: "60px 48px" }}>
-      <h2
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: "48px",
-          fontWeight: 800,
-          color: "#0c0c48",
-          textAlign: "center",
-          marginBottom: "48px",
-        }}
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${name} — open profile in a new tab`}
+        className={`group ${baseClass} ${clickableClass}`}
       >
-        Board of Directors
-      </h2>
+        {inner}
+      </a>
+    );
+  }
 
-      <div
-        style={{
-          display: "flex",
-          gap: "24px",
-          maxWidth: "1100px",
-          margin: "0 auto",
-          flexWrap: "wrap",
-          justifyContent: "center",
-        }}
-      >
-        {DIRECTORS.map((director) => (
-          <DirectorCard key={director.name} {...director} />
-        ))}
-      </div>
-    </section>
-  );
+  return <div className={`${baseClass} ${staticClass}`}>{inner}</div>;
 }

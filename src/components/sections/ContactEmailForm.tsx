@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -34,6 +34,11 @@ export default function ContactEmailForm() {
   const [honeypot, setHoneypot] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const mountedAtRef = useRef<number>(0);
+
+  useEffect(() => {
+    mountedAtRef.current = Date.now();
+  }, []);
 
   function clearError() {
     if (state === 'error') {
@@ -70,6 +75,7 @@ export default function ContactEmailForm() {
           category,
           message: message.trim(),
           honeypot: honeypot.trim(),
+          elapsedMs: Date.now() - (mountedAtRef.current || Date.now()),
         }),
       });
 
@@ -229,4 +235,3 @@ export default function ContactEmailForm() {
     </form>
   );
 }
-

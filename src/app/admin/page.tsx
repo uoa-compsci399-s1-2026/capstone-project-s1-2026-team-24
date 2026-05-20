@@ -3,121 +3,146 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-interface DashboardStats {
+type Stats = {
   studies: number;
   teamMembers: number;
   partners: number;
-}
+  publications: number;
+  pendingPublications: number;
+  contactSubmissions: number;
+};
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats>({
+  const [stats, setStats] = useState<Stats>({
     studies: 0,
     teamMembers: 0,
     partners: 0,
+    publications: 0,
+    pendingPublications: 0,
+    contactSubmissions: 0,
   });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    let cancelled = false;
+    (async () => {
       try {
-        const [studiesRes, teamRes, partnersRes] = await Promise.all([
-          fetch("/api/admin/studies"),
-          fetch("/api/admin/team"),
-          fetch("/api/admin/partner-logos"),
-        ]);
-
-        const studies = await studiesRes.json();
-        const team = await teamRes.json();
-        const partners = await partnersRes.json();
-
+        const res = await fetch("/api/admin/stats");
+        const data = res.ok ? await res.json() : {};
+        if (cancelled) return;
         setStats({
-          studies: Array.isArray(studies) ? studies.length : 0,
-          teamMembers: Array.isArray(team) ? team.length : 0,
-          partners: Array.isArray(partners) ? partners.length : 0,
+          studies: data.studies ?? 0,
+          teamMembers: data.teamMembers ?? 0,
+          partners: data.partners ?? 0,
+          publications: data.publications ?? 0,
+          pendingPublications: data.pendingPublications ?? 0,
+          contactSubmissions: data.contactSubmissions ?? 0,
         });
       } catch (error) {
-        console.error("Failed to fetch stats:", error);
+        console.error("Failed to fetch dashboard stats:", error);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-
-    fetchStats();
   }, []);
 
-  const statCards = [
+  const cards: Array<{
+    title: string;
+    count: number;
+    href: string;
+    helper?: string;
+  }> = [
+    { title: "Studies", count: stats.studies, href: "/admin/studies" },
+    { title: "Team members", count: stats.teamMembers, href: "/admin/team" },
+    { title: "Partners", count: stats.partners, href: "/admin/partners" },
     {
-      title: "Studies",
-      count: stats.studies,
-      icon: "📚",
-      href: "/admin/studies",
-      color: "bg-blue-50 text-blue-700",
+      title: "Publications",
+      count: stats.publications,
+      href: "/admin/publications",
+      helper:
+        stats.pendingPublications > 0
+          ? `${stats.pendingPublications} pending approval`
+          : "All reviewed",
     },
     {
-      title: "Team Members",
-      count: stats.teamMembers,
-      icon: "👥",
-      href: "/admin/team",
-      color: "bg-green-50 text-green-700",
-    },
-    {
-      title: "Partners",
-      count: stats.partners,
-      icon: "🤝",
-      href: "/admin/partners",
-      color: "bg-purple-50 text-purple-700",
+      title: "Contact submissions",
+      count: stats.contactSubmissions,
+      href: "/admin/contacts",
     },
   ];
 
   return (
     <div>
-      <h1 className="text-4xl font-bold text-gray-900 mb-2">Dashboard</h1>
-      <p className="text-gray-600 mb-8">Welcome to the admin dashboard</p>
+      <header className="mb-10">
+        <p className="text-xs uppercase tracking-[2px] text-[#0a4479]/70">
+          Overview
+        </p>
+        <h1 className="text-4xl font-extrabold text-[#0c0c48] mt-1 tracking-tight">
+          Dashboard
+        </h1>
+        <p className="text-[#0a4479]/80 mt-2">
+          Manage content shown across the public site.
+        </p>
+      </header>
 
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {statCards.map((card) => (
-            <Link key={card.href} href={card.href}>
-              <div
-                className={`${card.color} p-6 rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold mb-2">{card.title}</h2>
-                    <p className="text-3xl font-bold">{card.count}</p>
-                  </div>
-                  <div className="text-5xl">{card.icon}</div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-12">
+        {cards.map((card) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            className="group block bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-6 hover:shadow-[0_12px_32px_rgba(0,0,0,0.1)] transition-shadow"
+          >
+            <p className="text-sm font-medium text-[#0a4479]/70 group-hover:text-[#0a4479]">
+              {card.title}
+            </p>
+            <p className="mt-2 text-4xl font-extrabold text-[#0c0c48]">
+              {loading ? (
+                <span className="inline-block h-9 w-12 rounded bg-[#0a4479]/10 animate-pulse" />
+              ) : (
+                card.count
+              )}
+            </p>
+            {card.helper && (
+              <p className="mt-2 text-xs text-[#0a4479]/70">{card.helper}</p>
+            )}
+          </Link>
+        ))}
+      </section>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Link href="/admin/studies">
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-              Manage Studies
-            </button>
-          </Link>
-          <Link href="/admin/team">
-            <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
-              Manage Team
-            </button>
-          </Link>
-          <Link href="/admin/partners">
-            <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
-              Manage Partners
-            </button>
-          </Link>
+      <section className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-6">
+        <h2 className="text-xl font-bold text-[#0c0c48] mb-4">Quick actions</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <QuickAction href="/admin/studies/new">Add a study</QuickAction>
+          <QuickAction href="/admin/team/new">Add a team member</QuickAction>
+          <QuickAction href="/admin/partners/new">Add a partner</QuickAction>
+          <QuickAction href="/admin/publications">
+            Review publications
+          </QuickAction>
+          <QuickAction href="/admin/contact-recipients">
+            Edit contact emails
+          </QuickAction>
         </div>
-      </div>
+      </section>
     </div>
+  );
+}
+
+function QuickAction({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center justify-center bg-[#0a4479] text-white px-5 py-3 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors"
+    >
+      {children}
+    </Link>
   );
 }
