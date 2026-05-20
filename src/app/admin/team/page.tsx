@@ -3,14 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-interface TeamMember {
+type TeamMember = {
   id: number;
   name: string;
   title: string;
   section: string;
   isVisible: boolean;
   order: number;
-}
+  photoPath: string;
+};
+
+const SECTION_LABELS: Record<string, string> = {
+  BoardOfDirectors: "Board of Directors",
+  ResearchTeam: "Research Team",
+  Alumni: "Alumni",
+};
 
 export default function AdminTeam() {
   const [members, setMembers] = useState<TeamMember[]>([]);
@@ -21,7 +28,7 @@ export default function AdminTeam() {
     fetchMembers();
   }, []);
 
-  const fetchMembers = async () => {
+  async function fetchMembers() {
     try {
       setLoading(true);
       const res = await fetch("/api/admin/team");
@@ -34,153 +41,182 @@ export default function AdminTeam() {
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const toggleVisible = async (id: number, currentStatus: boolean) => {
+  async function toggleVisible(id: number, current: boolean) {
     try {
       const res = await fetch(`/api/admin/team/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isVisible: !currentStatus }),
+        body: JSON.stringify({ isVisible: !current }),
       });
       if (!res.ok) throw new Error("Failed to update team member");
       await fetchMembers();
     } catch (err) {
-      console.error("Error updating team member:", err);
+      console.error(err);
     }
-  };
+  }
 
-  const deleteMember = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this team member?")) return;
+  async function deleteMember(id: number, name: string) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
     try {
-      const res = await fetch(`/api/admin/team/${id}`, {
-        method: "DELETE",
-      });
+      const res = await fetch(`/api/admin/team/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete team member");
       await fetchMembers();
     } catch (err) {
-      console.error("Error deleting team member:", err);
+      console.error(err);
     }
-  };
+  }
 
-  const groupedMembers = members.reduce(
-    (acc, member) => {
-      if (!acc[member.section]) acc[member.section] = [];
-      acc[member.section].push(member);
-      return acc;
-    },
-    {} as Record<string, TeamMember[]>,
-  );
+  const grouped = members.reduce<Record<string, TeamMember[]>>((acc, m) => {
+    if (!acc[m.section]) acc[m.section] = [];
+    acc[m.section].push(m);
+    return acc;
+  }, {});
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Manage Team Members
-        </h1>
-        <Link href="/admin/team/new">
-          <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
-            + Add Team Member
-          </button>
+      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+        <div>
+          <p className="text-xs uppercase tracking-[2px] text-[#0a4479]/70">
+            Team
+          </p>
+          <h1 className="text-4xl font-extrabold text-[#0c0c48] mt-1 tracking-tight">
+            Team members
+          </h1>
+        </div>
+        <Link
+          href="/admin/team/new"
+          className="inline-flex items-center justify-center bg-[#0a4479] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors w-fit"
+        >
+          + Add team member
         </Link>
-      </div>
+      </header>
 
       {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl mb-6">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
-        </div>
-      ) : Object.keys(groupedMembers).length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-gray-500 mb-4">No team members found</p>
-          <Link href="/admin/team/new">
-            <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
-              Add First Team Member
-            </button>
-          </Link>
-        </div>
+        <LoadingBlock />
+      ) : Object.keys(grouped).length === 0 ? (
+        <EmptyState
+          message="No team members yet."
+          actionHref="/admin/team/new"
+          actionLabel="Add the first team member"
+        />
       ) : (
         <div className="space-y-8">
-          {Object.entries(groupedMembers).map(([section, sectionMembers]) => (
-            <div
+          {Object.entries(grouped).map(([section, sectionMembers]) => (
+            <section
               key={section}
-              className="bg-white rounded-lg shadow overflow-hidden"
+              className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] overflow-hidden"
             >
-              <div className="bg-gray-100 px-6 py-4 border-b">
-                <h2 className="text-xl font-bold text-gray-900">{section}</h2>
-              </div>
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-900">
-                      Name
-                    </th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-900">
-                      Title
-                    </th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-900">
-                      Order
-                    </th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-900">
-                      Visible
-                    </th>
-                    <th className="px-6 py-4 text-left font-semibold text-gray-900">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sectionMembers.map((member) => (
-                    <tr key={member.id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4 text-gray-900 font-medium">
-                        {member.name}
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">
-                        {member.title}
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">
-                        {member.order}
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() =>
-                            toggleVisible(member.id, member.isVisible)
-                          }
-                          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-                            member.isVisible
-                              ? "bg-green-100 text-green-700 hover:bg-green-200"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                          }`}
-                        >
-                          {member.isVisible ? "Visible" : "Hidden"}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 space-x-2">
-                        <Link href={`/admin/team/${member.id}`}>
-                          <button className="text-blue-600 hover:text-blue-800 font-medium">
-                            Edit
-                          </button>
-                        </Link>
-                        <button
-                          onClick={() => deleteMember(member.id)}
-                          className="text-red-600 hover:text-red-800 font-medium"
-                        >
-                          Delete
-                        </button>
-                      </td>
+              <header className="px-6 py-4 border-b border-[#0a4479]/10">
+                <h2 className="text-lg font-bold text-[#0c0c48]">
+                  {SECTION_LABELS[section] || section}
+                </h2>
+                <p className="text-xs text-[#0a4479]/70 mt-0.5">
+                  {sectionMembers.length}{" "}
+                  {sectionMembers.length === 1 ? "member" : "members"}
+                </p>
+              </header>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-[#f5f5f7] text-[#0a4479]/80">
+                    <tr>
+                      <th className="px-6 py-3 text-left font-semibold">Order</th>
+                      <th className="px-6 py-3 text-left font-semibold">Name</th>
+                      <th className="px-6 py-3 text-left font-semibold">Title</th>
+                      <th className="px-6 py-3 text-left font-semibold">
+                        Visibility
+                      </th>
+                      <th className="px-6 py-3 text-right font-semibold">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-[#0a4479]/5">
+                    {sectionMembers.map((member) => (
+                      <tr key={member.id} className="hover:bg-[#f5f5f7]">
+                        <td className="px-6 py-3 text-[#0a4479]/70 font-medium">
+                          {member.order}
+                        </td>
+                        <td className="px-6 py-3 font-semibold text-[#0c0c48]">
+                          {member.name}
+                        </td>
+                        <td className="px-6 py-3 text-[#0a4479]/80">
+                          {member.title}
+                        </td>
+                        <td className="px-6 py-3">
+                          <button
+                            onClick={() =>
+                              toggleVisible(member.id, member.isVisible)
+                            }
+                            className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                              member.isVisible
+                                ? "bg-[#0a4479]/10 text-[#0a4479] hover:bg-[#0a4479]/20"
+                                : "bg-[#0c0c48]/5 text-[#0c0c48]/60 hover:bg-[#0c0c48]/10"
+                            }`}
+                          >
+                            {member.isVisible ? "Visible" : "Hidden"}
+                          </button>
+                        </td>
+                        <td className="px-6 py-3 text-right whitespace-nowrap">
+                          <Link
+                            href={`/admin/team/${member.id}`}
+                            className="text-[#0a4479] hover:underline font-semibold mr-4"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => deleteMember(member.id, member.name)}
+                            className="text-red-600 hover:text-red-800 font-semibold"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function LoadingBlock() {
+  return (
+    <div className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-12 flex items-center justify-center">
+      <div className="h-10 w-10 rounded-full border-2 border-[#0a4479]/20 border-t-[#0a4479] animate-spin" />
+    </div>
+  );
+}
+
+function EmptyState({
+  message,
+  actionHref,
+  actionLabel,
+}: {
+  message: string;
+  actionHref: string;
+  actionLabel: string;
+}) {
+  return (
+    <div className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-12 text-center">
+      <p className="text-[#0a4479]/80 mb-5">{message}</p>
+      <Link
+        href={actionHref}
+        className="inline-flex items-center justify-center bg-[#0a4479] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors"
+      >
+        {actionLabel}
+      </Link>
     </div>
   );
 }

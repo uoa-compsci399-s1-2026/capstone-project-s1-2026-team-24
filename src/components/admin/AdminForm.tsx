@@ -1,43 +1,76 @@
+import Link from "next/link";
 import { ReactNode } from "react";
 
 interface AdminFormProps {
   title: string;
+  description?: string;
+  kicker?: string;
   onSubmit: (e: React.FormEvent) => void;
   isLoading?: boolean;
   children: ReactNode;
   submitButtonLabel?: string;
+  cancelHref?: string;
+  secondaryAction?: ReactNode;
 }
 
 export function AdminForm({
   title,
+  description,
+  kicker,
   onSubmit,
   isLoading = false,
   children,
   submitButtonLabel = "Save",
+  cancelHref,
+  secondaryAction,
 }: AdminFormProps) {
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">{title}</h1>
+      <header className="mb-8">
+        {kicker && (
+          <p className="text-xs uppercase tracking-[2px] text-[#0a4479]/70">
+            {kicker}
+          </p>
+        )}
+        <h1 className="text-4xl font-extrabold text-[#0c0c48] mt-1 tracking-tight">
+          {title}
+        </h1>
+        {description && (
+          <p className="text-[#0a4479]/80 mt-2 max-w-2xl">{description}</p>
+        )}
+      </header>
+
       <form
         onSubmit={onSubmit}
-        className="bg-white rounded-lg shadow p-8 max-w-2xl"
+        className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-8 max-w-3xl"
       >
         <div className="space-y-6">{children}</div>
-        <div className="mt-8 flex gap-4">
+
+        <div className="mt-8 flex flex-wrap gap-3">
           <button
             type="submit"
             disabled={isLoading}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="inline-flex items-center justify-center bg-[#0a4479] text-white px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isLoading ? "Saving..." : submitButtonLabel}
           </button>
-          <button
-            type="button"
-            onClick={() => window.history.back()}
-            className="bg-gray-300 text-gray-900 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors"
-          >
-            Cancel
-          </button>
+          {cancelHref ? (
+            <Link
+              href={cancelHref}
+              className="inline-flex items-center justify-center bg-white border-2 border-[#0a4479]/20 text-[#0a4479] px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-[#0a4479]/5 transition-colors"
+            >
+              Cancel
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={() => window.history.back()}
+              className="inline-flex items-center justify-center bg-white border-2 border-[#0a4479]/20 text-[#0a4479] px-6 py-2.5 rounded-full text-sm font-semibold hover:bg-[#0a4479]/5 transition-colors"
+            >
+              Cancel
+            </button>
+          )}
+          {secondaryAction}
         </div>
       </form>
     </div>
@@ -47,6 +80,7 @@ export function AdminForm({
 interface FormFieldProps {
   label: string;
   id: string;
+  name?: string;
   type?: string;
   placeholder?: string;
   value: string | number;
@@ -58,11 +92,16 @@ interface FormFieldProps {
   required?: boolean;
   rows?: number;
   options?: { value: string; label: string }[];
+  helper?: string;
 }
+
+const inputClass =
+  "w-full px-4 py-2.5 bg-white border-2 border-[#cac7c7] rounded-2xl text-base text-[#0c0c48] placeholder:text-[#8e8d8d] focus:outline-none focus:border-[#0a4479] transition-colors";
 
 export function FormField({
   label,
   id,
+  name,
   type = "text",
   placeholder = "",
   value,
@@ -70,12 +109,14 @@ export function FormField({
   required = false,
   rows,
   options,
+  helper,
 }: FormFieldProps) {
+  const fieldName = name ?? id;
   return (
     <div>
       <label
         htmlFor={id}
-        className="block text-sm font-medium text-gray-900 mb-2"
+        className="block text-sm font-semibold text-[#0c0c48] mb-2"
       >
         {label}
         {required && <span className="text-red-600 ml-1">*</span>}
@@ -83,22 +124,24 @@ export function FormField({
       {type === "textarea" ? (
         <textarea
           id={id}
+          name={fieldName}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
           required={required}
           rows={rows || 4}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          className={inputClass}
         />
       ) : type === "select" ? (
         <select
           id={id}
+          name={fieldName}
           value={value}
           onChange={onChange}
           required={required}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          className={inputClass}
         >
-          <option value="">Select {label}</option>
+          <option value="">Select {label.toLowerCase()}</option>
           {options?.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -108,13 +151,17 @@ export function FormField({
       ) : (
         <input
           id={id}
+          name={fieldName}
           type={type}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
           required={required}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          className={inputClass}
         />
+      )}
+      {helper && (
+        <p className="text-xs text-[#0a4479]/70 mt-1.5">{helper}</p>
       )}
     </div>
   );
@@ -123,28 +170,111 @@ export function FormField({
 interface FormCheckboxProps {
   label: string;
   id: string;
+  name?: string;
   checked: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  helper?: string;
 }
 
 export function FormCheckbox({
   label,
   id,
+  name,
   checked,
   onChange,
+  helper,
 }: FormCheckboxProps) {
   return (
-    <div className="flex items-center">
+    <div>
+      <div className="flex items-center gap-3">
+        <input
+          id={id}
+          name={name ?? id}
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="w-5 h-5 rounded border-2 border-[#cac7c7] text-[#0a4479] focus:ring-2 focus:ring-[#0a4479]/30 accent-[#0a4479]"
+        />
+        <label htmlFor={id} className="text-sm font-semibold text-[#0c0c48]">
+          {label}
+        </label>
+      </div>
+      {helper && (
+        <p className="text-xs text-[#0a4479]/70 mt-1.5 ml-8">{helper}</p>
+      )}
+    </div>
+  );
+}
+
+interface FormFileFieldProps {
+  label: string;
+  id: string;
+  name?: string;
+  accept?: string;
+  required?: boolean;
+  helper?: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  currentValue?: string;
+}
+
+export function FormFileField({
+  label,
+  id,
+  name,
+  accept,
+  required = false,
+  helper,
+  onChange,
+  currentValue,
+}: FormFileFieldProps) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="block text-sm font-semibold text-[#0c0c48] mb-2"
+      >
+        {label}
+        {required && <span className="text-red-600 ml-1">*</span>}
+      </label>
+      {currentValue && (
+        <p className="text-xs text-[#0a4479]/80 mb-2">
+          Current: <code className="bg-[#f5f5f7] px-1.5 py-0.5 rounded">{currentValue}</code>
+        </p>
+      )}
       <input
         id={id}
-        type="checkbox"
-        checked={checked}
+        name={name ?? id}
+        type="file"
+        accept={accept}
         onChange={onChange}
-        className="w-4 h-4 border-gray-300 rounded text-blue-600 focus:ring-2 focus:ring-blue-600"
+        required={required}
+        className="block w-full text-sm text-[#0c0c48] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#0a4479] file:text-white hover:file:bg-[#083559] file:cursor-pointer"
       />
-      <label htmlFor={id} className="ml-2 text-sm font-medium text-gray-900">
-        {label}
-      </label>
+      {helper && (
+        <p className="text-xs text-[#0a4479]/70 mt-1.5">{helper}</p>
+      )}
+    </div>
+  );
+}
+
+export function FormErrorBanner({ message }: { message: string }) {
+  return (
+    <div
+      role="alert"
+      className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-sm"
+    >
+      {message}
+    </div>
+  );
+}
+
+export function FormSuccessBanner({ message }: { message: string }) {
+  return (
+    <div
+      role="status"
+      className="bg-[#0a4479]/5 border border-[#0a4479]/20 text-[#0a4479] px-4 py-3 rounded-2xl text-sm"
+    >
+      {message}
     </div>
   );
 }
