@@ -19,7 +19,8 @@ export async function fetchPartnerLogos() {
     cache: "no-store",
   });
   if (!res.ok) {
-    throw new Error("Failed to fetch partner logos");
+    console.error("Failed to fetch partner logos:", res.status);
+    return [];
   }
   return res.json() as Promise<PartnerLogoRecord[]>;
 }

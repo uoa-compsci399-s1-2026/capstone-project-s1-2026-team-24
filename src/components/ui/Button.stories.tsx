@@ -1,68 +1,50 @@
-import type { Meta, StoryObj } from '@storybook/nextjs-vite';
-import Button from './Button';
+import type { Meta, StoryObj } from "@storybook/nextjs-vite";
+import Button from "./Button";
 
 const meta: Meta<typeof Button> = {
-  title: 'Components/UI/Button',
+  title: "Components/UI/Button",
   component: Button,
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     variant: {
-      control: 'select',
-      options: ['primary', 'secondary', 'outline', 'ghost', 'danger'],
+      control: "select",
+      options: ["blue", "white"],
     },
-    size: {
-      control: 'select',
-      options: ['sm', 'md', 'lg'],
+    color: {
+      control: "select",
+      options: ["dark", "standard", "light"],
     },
-    disabled: { control: 'boolean' },
-    isLoading: { control: 'boolean' },
-    href: { control: 'text' },
+    href: { control: "text" },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof Button>;
 
-export const Primary: Story = {
-  args: { variant: 'primary', children: 'Primary Button' },
+export const Blue: Story = {
+  args: { variant: "blue", color: "standard", children: "Get started" },
 };
 
-export const Secondary: Story = {
-  args: { variant: 'secondary', children: 'Secondary Button' },
+export const BlueDark: Story = {
+  args: { variant: "blue", color: "dark", children: "Get started" },
 };
 
-export const Outline: Story = {
-  args: { variant: 'outline', children: 'Outline Button' },
+export const BlueLight: Story = {
+  args: { variant: "blue", color: "light", children: "Get started" },
 };
 
-export const Ghost: Story = {
-  args: { variant: 'ghost', children: 'Ghost Button' },
-};
-
-export const Danger: Story = {
-  args: { variant: 'danger', children: 'Danger Button' },
-};
-
-export const Small: Story = {
-  args: { size: 'sm', children: 'Small' },
-};
-
-export const Large: Story = {
-  args: { size: 'lg', children: 'Large' },
-};
-
-export const Loading: Story = {
-  args: { isLoading: true, children: 'Loading...' },
-};
-
-export const Disabled: Story = {
-  args: { disabled: true, children: 'Disabled' },
+export const White: Story = {
+  args: { variant: "white", color: "standard", children: "Learn more" },
 };
 
 export const AsLink: Story = {
-  args: { href: '/about', children: 'Internal Link' },
+  args: { variant: "blue", href: "/about", children: "Internal link" },
 };
 
 export const AsExternalLink: Story = {
-  args: { href: 'https://www.auckland.ac.nz', children: 'External Link' },
+  args: {
+    variant: "blue",
+    href: "https://www.auckland.ac.nz",
+    children: "External link",
+  },
 };
