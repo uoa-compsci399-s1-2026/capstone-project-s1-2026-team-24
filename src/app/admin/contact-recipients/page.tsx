@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Recipient = {
   id: number;
@@ -15,9 +15,15 @@ export default function AdminContactRecipients() {
   const [pending, setPending] = useState<Record<string, string>>({});
   const [savingCategory, setSavingCategory] = useState<string | null>(null);
   const [savedCategory, setSavedCategory] = useState<string | null>(null);
+  const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetchRecipients();
+    return () => {
+      if (savedTimerRef.current !== null) {
+        clearTimeout(savedTimerRef.current);
+      }
+    };
   }, []);
 
   async function fetchRecipients() {
@@ -53,8 +59,11 @@ export default function AdminContactRecipients() {
         throw new Error(data.error || "Failed to update recipient");
       }
       await fetchRecipients();
+      if (savedTimerRef.current !== null) {
+        clearTimeout(savedTimerRef.current);
+      }
       setSavedCategory(category);
-      setTimeout(
+      savedTimerRef.current = setTimeout(
         () =>
           setSavedCategory((prev) => (prev === category ? null : prev)),
         2500,

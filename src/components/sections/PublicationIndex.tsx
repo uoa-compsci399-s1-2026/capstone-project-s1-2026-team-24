@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type PublicationAuthor = {
@@ -131,9 +132,15 @@ export default function PublicationIndex() {
           className="text-[18px] text-[#0c0c48] mb-6 tracking-[0.36px]"
         >
           <ol className="flex items-center gap-2">
-            <li>About</li>
+            <li>
+              <Link href="/about" className="hover:underline">
+                About
+              </Link>
+            </li>
             <li aria-hidden="true">&gt;</li>
-            <li className="font-bold">Our Research</li>
+            <li aria-current="page" className="font-bold">
+              Our Research
+            </li>
           </ol>
         </nav>
 

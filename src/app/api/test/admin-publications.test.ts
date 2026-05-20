@@ -1,0 +1,183 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mockPrisma = vi.hoisted(() => ({
+  publication: {
+    findUnique: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("@/lib/prisma", () => ({
+  prisma: mockPrisma,
+}));
+
+import {
+  GET as getPublication,
+  PATCH as patchPublication,
+  DELETE as deletePublication,
+} from "@/app/api/admin/publications/[id]/route";
+
+const makeParams = (id: string) => ({ params: Promise.resolve({ id }) });
+
+const basePublication = {
+  id: 1,
+  title: "Test Publication",
+  authorsRaw: "Author A",
+  journal: "Nature",
+  year: 2024,
+  doi: "10.1000/test",
+  pubType: "Journal Article",
+  url: null,
+  abstract: null,
+  affiliation: null,
+  sourceType: "manual",
+  sourceId: null,
+  orcidSource: null,
+  status: "Pending",
+  isVisible: true,
+  hiddenManually: false,
+  matchedKeywords: "",
+  lastSyncedAt: null,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  categoryId: null,
+  category: null,
+  authors: [],
+};
+
+describe("admin publications/[id] routes", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // GET
+  it("GET returns 400 for invalid id", async () => {
+    const res = await getPublication(
+      new Request("http://localhost"),
+      makeParams("abc"),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("GET returns 404 when publication not found", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(null);
+    const res = await getPublication(
+      new Request("http://localhost"),
+      makeParams("1"),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("GET returns publication on success", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
+    const res = await getPublication(
+      new Request("http://localhost"),
+      makeParams("1"),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.id).toBe(1);
+  });
+
+  // PATCH
+  it("PATCH returns 400 for invalid id", async () => {
+    const req = new Request("http://localhost", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "Approved" }),
+    });
+    const res = await patchPublication(req, makeParams("not-a-number"));
+    expect(res.status).toBe(400);
+  });
+
+  it("PATCH returns 404 when publication not found", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(null);
+    const req = new Request("http://localhost", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "Approved" }),
+    });
+    const res = await patchPublication(req, makeParams("1"));
+    expect(res.status).toBe(404);
+  });
+
+  it("PATCH returns 400 for invalid status", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
+    const req = new Request("http://localhost", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "InvalidStatus" }),
+    });
+    const res = await patchPublication(req, makeParams("1"));
+    expect(res.status).toBe(400);
+  });
+
+  it("PATCH returns 400 when no valid fields provided", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
+    const req = new Request("http://localhost", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ unknownField: "value" }),
+    });
+    const res = await patchPublication(req, makeParams("1"));
+    expect(res.status).toBe(400);
+  });
+
+  it("PATCH updates publication on valid input", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
+    mockPrisma.publication.update.mockResolvedValueOnce({
+      ...basePublication,
+      status: "Approved",
+    });
+    const req = new Request("http://localhost", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "Approved" }),
+    });
+    const res = await patchPublication(req, makeParams("1"));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.status).toBe("Approved");
+  });
+
+  it("PATCH returns 400 for invalid categoryId type", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
+    const req = new Request("http://localhost", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ categoryId: "not-a-number" }),
+    });
+    const res = await patchPublication(req, makeParams("1"));
+    // categoryId "not-a-number" is a string, not number/null — treated as no valid field → 400
+    expect(res.status).toBe(400);
+  });
+
+  // DELETE
+  it("DELETE returns 400 for invalid id", async () => {
+    const res = await deletePublication(
+      new Request("http://localhost"),
+      makeParams("0"),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("DELETE returns 404 when publication not found", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(null);
+    const res = await deletePublication(
+      new Request("http://localhost"),
+      makeParams("1"),
+    );
+    expect(res.status).toBe(404);
+  });
+
+  it("DELETE returns 204 on success", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
+    mockPrisma.publication.delete.mockResolvedValueOnce({});
+    const res = await deletePublication(
+      new Request("http://localhost"),
+      makeParams("1"),
+    );
+    expect(res.status).toBe(204);
+  });
+});

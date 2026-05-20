@@ -6,6 +6,8 @@ function parseId(rawId: string) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
+const ALLOWED_STUDY_STATUSES = new Set(["Recruiting", "Active", "Completed"]);
+
 const ALLOWED_STUDY_KEYS = new Set([
   "slug",
   "title",
@@ -89,7 +91,18 @@ export async function PATCH(
         }
         continue;
       }
-      if (typeof value === "string") {
+      if (key === "status") {
+        const trimmed = typeof value === "string" ? value.trim() : "";
+        if (!ALLOWED_STUDY_STATUSES.has(trimmed)) {
+          return NextResponse.json(
+            {
+              error: `Invalid status. Allowed values: ${[...ALLOWED_STUDY_STATUSES].join(", ")}.`,
+            },
+            { status: 400 },
+          );
+        }
+        updates[key] = trimmed;
+      } else if (typeof value === "string") {
         updates[key] = value.trim();
       } else {
         updates[key] = value;

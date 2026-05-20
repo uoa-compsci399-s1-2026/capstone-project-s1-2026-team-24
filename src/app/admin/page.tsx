@@ -27,38 +27,16 @@ export default function AdminDashboard() {
     let cancelled = false;
     (async () => {
       try {
-        const [
-          studiesRes,
-          teamRes,
-          partnersRes,
-          publicationsRes,
-          contactsRes,
-        ] = await Promise.all([
-          fetch("/api/admin/studies"),
-          fetch("/api/admin/team"),
-          fetch("/api/admin/partner-logos"),
-          fetch("/api/admin/publications"),
-          fetch("/api/admin/contacts"),
-        ]);
-        const [studies, team, partners, publications, contacts] =
-          await Promise.all([
-            studiesRes.ok ? studiesRes.json() : [],
-            teamRes.ok ? teamRes.json() : [],
-            partnersRes.ok ? partnersRes.json() : [],
-            publicationsRes.ok ? publicationsRes.json() : [],
-            contactsRes.ok ? contactsRes.json() : [],
-          ]);
+        const res = await fetch("/api/admin/stats");
+        const data = res.ok ? await res.json() : {};
         if (cancelled) return;
-        const publicationsArr = Array.isArray(publications) ? publications : [];
         setStats({
-          studies: Array.isArray(studies) ? studies.length : 0,
-          teamMembers: Array.isArray(team) ? team.length : 0,
-          partners: Array.isArray(partners) ? partners.length : 0,
-          publications: publicationsArr.length,
-          pendingPublications: publicationsArr.filter(
-            (p: { status?: string }) => p.status === "Pending",
-          ).length,
-          contactSubmissions: Array.isArray(contacts) ? contacts.length : 0,
+          studies: data.studies ?? 0,
+          teamMembers: data.teamMembers ?? 0,
+          partners: data.partners ?? 0,
+          publications: data.publications ?? 0,
+          pendingPublications: data.pendingPublications ?? 0,
+          contactSubmissions: data.contactSubmissions ?? 0,
         });
       } catch (error) {
         console.error("Failed to fetch dashboard stats:", error);
