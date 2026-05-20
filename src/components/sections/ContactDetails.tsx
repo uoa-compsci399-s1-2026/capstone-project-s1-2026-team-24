@@ -29,21 +29,6 @@ function LocationIcon() {
   );
 }
 
-function ClockIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <circle cx="20" cy="20" r="14" stroke="#0a4479" strokeWidth="2.5" />
-      <path
-        d="M20 12v9l5 3"
-        stroke="#0a4479"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export default function ContactDetails() {
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
@@ -88,36 +73,22 @@ export default function ContactDetails() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5 text-[#0a4479]">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-5 text-[#0a4479]">
+              <div className="grid grid-cols-[40px_1fr] items-center gap-x-3">
                 <PhoneIcon />
-                <a href="tel:+6492345678" className="text-sm sm:text-[20px] hover:underline">
+                <a
+                  href="tel:+6492345678"
+                  className="text-sm sm:text-[20px] hover:underline"
+                >
                   09 923 4567
                 </a>
               </div>
 
-              <div className="flex items-start gap-3">
-                <div className="mt-1 shrink-0">
-                  <LocationIcon />
-                </div>
+              <div className="grid grid-cols-[40px_1fr] items-center gap-x-3">
+                <LocationIcon />
                 <address className="not-italic text-sm sm:text-[20px] leading-relaxed">
-                  18 Carrick Place, Mt Eden
-                  <br />
-                  Auckland 1024,
-                  <br />
-                  New Zealand
+                  18 Carrick Place, Mt Eden, Auckland 1024, New Zealand
                 </address>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="mt-1 shrink-0">
-                  <ClockIcon />
-                </div>
-                <p className="text-sm sm:text-[20px] leading-relaxed">
-                  Mon – Fri
-                  <br />
-                  9am – 5pm
-                </p>
               </div>
             </div>
           </div>

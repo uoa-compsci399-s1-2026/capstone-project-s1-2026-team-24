@@ -14,7 +14,14 @@ type Props = {
 };
 
 async function fetchStudy(slug: string) {
-  return prisma.study.findFirst({ where: { slug } });
+  return prisma.study.findFirst({
+    where: { slug },
+    include: {
+      pdfs: {
+        orderBy: [{ order: "asc" }, { uploadedAt: "asc" }],
+      },
+    },
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -110,6 +117,11 @@ export default async function StudyPage({ params }: Props) {
           publishedAt={
             study.publishedAt ? study.publishedAt.toISOString() : null
           }
+          pdfs={study.pdfs.map((pdf) => ({
+            id: pdf.id,
+            title: pdf.title,
+            pdfPath: pdf.pdfPath,
+          }))}
         />
       </main>
 

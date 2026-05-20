@@ -1,10 +1,12 @@
 import Image from "next/image";
-import { fetchTeamData } from "@/lib/fetch-api";
+import type { TeamMemberRecord } from "@/lib/fetch-api";
 
-export default async function AlumniSection() {
-  const { alumni } = await fetchTeamData();
-
-  if (alumni.length === 0) {
+export default function AlumniSection({
+  members,
+}: {
+  members: TeamMemberRecord[];
+}) {
+  if (members.length === 0) {
     return null;
   }
 
@@ -15,30 +17,60 @@ export default async function AlumniSection() {
           Alumni
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12">
-          {alumni.map((member) => (
-            <div
-              key={member.id}
-              className="flex flex-col items-center text-center"
-            >
-              <div className="w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] lg:w-[200px] lg:h-[200px] rounded-full overflow-hidden flex-shrink-0">
-                <Image
-                  src={member.photoPath}
-                  alt={member.name}
-                  width={200}
-                  height={200}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <h3 className="mt-4 text-[18px] font-bold text-[#0c0c48] tracking-[0.64px] leading-normal">
-                {member.name}
-              </h3>
-              <p className="mt-1 text-[15px] text-black tracking-[0.48px] leading-normal">
-                {member.title}
-              </p>
-            </div>
+          {members.map((member) => (
+            <AlumniCard key={member.id} member={member} />
           ))}
         </div>
       </div>
     </section>
+  );
+}
+
+function AlumniCard({ member }: { member: TeamMemberRecord }) {
+  const profileUrl = member.profileUrl?.trim();
+  const photoWrapperClass = profileUrl
+    ? "w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] lg:w-[200px] lg:h-[200px] rounded-full overflow-hidden flex-shrink-0 ring-0 group-hover:ring-4 group-hover:ring-[#0c0c48]/15 transition-all duration-200 shadow-md group-hover:shadow-xl"
+    : "w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] lg:w-[200px] lg:h-[200px] rounded-full overflow-hidden flex-shrink-0";
+
+  const content = (
+    <>
+      <div className={photoWrapperClass}>
+        <Image
+          src={member.photoPath}
+          alt={member.name}
+          width={200}
+          height={200}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <h3
+        className={`mt-4 text-[18px] font-bold text-[#0c0c48] tracking-[0.64px] leading-normal ${
+          profileUrl ? "group-hover:underline" : ""
+        }`}
+      >
+        {member.name}
+      </h3>
+      <p className="mt-1 text-[15px] text-black tracking-[0.48px] leading-normal">
+        {member.title}
+      </p>
+    </>
+  );
+
+  if (profileUrl) {
+    return (
+      <a
+        href={profileUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${member.name} — open profile in a new tab`}
+        className="flex flex-col items-center text-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48] focus-visible:ring-offset-2 rounded-lg transition-transform duration-200 hover:-translate-y-1"
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center text-center">{content}</div>
   );
 }

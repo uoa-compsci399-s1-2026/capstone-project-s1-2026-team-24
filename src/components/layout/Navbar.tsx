@@ -6,6 +6,13 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
 
+type SearchResult = {
+  type: "study" | "team" | "page";
+  title: string;
+  snippet: string;
+  href: string;
+};
+
 const ABOUT_ITEMS = [
   { label: "Discover HNU", href: "/about" },
   { label: "Our Team", href: "/team" },
@@ -43,6 +50,10 @@ export default function Navbar() {
   const [aboutClosing, setAboutClosing] = useState(false);
   const [studiesClosing, setStudiesClosing] = useState(false);
   const [searchContentTopOffset, setSearchContentTopOffset] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchSubmitted, setSearchSubmitted] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
@@ -72,6 +83,56 @@ export default function Navbar() {
     setMobileAboutOpen(false);
     setMobileStudiesOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!searchOpen) {
+      setSearchQuery("");
+      setSearchResults([]);
+      setSearchSubmitted(false);
+      return;
+    }
+  }, [searchOpen]);
+
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+    if (trimmed.length < 2) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      setSearchSubmitted(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(async () => {
+      try {
+        const res = await fetch(
+          `/api/search?q=${encodeURIComponent(trimmed)}`,
+          { signal: controller.signal },
+        );
+        if (!res.ok) {
+          setSearchResults([]);
+          setSearchSubmitted(true);
+          return;
+        }
+        const data = (await res.json()) as { results: SearchResult[] };
+        setSearchResults(Array.isArray(data.results) ? data.results : []);
+        setSearchSubmitted(true);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") {
+          setSearchResults([]);
+          setSearchSubmitted(true);
+        }
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 200);
+
+    return () => {
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
+  }, [searchQuery]);
 
   useEffect(() => {
     if (searchOpen) {
@@ -690,6 +751,8 @@ export default function Navbar() {
                   ref={searchInputRef}
                   type="search"
                   placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1 bg-transparent text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
                   aria-label="Search"
                 />
@@ -709,68 +772,120 @@ export default function Navbar() {
                 </svg>
               </div>
 
-              <div className="mt-3">
-                <p className="text-white text-[16px] tracking-[0.32px] mb-1">
-                  Popular searches
-                </p>
-                <ul>
-                  <li>
-                    <button
-                      className="flex items-center gap-2 text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
-                      onClick={() => setSearchStudiesOpen(!searchStudiesOpen)}
-                      aria-expanded={searchStudiesOpen}
-                      aria-haspopup="true"
-                      aria-controls="search-studies-dropdown"
-                    >
-                      Studies
-                      <svg
-                        className={`w-4 h-4 transition-transform ${searchStudiesOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {searchStudiesOpen && (
-                      <ul
-                        id="search-studies-dropdown"
-                        role="menu"
-                        className="ml-4 mb-1 border-l border-white/20 pl-4"
-                      >
-                        {STUDIES_ITEMS.map((item) => (
-                          <li key={item.href} role="none">
-                            <Link
-                              href={item.href}
-                              role="menuitem"
-                              className="block text-[16px] text-white/80 leading-[40px] hover:text-white hover:opacity-80 transition-colors"
+              <div className="mt-3" aria-live="polite">
+                {searchQuery.trim().length < 2 ? (
+                  <>
+                    <p className="text-white text-[16px] tracking-[0.32px] mb-1">
+                      Popular searches
+                    </p>
+                    <ul>
+                      <li>
+                        <button
+                          className="flex items-center gap-2 text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
+                          onClick={() => setSearchStudiesOpen(!searchStudiesOpen)}
+                          aria-expanded={searchStudiesOpen}
+                          aria-haspopup="true"
+                          aria-controls="search-studies-dropdown"
+                        >
+                          Studies
+                          <svg
+                            className={`w-4 h-4 transition-transform ${searchStudiesOpen ? "rotate-180" : ""}`}
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            aria-hidden="true"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </button>
+                        {searchStudiesOpen && (
+                          <ul
+                            id="search-studies-dropdown"
+                            role="menu"
+                            className="ml-4 mb-1 border-l border-white/20 pl-4"
+                          >
+                            {STUDIES_ITEMS.map((item) => (
+                              <li key={item.href} role="none">
+                                <Link
+                                  href={item.href}
+                                  role="menuitem"
+                                  className="block text-[16px] text-white/80 leading-[40px] hover:text-white hover:opacity-80 transition-colors"
+                                  onClick={() => setSearchOpen(false)}
+                                >
+                                  {item.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                      {POPULAR_SEARCHES.map((item) => (
+                        <li key={item.href}>
+                          <Link
+                            href={item.href}
+                            className="block text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
+                            onClick={() => setSearchOpen(false)}
+                          >
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : searchLoading ? (
+                  <p className="text-white/70 text-[16px] py-3">Searching…</p>
+                ) : searchResults.length === 0 && searchSubmitted ? (
+                  <p className="text-white/70 text-[16px] py-3">
+                    No matches for &ldquo;{searchQuery.trim()}&rdquo;.
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-white/15">
+                    {searchResults.map((result, idx) => {
+                      const isExternal = result.href.startsWith("http");
+                      const LinkInner = (
+                        <>
+                          <span className="block text-[20px] font-bold text-white leading-snug">
+                            {result.title}
+                          </span>
+                          <span className="block text-[14px] text-white/70 leading-snug mt-0.5">
+                            <span className="uppercase tracking-[1.5px] mr-2">
+                              {result.type}
+                            </span>
+                            {result.snippet}
+                          </span>
+                        </>
+                      );
+                      return (
+                        <li key={`${result.href}-${idx}`}>
+                          {isExternal ? (
+                            <a
+                              href={result.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block py-3 hover:opacity-80 transition-opacity"
                               onClick={() => setSearchOpen(false)}
                             >
-                              {item.label}
+                              {LinkInner}
+                            </a>
+                          ) : (
+                            <Link
+                              href={result.href}
+                              className="block py-3 hover:opacity-80 transition-opacity"
+                              onClick={() => setSearchOpen(false)}
+                            >
+                              {LinkInner}
                             </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                  {POPULAR_SEARCHES.map((item) => (
-                    <li key={item.href}>
-                      <Link
-                        href={item.href}
-                        className="block text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
-                        onClick={() => setSearchOpen(false)}
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
             </div>
           </div>

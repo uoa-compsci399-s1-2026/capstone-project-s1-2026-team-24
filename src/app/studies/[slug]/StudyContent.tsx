@@ -5,6 +5,12 @@ import Link from "next/link";
 
 type Lang = "en" | "zh";
 
+interface StudyPdfRecord {
+  id: number;
+  title: string;
+  pdfPath: string;
+}
+
 interface StudyContentProps {
   fullDescriptionEn: string;
   fullDescriptionZh: string;
@@ -19,6 +25,7 @@ interface StudyContentProps {
   ethicsStatement: string;
   status: string;
   publishedAt: string | null;
+  pdfs: StudyPdfRecord[];
 }
 
 const STATUS_STYLES: Record<string, { dot: string; label: { en: string; zh: string } }> = {
@@ -41,6 +48,7 @@ export default function StudyContent({
   ethicsStatement,
   status,
   publishedAt,
+  pdfs,
 }: StudyContentProps) {
   const [lang, setLang] = useState<Lang>("en");
 
@@ -142,6 +150,44 @@ export default function StudyContent({
               {lang === "en" ? "What you'll receive" : "参与补偿"}
             </h2>
             <p className="whitespace-pre-wrap">{compensation}</p>
+
+            {pdfs.length > 0 && (
+              <>
+                <h2 className="text-[#0c0c48] text-xl lg:text-2xl font-bold pt-3">
+                  {lang === "en" ? "Downloads" : "下载资料"}
+                </h2>
+                <ul className="flex flex-col gap-2 list-none p-0 m-0">
+                  {pdfs.map((pdf) => (
+                    <li key={pdf.id}>
+                      <a
+                        href={pdf.pdfPath}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-[#0a4479] hover:underline font-semibold"
+                      >
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="12" y1="18" x2="12" y2="12" />
+                          <polyline points="9 15 12 18 15 15" />
+                        </svg>
+                        {pdf.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
 
             <h2 className="text-[#0c0c48] text-xl lg:text-2xl font-bold pt-3">
               {lang === "en" ? "Contact" : "联系方式"}
