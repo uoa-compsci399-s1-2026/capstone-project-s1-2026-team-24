@@ -39,13 +39,13 @@ export async function PATCH(
     if (typeof body.title === "string" && body.title.trim()) {
       updates.title = body.title.trim();
     }
-    if (typeof body.order === "number" && !Number.isInteger(body.order)) {
-      return NextResponse.json(
-        { error: "order must be an integer." },
-        { status: 400 },
-      );
-    }
-    if (typeof body.order === "number" && Number.isInteger(body.order)) {
+    if (typeof body.order === "number") {
+      if (!Number.isInteger(body.order)) {
+        return NextResponse.json(
+          { error: "order must be an integer." },
+          { status: 400 },
+        );
+      }
       updates.order = body.order;
     }
 
