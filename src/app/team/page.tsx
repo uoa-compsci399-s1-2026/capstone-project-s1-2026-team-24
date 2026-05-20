@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import TeamHero from "@/components/team/TeamHero";
 import ResearchTeam from "@/components/team/ResearchTeam";
 import BoardOfDirectors from "@/components/team/BoardOfDirectors";
 import AlumniSection from "@/components/team/AlumniSection";
+import TeamFilter from "@/components/team/TeamFilter";
+import { fetchTeamData } from "@/lib/fetch-api";
 
 export const metadata: Metadata = {
   title: "Our Team | HNU Auckland",
@@ -15,22 +16,20 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function TeamPage() {
+export default async function TeamPage() {
+  const { boardOfDirectors, researchTeam, alumni } = await fetchTeamData();
+
   return (
     <>
       <Navbar />
-      {/*
-        TeamHero is a direct flex sibling of Navbar in the body's flex-col.
-        Its negative margin-top (equal to the navbar height) slides it up so its
-        background fills the space behind the transparent navbar, while its
-        padding-top keeps the visible content below the navbar.
-      */}
       <TeamHero />
       <main id="main-content">
-
-        <BoardOfDirectors />
-        <ResearchTeam />
-        <AlumniSection />
+        <TeamFilter
+          board={<BoardOfDirectors members={boardOfDirectors} />}
+          research={<ResearchTeam members={researchTeam} />}
+          alumni={<AlumniSection members={alumni} />}
+          hasAlumni={alumni.length > 0}
+        />
       </main>
       <Footer />
     </>

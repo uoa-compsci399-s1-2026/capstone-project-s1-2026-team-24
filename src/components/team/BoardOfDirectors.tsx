@@ -1,9 +1,11 @@
 import DirectorCard from "@/components/team/DirectorCard";
-import { fetchTeamData } from "@/lib/fetch-api";
+import type { TeamMemberRecord } from "@/lib/fetch-api";
 
-export default async function BoardOfDirectors() {
-  const { boardOfDirectors } = await fetchTeamData();
-
+export default function BoardOfDirectors({
+  members,
+}: {
+  members: TeamMemberRecord[];
+}) {
   return (
     <section style={{ backgroundColor: "white", padding: "60px 48px" }}>
       <h2
@@ -29,12 +31,13 @@ export default async function BoardOfDirectors() {
           justifyContent: "center",
         }}
       >
-        {boardOfDirectors.map((director) => (
+        {members.map((director) => (
           <DirectorCard
             key={director.id}
             name={director.name}
             title={director.title}
             photoPath={director.photoPath}
+            profileUrl={director.profileUrl}
           />
         ))}
       </div>

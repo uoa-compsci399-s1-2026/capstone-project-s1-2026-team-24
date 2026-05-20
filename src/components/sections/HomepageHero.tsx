@@ -25,7 +25,7 @@ export default function HomepageHero() {
         {/* Hero bowl image */}
         <div className="pointer-events-none absolute -left-75 bottom-[-400px] h-[1000px] w-[1000px]">
           <Image
-            src="/Untitled422_20260425205737.png"
+            src="/images/homepage-hero-bowl.webp"
             alt="Colourful salad bowl with fresh vegetables"
             fill
             priority

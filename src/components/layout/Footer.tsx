@@ -27,7 +27,7 @@ export default function Footer() {
   return (
     <footer className="bg-black text-white mt-auto">
       <div className="max-w-7xl mx-auto px-8 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
           {/* Logos: UoA | divider | HNU */}
           <div className="flex items-center gap-5">
             <Image
@@ -62,13 +62,6 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
-
-          {/* Stay Updated — email subscribe */}
-          <div>
-            <h3 className="font-bold text-xl mb-4 tracking-wide">
-              Stay Updated
-            </h3>
           </div>
         </div>
 

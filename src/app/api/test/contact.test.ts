@@ -28,6 +28,17 @@ function buildRequest(body: Record<string, unknown>) {
   });
 }
 
+function buildValidPayload(overrides: Record<string, unknown> = {}) {
+  return {
+    name: "Alice",
+    email: "alice@example.com",
+    category: "General Enquiry",
+    message: "Hello there, this is valid.",
+    elapsedMs: 5000,
+    ...overrides,
+  };
+}
+
 describe("POST /api/contact", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -35,12 +46,11 @@ describe("POST /api/contact", () => {
 
   it("returns 400 for invalid category", async () => {
     const response = await postContact(
-      buildRequest({
-        name: "A",
-        email: "a@example.com",
-        category: "Invalid",
-        message: "Hello",
-      }),
+      buildRequest(
+        buildValidPayload({
+          category: "Invalid",
+        }),
+      ),
     );
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
@@ -56,12 +66,7 @@ describe("POST /api/contact", () => {
     mockPrisma.contactSubmission.create.mockResolvedValueOnce({});
 
     const response = await postContact(
-      buildRequest({
-        name: "Alice",
-        email: "alice@example.com",
-        category: "General Enquiry",
-        message: "Hello",
-      }),
+      buildRequest(buildValidPayload()),
     );
     expect(response.status).toBe(201);
     await expect(response.json()).resolves.toEqual({ ok: true });
@@ -70,8 +75,64 @@ describe("POST /api/contact", () => {
         name: "Alice",
         email: "alice@example.com",
         category: "General Enquiry",
-        message: "Hello",
+        message: "Hello there, this is valid.",
       },
+    });
+  });
+
+  it("silently accepts when elapsedMs is missing", async () => {
+    const response = await postContact(
+      buildRequest(
+        buildValidPayload({
+          elapsedMs: undefined,
+        }),
+      ),
+    );
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toEqual({ ok: true });
+    expect(mockPrisma.contactSubmission.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 when name is too long", async () => {
+    const response = await postContact(
+      buildRequest(
+        buildValidPayload({
+          name: "A".repeat(121),
+        }),
+      ),
+    );
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "name must be 120 characters or fewer.",
+    });
+  });
+
+  it("returns 400 when message is too short", async () => {
+    const response = await postContact(
+      buildRequest(
+        buildValidPayload({
+          message: "short",
+        }),
+      ),
+    );
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "message must be at least 10 characters.",
+    });
+  });
+
+  it("returns 400 when message has too many URLs", async () => {
+    const response = await postContact(
+      buildRequest(
+        buildValidPayload({
+          message:
+            "https://a.com https://b.com https://c.com https://d.com this has links",
+        }),
+      ),
+    );
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Please remove some links from your message.",
     });
   });
 });

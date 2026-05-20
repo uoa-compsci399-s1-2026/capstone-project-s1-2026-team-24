@@ -1,143 +1,65 @@
 import Image from "next/image";
+import { getSafeHttpUrl } from "@/lib/safe-url";
 
 export type DirectorCardProps = {
   name: string;
   title: string;
   photoPath: string;
-  linkedinUrl?: string;
-  email?: string;
+  profileUrl?: string | null;
 };
-
-function PersonIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#6b7280"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  );
-}
-
-function MailIcon() {
-  return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#6b7280"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-  );
-}
 
 export default function DirectorCard({
   name,
   title,
   photoPath,
-  linkedinUrl,
-  email,
+  profileUrl,
 }: DirectorCardProps) {
-  return (
-    <div
-      style={{
-        backgroundColor: "white",
-        borderRadius: "20px",
-        boxShadow: "0 0 20px rgba(0,0,0,0.25)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "40px 32px 32px",
-        flex: 1,
-        minWidth: 0,
-      }}
-    >
-      <div
-        style={{
-          width: "250px",
-          height: "250px",
-          borderRadius: "50%",
-          overflow: "hidden",
-          flexShrink: 0,
-          marginBottom: "28px",
-        }}
-      >
+  const href = getSafeHttpUrl(profileUrl);
+  const isClickable = Boolean(href);
+
+  const baseClass =
+    "flex flex-col items-center bg-white rounded-[20px] px-8 pt-10 pb-8 flex-1 min-w-0";
+  const clickableClass =
+    "no-underline text-inherit cursor-pointer transition-all duration-200 shadow-[0_0_20px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(0,0,0,0.32)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48] focus-visible:ring-offset-2";
+  const staticClass = "shadow-[0_0_20px_rgba(0,0,0,0.25)]";
+
+  const inner = (
+    <>
+      <div className="w-[250px] h-[250px] rounded-full overflow-hidden flex-shrink-0 mb-7">
         <Image
           src={photoPath}
           alt={name}
-          width={180}
-          height={180}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          width={250}
+          height={250}
+          className="w-full h-full object-cover"
         />
       </div>
 
       <p
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: "20px",
-          fontWeight: 700,
-          color: "#0c0c48",
-          textAlign: "center",
-          marginBottom: "6px",
-        }}
+        className={`text-[20px] font-bold text-[#0c0c48] text-center mb-1.5 ${
+          isClickable ? "group-hover:underline" : ""
+        }`}
       >
         {name}
       </p>
 
-      <p
-        style={{
-          fontFamily: "Inter, sans-serif",
-          fontSize: "16px",
-          fontWeight: 400,
-          color: "#4b5563",
-          textAlign: "center",
-          marginBottom: "24px",
-        }}
-      >
-        {title}
-      </p>
-
-      <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-        {linkedinUrl ? (
-          <a
-            href={linkedinUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${name} profile`}
-          >
-            <PersonIcon />
-          </a>
-        ) : (
-          <span style={{ opacity: 0.4 }}>
-            <PersonIcon />
-          </span>
-        )}
-        {email ? (
-          <a href={`mailto:${email}`} aria-label={`Email ${name}`}>
-            <MailIcon />
-          </a>
-        ) : (
-          <span style={{ opacity: 0.4 }}>
-            <MailIcon />
-          </span>
-        )}
-      </div>
-    </div>
+      <p className="text-[16px] text-[#4b5563] text-center">{title}</p>
+    </>
   );
-}
 
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${name} — open profile in a new tab`}
+        className={`group ${baseClass} ${clickableClass}`}
+      >
+        {inner}
+      </a>
+    );
+  }
+
+  return <div className={`${baseClass} ${staticClass}`}>{inner}</div>;
+}

@@ -11,6 +11,7 @@ export async function GET() {
       section: true,
       bio: true,
       photoPath: true,
+      profileUrl: true,
     } as const;
 
     const [boardOfDirectors, researchTeam, alumni] = await Promise.all([

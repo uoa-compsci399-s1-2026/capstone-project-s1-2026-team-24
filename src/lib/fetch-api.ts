@@ -31,6 +31,7 @@ export type TeamMemberRecord = {
   section: string;
   bio: string;
   photoPath: string;
+  profileUrl: string | null;
 };
 
 export type PartnerLogoRecord = {

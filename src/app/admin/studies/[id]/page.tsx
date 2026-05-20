@@ -9,6 +9,7 @@ import {
   studyToFormData,
   type StudyFormData,
 } from "@/components/admin/StudyFormFields";
+import StudyPdfManager from "@/components/admin/StudyPdfManager";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -123,18 +124,25 @@ export default function EditStudy({ params }: Props) {
     );
   }
 
+  const numericId = Number(id);
+
   return (
-    <AdminForm
-      title={`Edit ${formData.title || "study"}`}
-      kicker="Studies"
-      description="Update any of the fields below. Changes are visible on the public study page immediately after saving."
-      onSubmit={handleSubmit}
-      isLoading={isLoading}
-      submitButtonLabel="Save changes"
-      cancelHref="/admin/studies"
-    >
-      {error && <FormErrorBanner message={error} />}
-      <StudyFormFields formData={formData} onChange={handleChange} />
-    </AdminForm>
+    <>
+      <AdminForm
+        title={`Edit ${formData.title || "study"}`}
+        kicker="Studies"
+        description="Update any of the fields below. Changes are visible on the public study page immediately after saving."
+        onSubmit={handleSubmit}
+        isLoading={isLoading}
+        submitButtonLabel="Save changes"
+        cancelHref="/admin/studies"
+      >
+        {error && <FormErrorBanner message={error} />}
+        <StudyFormFields formData={formData} onChange={handleChange} />
+      </AdminForm>
+      {Number.isInteger(numericId) && numericId > 0 && (
+        <StudyPdfManager studyId={numericId} />
+      )}
+    </>
   );
 }
