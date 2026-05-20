@@ -13,6 +13,8 @@ export const metadata: Metadata = {
     "Meet the people behind the Human Nutrition Unit — our board of directors and research team.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function TeamPage() {
   return (
     <>

@@ -6,68 +6,76 @@ import {
   AdminForm,
   FormField,
   FormCheckbox,
+  FormFileField,
+  FormErrorBanner,
 } from "@/components/admin/AdminForm";
+
+type Form = {
+  name: string;
+  title: string;
+  section: "BoardOfDirectors" | "ResearchTeam" | "Alumni";
+  bio: string;
+  orcidId: string;
+  profileUrl: string;
+  yearsActive: string;
+  order: number;
+  isVisible: boolean;
+};
+
+const EMPTY: Form = {
+  name: "",
+  title: "",
+  section: "ResearchTeam",
+  bio: "",
+  orcidId: "",
+  profileUrl: "",
+  yearsActive: "",
+  order: 0,
+  isVisible: true,
+};
 
 export default function NewTeamMember() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    title: "",
-    section: "ResearchTeam",
-    bio: "",
-    photoFile: null as File | null,
-    order: 0,
-    isVisible: true,
-  });
+  const [formData, setFormData] = useState<Form>(EMPTY);
+  const [photo, setPhoto] = useState<File | null>(null);
 
-  const handleChange = (
+  function handleChange(
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
-  ) => {
-    const target = e.target as any;
-    const { name, type, value, checked, files } = target;
+  ) {
+    const target = e.target as HTMLInputElement;
+    const { name, type, value, checked } = target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : type === "number"
+            ? Number(value)
+            : value,
+    }));
+  }
 
-    if (name === "photoFile") {
-      setFormData((prev) => ({
-        ...prev,
-        photoFile: files?.[0] || null,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]:
-          type === "checkbox"
-            ? checked
-            : type === "number"
-              ? Number(value)
-              : value,
-      }));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      if (!formData.photoFile) {
-        setError("Please select a photo file");
-        setIsLoading(false);
-        return;
-      }
-
       const data = new FormData();
       data.append("name", formData.name);
       data.append("title", formData.title);
       data.append("section", formData.section);
       data.append("bio", formData.bio);
-      data.append("photo", formData.photoFile);
+      data.append("orcidId", formData.orcidId);
+      data.append("profileUrl", formData.profileUrl);
+      data.append("yearsActive", formData.yearsActive);
       data.append("order", String(formData.order));
       data.append("isVisible", String(formData.isVisible));
+      if (photo) data.append("photo", photo);
 
       const res = await fetch("/api/admin/team", {
         method: "POST",
@@ -82,30 +90,29 @@ export default function NewTeamMember() {
           errorData.error || `Failed to create team member (${res.status})`,
         );
       }
-
       router.push("/admin/team");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <AdminForm
-      title="Add Team Member"
+      title="New team member"
+      kicker="Team"
       onSubmit={handleSubmit}
       isLoading={isLoading}
-      submitButtonLabel="Add Member"
+      submitButtonLabel="Create"
+      cancelHref="/admin/team"
     >
-      {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg">{error}</div>
-      )}
+      {error && <FormErrorBanner message={error} />}
 
       <FormField
         label="Name"
         id="name"
-        placeholder="Full name"
+        placeholder="Dr Jane Doe"
         value={formData.name}
         onChange={handleChange}
         required
@@ -114,7 +121,7 @@ export default function NewTeamMember() {
       <FormField
         label="Title"
         id="title"
-        placeholder="Job title"
+        placeholder="Senior Lecturer"
         value={formData.title}
         onChange={handleChange}
         required
@@ -126,59 +133,70 @@ export default function NewTeamMember() {
         type="select"
         value={formData.section}
         onChange={handleChange}
-        options={[
-          { value: "ResearchTeam", label: "Research Team" },
-          { value: "BoardOfDirectors", label: "Board of Directors" },
-        ]}
         required
+        options={[
+          { value: "BoardOfDirectors", label: "Board of Directors" },
+          { value: "ResearchTeam", label: "Research Team" },
+          { value: "Alumni", label: "Alumni" },
+        ]}
       />
 
       <FormField
         label="Biography"
         id="bio"
         type="textarea"
-        placeholder="Team member biography"
+        rows={5}
         value={formData.bio}
         onChange={handleChange}
-        required
-        rows={5}
       />
 
-      <div>
-        <label
-          htmlFor="photoFile"
-          className="block text-sm font-medium text-gray-900 mb-2"
-        >
-          Photo <span className="text-red-600 ml-1">*</span>
-        </label>
-        <input
-          id="photoFile"
-          name="photoFile"
-          type="file"
-          accept="image/*"
+      <FormFileField
+        label="Photo"
+        id="photo"
+        accept="image/jpeg,image/png,image/webp"
+        helper="JPEG, PNG, or WebP. Max 5MB. Optional — defaults to a placeholder."
+        onChange={(e) => setPhoto(e.target.files?.[0] || null)}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <FormField
+          label="ORCID ID"
+          id="orcidId"
+          placeholder="0000-0001-2345-6789"
+          value={formData.orcidId}
           onChange={handleChange}
-          required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
         />
-        <p className="text-sm text-gray-500 mt-1">
-          Accepted formats: JPEG, PNG, WebP. Max 5MB.
-        </p>
+        <FormField
+          label="Profile URL"
+          id="profileUrl"
+          type="url"
+          value={formData.profileUrl}
+          onChange={handleChange}
+        />
+        <FormField
+          label="Years active"
+          id="yearsActive"
+          placeholder="2018–present"
+          value={formData.yearsActive}
+          onChange={handleChange}
+        />
       </div>
 
-      <FormField
-        label="Order"
-        id="order"
-        type="number"
-        value={formData.order}
-        onChange={handleChange}
-      />
-
-      <FormCheckbox
-        label="Visible"
-        id="isVisible"
-        checked={formData.isVisible}
-        onChange={handleChange}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          label="Order"
+          id="order"
+          type="number"
+          value={formData.order}
+          onChange={handleChange}
+        />
+        <FormCheckbox
+          label="Show on public site"
+          id="isVisible"
+          checked={formData.isVisible}
+          onChange={handleChange}
+        />
+      </div>
     </AdminForm>
   );
 }

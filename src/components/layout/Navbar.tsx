@@ -178,18 +178,15 @@ export default function Navbar() {
       document.removeEventListener("keydown", handleSearchDialogKeyDown);
   }, [searchOpen]);
 
-  // The home page hero pulls its own gradient up over the navbar, so the
-  // navbar stays transparent there to let it show through. On every other
-  // page the navbar carries its own gradient (sampled from Figma): opaque
-  // dark navy at the top fading to fully transparent at the bottom, so the
-  // subpage hero gradient flows up into the navbar and the two read as one
-  // block with no hard seam.
-  const isHomePage = pathname === "/";
-  const mainNavStyle = isHomePage
-    ? { backgroundColor: "#00000000" }
-    : isHomePage
-      ? undefined
-      : { backgroundColor: "#00000000" };
+  // Navbar carries its own gradient on every page (sampled from the Figma
+  // navbar frame): opaque dark navy at the top fading to fully transparent
+  // at the bottom. On subpages this blends into the SubpageHero gradient
+  // with no hard seam. On the home page the navy band keeps the white
+  // logos legible without depending on the homepage hero bleeding behind.
+  const mainNavStyle = {
+    backgroundImage:
+      "linear-gradient(180deg, rgba(10,26,85,1) 0%, rgba(10,26,85,0) 100%)",
+  };
 
   return (
     <>

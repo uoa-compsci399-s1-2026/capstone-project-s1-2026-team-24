@@ -6,64 +6,64 @@ import {
   AdminForm,
   FormField,
   FormCheckbox,
+  FormFileField,
+  FormErrorBanner,
 } from "@/components/admin/AdminForm";
+
+type Form = {
+  name: string;
+  websiteUrl: string;
+  group: "Collaborating" | "Industry";
+  isPlaceholder: boolean;
+  order: number;
+};
+
+const EMPTY: Form = {
+  name: "",
+  websiteUrl: "",
+  group: "Collaborating",
+  isPlaceholder: false,
+  order: 0,
+};
 
 export default function NewPartner() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    websiteUrl: "",
-    logoFile: null as File | null,
-    isPlaceholder: false,
-    order: 0,
-  });
+  const [formData, setFormData] = useState<Form>(EMPTY);
+  const [logo, setLogo] = useState<File | null>(null);
 
-  const handleChange = (
+  function handleChange(
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >,
-  ) => {
-    const target = e.target as any;
-    const { name, type, value, checked, files } = target;
+  ) {
+    const target = e.target as HTMLInputElement;
+    const { name, type, value, checked } = target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : type === "number"
+            ? Number(value)
+            : value,
+    }));
+  }
 
-    if (name === "logoFile") {
-      setFormData((prev) => ({
-        ...prev,
-        logoFile: files?.[0] || null,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]:
-          type === "checkbox"
-            ? checked
-            : type === "number"
-              ? Number(value)
-              : value,
-      }));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
-      if (!formData.logoFile) {
-        setError("Please select a logo file");
-        setIsLoading(false);
-        return;
-      }
-
       const data = new FormData();
       data.append("name", formData.name);
       data.append("websiteUrl", formData.websiteUrl);
-      data.append("file", formData.logoFile);
+      data.append("group", formData.group);
       data.append("isPlaceholder", String(formData.isPlaceholder));
       data.append("order", String(formData.order));
+      if (logo) data.append("file", logo);
 
       const res = await fetch("/api/admin/partner-logos", {
         method: "POST",
@@ -78,30 +78,29 @@ export default function NewPartner() {
           errorData.error || `Failed to create partner (${res.status})`,
         );
       }
-
       router.push("/admin/partners");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
     <AdminForm
-      title="Add Partner"
+      title="New partner"
+      kicker="Partners"
       onSubmit={handleSubmit}
       isLoading={isLoading}
-      submitButtonLabel="Add Partner"
+      submitButtonLabel="Create"
+      cancelHref="/admin/partners"
     >
-      {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg">{error}</div>
-      )}
+      {error && <FormErrorBanner message={error} />}
 
       <FormField
-        label="Partner Name"
+        label="Name"
         id="name"
-        placeholder="Organization name"
+        placeholder="University of Auckland"
         value={formData.name}
         onChange={handleChange}
         required
@@ -114,43 +113,45 @@ export default function NewPartner() {
         placeholder="https://example.com"
         value={formData.websiteUrl}
         onChange={handleChange}
-        required
+        helper="Optional. If provided, the logo will link here."
       />
 
-      <div>
-        <label
-          htmlFor="logoFile"
-          className="block text-sm font-medium text-gray-900 mb-2"
-        >
-          Logo <span className="text-red-600 ml-1">*</span>
-        </label>
-        <input
-          id="logoFile"
-          name="logoFile"
-          type="file"
-          accept="image/*"
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          label="Group"
+          id="group"
+          type="select"
+          value={formData.group}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+          options={[
+            { value: "Collaborating", label: "Collaborating partner" },
+            { value: "Industry", label: "Industry partner" },
+          ]}
         />
-        <p className="text-sm text-gray-500 mt-1">
-          Accepted formats: PNG, JPEG, WebP, GIF, SVG. Max 5MB.
-        </p>
+        <FormField
+          label="Order"
+          id="order"
+          type="number"
+          value={formData.order}
+          onChange={handleChange}
+        />
       </div>
 
-      <FormField
-        label="Order"
-        id="order"
-        type="number"
-        value={formData.order}
-        onChange={handleChange}
+      <FormFileField
+        label="Logo"
+        id="logo"
+        accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif"
+        helper="PNG, JPEG, WebP, GIF, or SVG. Max 5MB. Optional — if missing, the entry is marked as a placeholder."
+        onChange={(e) => setLogo(e.target.files?.[0] || null)}
       />
 
       <FormCheckbox
-        label="Placeholder Logo"
+        label="Placeholder slot"
         id="isPlaceholder"
         checked={formData.isPlaceholder}
         onChange={handleChange}
+        helper="Reserve a slot for a partner whose artwork hasn't arrived yet."
       />
     </AdminForm>
   );

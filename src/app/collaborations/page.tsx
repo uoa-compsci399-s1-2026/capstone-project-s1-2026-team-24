@@ -11,6 +11,8 @@ export const metadata: Metadata = {
     'Building partnerships in nutrition research. Learn more about our collaborative work and initiatives.',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default function CollaborationsPage() {
   return (
     <>
