@@ -8,8 +8,8 @@ export default function DiscoverVideo() {
   const [playing, setPlaying] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
-
-  const src = `https://www.youtube.com/embed/FSvG3KU8-uo?autoplay=1&mute=1&loop=1&playlist=FSvG3KU8-uo&controls=0&showinfo=0&rel=0&modestbranding=1&enablejsapi=1`;
+  const [videoHovered, setVideoHovered] = useState(false);
+  const src = `https://www.youtube.com/embed/FSvG3KU8-uo?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=FSvG3KU8-uo&controls=1&rel=0&modestbranding=1`;
 
   function postMessage(command: string) {
     iframeRef.current?.contentWindow?.postMessage(
@@ -62,10 +62,12 @@ export default function DiscoverVideo() {
           <div
             className="relative rounded-[28px] overflow-hidden flex-1 -mr-65"
             style={{ height: "550px" }}
+            onMouseEnter={() => setVideoHovered(true)}
+            onMouseLeave={() => setVideoHovered(false)}
           >
             <iframe
               ref={iframeRef}
-              className="absolute w-[130%] h-[130%]"
+              className="absolute w-full h-full"
               style={{
                 top: "50%",
                 left: "50%",
@@ -74,7 +76,7 @@ export default function DiscoverVideo() {
               }}
               src={src}
               title="HNU video"
-              allow="autoplay; encrypted-media"
+              allow="autoplay; encrypted-media; fullscreen"
             />
           </div>
 
@@ -84,6 +86,8 @@ export default function DiscoverVideo() {
             style={{
               backgroundColor: "#0a4379f2",
               borderRadius: "80px 0 80px 0",
+              transform: videoHovered ? "translateX(250px)" : "translateX(0)",
+              transition: "transform 0.4s ease",
             }}
           >
             <h2
@@ -94,7 +98,7 @@ export default function DiscoverVideo() {
                 lineHeight: 1.2,
               }}
             >
-             Who are we
+              Who are we
             </h2>
 
             <p
@@ -105,13 +109,14 @@ export default function DiscoverVideo() {
                 lineHeight: 1.6,
               }}
             >
-              HNU is a University of Auckland research facility, established in 1998 as a
-              collaboration between the School of Biological Sciences and the Department of
-              Medicine at the University of Auckland.
+              HNU is a University of Auckland research facility, established in
+              1998 as a collaboration between the School of Biological Sciences
+              and the Department of Medicine at the University of Auckland.
             </p>
             <p>
-              It is New Zealand&apos;s only live-in nutrition trials facility which has the
-              capability to carry out long-term human residential studies.
+              It is New Zealand&apos;s only live-in nutrition trials facility
+              which has the capability to carry out long-term human residential
+              studies.
             </p>
 
             {/* Controls */}

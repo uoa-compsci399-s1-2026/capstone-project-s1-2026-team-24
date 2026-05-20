@@ -43,6 +43,7 @@ export default function InfoCard({
             style={{
               backgroundColor: bgColors[cardBg],
               borderRadius: "0 80px 0 80px",
+              zIndex: 10,
             }}
           >
             <h2
@@ -81,7 +82,10 @@ export default function InfoCard({
           {/* Image — overlaps behind the card on the left, extends right */}
           <div
             className="relative rounded-[28px] overflow-hidden flex-1 -ml-65"
-            style={{ height: "550px" }}
+            style={{
+              height: "550px",
+              zIndex: 9,
+            }}
           >
             <Image
               src={imageSrc}
@@ -92,6 +96,25 @@ export default function InfoCard({
             />
           </div>
         </div>
+      </div>
+      <div
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        aria-hidden="true"
+      >
+        <div
+          style={{
+            position: "absolute",
+            width: "4000px",
+            height: "200px",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            opacity: 0.25,
+            backgroundImage: "url(/maori-pattern.svg)",
+            backgroundRepeat: "repeat-x",
+            backgroundSize: "auto 100%",
+            filter: "brightness(3) invert(0)",
+          }}
+        />
       </div>
     </section>
   );
