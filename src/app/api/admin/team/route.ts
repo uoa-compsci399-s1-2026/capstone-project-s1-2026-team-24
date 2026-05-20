@@ -26,9 +26,17 @@ function parseOrder(value: FormDataEntryValue | null, fallback = 0) {
 
 function parseSection(value: FormDataEntryValue | null) {
   if (typeof value !== "string") return null;
-  if (value === TeamSection.BoardOfDirectors) return TeamSection.BoardOfDirectors;
+  if (value === TeamSection.BoardOfDirectors)
+    return TeamSection.BoardOfDirectors;
   if (value === TeamSection.ResearchTeam) return TeamSection.ResearchTeam;
+  if (value === TeamSection.Alumni) return TeamSection.Alumni;
   return null;
+}
+
+function asOptionalString(value: FormDataEntryValue | null) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? null : trimmed;
 }
 
 async function saveTeamPhoto(file: File) {
@@ -78,26 +86,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "name is required." }, { status: 400 });
     }
     if (typeof title !== "string" || !title.trim()) {
-      return NextResponse.json({ error: "title is required." }, { status: 400 });
-    }
-    if (!section) {
-      return NextResponse.json({ error: "section is invalid." }, { status: 400 });
-    }
-    if (typeof bio !== "string" || !bio.trim()) {
-      return NextResponse.json({ error: "bio is required." }, { status: 400 });
-    }
-    if (!(photo instanceof File)) {
-      return NextResponse.json({ error: "photo file is required." }, { status: 400 });
-    }
-
-    let photoPath: string;
-    try {
-      photoPath = await saveTeamPhoto(photo);
-    } catch (error) {
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : "Invalid image file." },
+        { error: "title is required." },
         { status: 400 },
       );
+    }
+    if (!section) {
+      return NextResponse.json(
+        { error: "section is invalid." },
+        { status: 400 },
+      );
+    }
+
+    let photoPath = "";
+    if (photo instanceof File && photo.size > 0) {
+      try {
+        photoPath = await saveTeamPhoto(photo);
+      } catch (error) {
+        return NextResponse.json(
+          {
+            error:
+              error instanceof Error ? error.message : "Invalid image file.",
+          },
+          { status: 400 },
+        );
+      }
+    } else {
+      photoPath = "/images/team/no-team-member-picture.png";
     }
 
     const created = await prisma.teamMember.create({
@@ -105,8 +120,11 @@ export async function POST(request: NextRequest) {
         name: name.trim(),
         title: title.trim(),
         section,
-        bio: bio.trim(),
+        bio: typeof bio === "string" ? bio.trim() : "",
         photoPath,
+        orcidId: asOptionalString(formData.get("orcidId")),
+        profileUrl: asOptionalString(formData.get("profileUrl")),
+        yearsActive: asOptionalString(formData.get("yearsActive")),
         order: parseOrder(formData.get("order"), 0),
         isVisible: parseBoolean(formData.get("isVisible"), true),
       },
