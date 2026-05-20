@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     const elapsedMs =
       typeof body?.elapsedMs === "number" && Number.isFinite(body.elapsedMs)
         ? body.elapsedMs
-        : null;
+        : 0;
 
     // Bot honeypot: silently accept (don't leak that we filter it).
     if (honeypot) {
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Bot time-trap: a real user takes >3s to fill the form.
-    if (elapsedMs !== null && elapsedMs < MIN_FORM_FILL_MS) {
+    if (elapsedMs < MIN_FORM_FILL_MS) {
       return NextResponse.json({ ok: true }, { status: 201 });
     }
 
@@ -189,5 +189,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
 

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getSafeHttpUrl } from "@/lib/safe-url";
 
 export type DirectorCardProps = {
   name: string;
@@ -13,7 +14,7 @@ export default function DirectorCard({
   photoPath,
   profileUrl,
 }: DirectorCardProps) {
-  const href = profileUrl?.trim();
+  const href = getSafeHttpUrl(profileUrl);
   const isClickable = Boolean(href);
 
   const baseClass =

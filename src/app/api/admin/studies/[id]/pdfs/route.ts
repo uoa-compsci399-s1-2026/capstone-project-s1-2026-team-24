@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, unlink, writeFile } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/prisma";
 
@@ -14,6 +14,15 @@ function sanitizeFileName(fileName: string) {
 function parseId(rawId: string) {
   const id = Number(rawId);
   return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+function parseOrder(orderRaw: FormDataEntryValue | null) {
+  if (typeof orderRaw !== "string" || orderRaw.trim() === "") {
+    return 0;
+  }
+
+  const parsed = Number(orderRaw);
+  return Number.isInteger(parsed) ? parsed : null;
 }
 
 export async function GET(
@@ -109,19 +118,33 @@ export async function POST(
     const bytes = await file.arrayBuffer();
     await writeFile(diskPath, Buffer.from(bytes));
 
-    const order =
-      typeof orderRaw === "string" && orderRaw.trim() !== ""
-        ? Number(orderRaw)
-        : 0;
+    const order = parseOrder(orderRaw);
+    if (order === null) {
+      return NextResponse.json(
+        { error: "Order must be an integer." },
+        { status: 400 },
+      );
+    }
 
-    const created = await prisma.studyPdf.create({
-      data: {
-        studyId,
-        title: title.trim(),
-        pdfPath: `/uploads/studies/${studyId}/${safeFileName}`,
-        order: Number.isFinite(order) ? order : 0,
-      },
-    });
+    const pdfPath = `/uploads/studies/${studyId}/${safeFileName}`;
+    let created;
+    try {
+      created = await prisma.studyPdf.create({
+        data: {
+          studyId,
+          title: title.trim(),
+          pdfPath,
+          order,
+        },
+      });
+    } catch (dbError) {
+      try {
+        await unlink(diskPath);
+      } catch (fileError) {
+        console.warn("Uploaded PDF cleanup failed:", fileError);
+      }
+      throw dbError;
+    }
 
     return NextResponse.json(created, { status: 201 });
   } catch (error) {

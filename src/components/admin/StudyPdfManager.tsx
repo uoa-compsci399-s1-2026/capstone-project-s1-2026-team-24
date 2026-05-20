@@ -183,8 +183,16 @@ export default function StudyPdfManager({ studyId }: { studyId: number }) {
           <input
             id="pdf-order"
             type="number"
+            step={1}
             value={order}
-            onChange={(e) => setOrder(Number(e.target.value))}
+            onChange={(e) => {
+              const next = Number(e.target.value);
+              if (Number.isNaN(next)) {
+                setOrder(0);
+                return;
+              }
+              setOrder(next);
+            }}
             className="w-full px-4 py-2.5 bg-white border-2 border-[#cac7c7] rounded-2xl text-base text-[#0c0c48] focus:outline-none focus:border-[#0a4479] transition-colors"
           />
           <p className="text-xs text-[#0a4479]/70 mt-1.5">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getSafeHttpUrl } from "@/lib/safe-url";
 
 export type SearchResult = {
   type: "study" | "team" | "page";
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest) {
         type: "team",
         title: member.name,
         snippet: member.title,
-        href: member.profileUrl?.trim() ? member.profileUrl : "/team",
+        href: getSafeHttpUrl(member.profileUrl) ?? "/team",
       });
     }
 

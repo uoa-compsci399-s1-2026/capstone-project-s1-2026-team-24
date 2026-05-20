@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { getSafeHttpUrl } from "@/lib/safe-url";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
 
 type SearchResult = {
@@ -846,7 +847,10 @@ export default function Navbar() {
                 ) : (
                   <ul className="divide-y divide-white/15">
                     {searchResults.map((result, idx) => {
-                      const isExternal = result.href.startsWith("http");
+                      const externalHref = getSafeHttpUrl(result.href);
+                      const internalHref = result.href.startsWith("/")
+                        ? result.href
+                        : "/";
                       const LinkInner = (
                         <>
                           <span className="block text-[20px] font-bold text-white leading-snug">
@@ -862,9 +866,9 @@ export default function Navbar() {
                       );
                       return (
                         <li key={`${result.href}-${idx}`}>
-                          {isExternal ? (
+                          {externalHref ? (
                             <a
-                              href={result.href}
+                              href={externalHref}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="block py-3 hover:opacity-80 transition-opacity"
@@ -874,7 +878,7 @@ export default function Navbar() {
                             </a>
                           ) : (
                             <Link
-                              href={result.href}
+                              href={internalHref}
                               className="block py-3 hover:opacity-80 transition-opacity"
                               onClick={() => setSearchOpen(false)}
                             >

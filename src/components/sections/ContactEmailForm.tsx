@@ -34,7 +34,8 @@ export default function ContactEmailForm() {
   const [honeypot, setHoneypot] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
-  const mountedAtRef = useRef<number>(0);
+  const [initialMountedAt] = useState(() => Date.now());
+  const mountedAtRef = useRef<number>(initialMountedAt);
 
   useEffect(() => {
     mountedAtRef.current = Date.now();
@@ -235,4 +236,3 @@ export default function ContactEmailForm() {
     </form>
   );
 }
-

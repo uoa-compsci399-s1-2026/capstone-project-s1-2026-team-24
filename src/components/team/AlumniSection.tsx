@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getSafeHttpUrl } from "@/lib/safe-url";
 import type { TeamMemberRecord } from "@/lib/fetch-api";
 
 export default function AlumniSection({
@@ -27,7 +28,7 @@ export default function AlumniSection({
 }
 
 function AlumniCard({ member }: { member: TeamMemberRecord }) {
-  const profileUrl = member.profileUrl?.trim();
+  const profileUrl = getSafeHttpUrl(member.profileUrl);
   const photoWrapperClass = profileUrl
     ? "w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] lg:w-[200px] lg:h-[200px] rounded-full overflow-hidden flex-shrink-0 ring-0 group-hover:ring-4 group-hover:ring-[#0c0c48]/15 transition-all duration-200 shadow-md group-hover:shadow-xl"
     : "w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] lg:w-[200px] lg:h-[200px] rounded-full overflow-hidden flex-shrink-0";
