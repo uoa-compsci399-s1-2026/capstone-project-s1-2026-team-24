@@ -57,7 +57,7 @@ export default function DiscoverVideo() {
       className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden"
     >
       <div className="max-w-[1512px] mx-auto">
-        <div className="relative flex flex-col lg:flex-row items-center gap-0">
+        <div className="relative flex flex-col lg:flex-row items-center gap-0 z-5">
           {/* Video */}
           <div
             className="relative rounded-[28px] overflow-hidden flex-1 -mr-65"
@@ -196,6 +196,25 @@ export default function DiscoverVideo() {
             </div>
           </div>
         </div>
+      </div>
+      <div
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        aria-hidden="true"
+      >
+        <div
+          style={{
+            position: "absolute",
+            width: "4000px",
+            height: "200px",
+            top: "50%",
+            transform: "translate(-50%, -50%)",
+            opacity: 0.25,
+            backgroundImage: "url(/maori-pattern.svg)",
+            backgroundRepeat: "repeat-x",
+            backgroundSize: "auto 100%",
+            filter: "brightness(3) invert(0)",
+          }}
+        />
       </div>
     </section>
   );
