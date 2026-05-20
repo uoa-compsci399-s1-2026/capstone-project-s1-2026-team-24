@@ -2,12 +2,7 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ResearchHero from "@/components/sections/ResearchHero";
-import ResearchIntroduction from "@/components/sections/ResearchIntroduction";
-import ResearchFocus from "@/components/sections/ResearchFocus";
-import TrialDesign from "@/components/sections/TrialDesign";
-import PostureMaintenanceCallout from "@/components/sections/PostureMaintenanceCallout";
-import StudiesArchive from "@/components/sections/StudyIndex";
-import StudyIndex from "@/components/sections/StudyIndex";
+import PublicationIndex from "@/components/sections/PublicationIndex";
 
 export const metadata: Metadata = {
   title: "Our Research | HNU",
@@ -21,7 +16,7 @@ export default function ResearchPage() {
       <Navbar />
       <ResearchHero />
       <main id="main-content">
-        <StudyIndex />
+        <PublicationIndex />
       </main>
       <Footer />
     </>

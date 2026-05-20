@@ -125,25 +125,34 @@ model PublicationCategory {
 }
 
 model Publication {
-  id          Int      @id @default(autoincrement())
-  title       String
-  authorsRaw  String   @default("")
-  journal     String?
-  year        Int?
-  doi         String?  @unique
-  pubType     String   @default("Journal Article")
-  url         String?
-  abstract    String?
-  affiliation String?
-  orcidSource String?
-  status      String   @default("Pending")
-  categoryId  Int?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  title           String
+  authorsRaw      String   @default("")
+  journal         String?
+  year            Int?
+  doi             String?
+  pubType         String   @default("Journal Article")
+  url             String?
+  abstract        String?
+  affiliation     String?
 
-  category PublicationCategory? @relation(fields: [categoryId], references: [id])
-  authors  PublicationAuthor[]
+  sourceType      String   @default("ORCID")   // ORCID / PubMed
+  sourceId        String?                      // ORCID put-code or PMID
+  orcidSource     String?
+  status          String   @default("Pending") // Pending / Approved / Rejected
+  isVisible       Boolean  @default(true)
+  hiddenManually  Boolean  @default(false)
+  matchedKeywords String   @default("")
+  lastSyncedAt    DateTime?
 
+  categoryId      Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  category        PublicationCategory? @relation(fields: [categoryId], references: [id])
+  authors         PublicationAuthor[]
+
+  @@unique([sourceType, sourceId])
   @@index([status, year])
   @@index([categoryId])
 }

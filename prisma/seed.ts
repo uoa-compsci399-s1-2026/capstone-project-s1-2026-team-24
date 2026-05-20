@@ -12,8 +12,16 @@ const adapter = new PrismaBetterSqlite3({
 
 const prisma = new PrismaClient({ adapter });
 
+async function getTeamMemberByName(name: string) {
+  return prisma.teamMember.findFirst({
+    where: { name },
+  });
+}
 
 async function main() {
+  await prisma.publicationAuthor.deleteMany()
+  await prisma.publication.deleteMany()
+  await prisma.publicationCategory.deleteMany()
   await prisma.study.deleteMany()
   await prisma.teamMember.deleteMany()
   await prisma.contactRecipient.deleteMany()
@@ -124,11 +132,12 @@ async function main() {
   await prisma.teamMember.createMany({
     data: [
       {
-        name: 'Dr Jennifer Miles Chan',
-        title: 'Board of Directors',
+        name: "Dr Jennifer Miles Chan",
+        title: "Board of Directors",
         section: TeamSection.BoardOfDirectors,
-        bio: 'TODO_REAL_BIO',
-        photoPath: '/images/team/placeholder.jpg',
+        bio: "TODO_REAL_BIO",
+        photoPath: "/images/team/placeholder.jpg",
+        // orcidId: "0000-0003-2050-7709",
         order: 1,
         isVisible: true,
       },
@@ -138,6 +147,7 @@ async function main() {
         section: TeamSection.BoardOfDirectors,
         bio: 'TODO_REAL_BIO',
         photoPath: '/images/team/placeholder.jpg',
+        orcidId: "0000-0002-2214-8378",
         order: 2,
         isVisible: true,
       },
@@ -147,6 +157,7 @@ async function main() {
         section: TeamSection.BoardOfDirectors,
         bio: 'TODO_REAL_BIO',
         photoPath: '/images/team/placeholder.jpg',
+        orcidId: "0000-0001-5241-3163",
         order: 3,
         isVisible: true,
       },
@@ -156,6 +167,7 @@ async function main() {
         section: TeamSection.ResearchTeam,
         bio: 'TODO_REAL_BIO',
         photoPath: '/images/team/placeholder.jpg',
+        orcidId: "0000-0001-5414-9925",
         order: 1,
         isVisible: true,
       },
@@ -165,6 +177,7 @@ async function main() {
         section: TeamSection.ResearchTeam,
         bio: 'TODO_REAL_BIO',
         photoPath: '/images/team/placeholder.jpg',
+        orcidId: "0000-0001-5147-6007",
         order: 2,
         isVisible: true,
       },
@@ -174,6 +187,7 @@ async function main() {
         section: TeamSection.ResearchTeam,
         bio: 'TODO_REAL_BIO',
         photoPath: '/images/team/placeholder.jpg',
+        orcidId: "0000-0001-8488-4138",
         order: 3,
         isVisible: true,
       },
@@ -183,6 +197,7 @@ async function main() {
         section: TeamSection.ResearchTeam,
         bio: 'TODO_REAL_BIO',
         photoPath: '/images/team/placeholder.jpg',
+        orcidId: "0000-0002-3926-1510",
         order: 4,
         isVisible: true,
       },
@@ -192,6 +207,7 @@ async function main() {
         section: TeamSection.ResearchTeam,
         bio: 'TODO_REAL_BIO',
         photoPath: '/images/team/placeholder.jpg',
+        orcidId: "0000-0002-1247-1403",
         order: 5,
         isVisible: true,
       },
@@ -219,6 +235,7 @@ async function main() {
         section: TeamSection.ResearchTeam,
         bio: 'TODO_REAL_BIO',
         photoPath: '/images/team/placeholder.jpg',
+        orcidId: "0000-0001-5121-1025",
         order: 8,
         isVisible: true,
       },
@@ -228,6 +245,7 @@ async function main() {
         section: TeamSection.ResearchTeam,
         bio: 'TODO_REAL_BIO',
         photoPath: '/images/team/placeholder.jpg',
+        orcidId: "0009-0009-5769-2996",
         order: 9,
         isVisible: true,
       },
@@ -251,9 +269,133 @@ async function main() {
       },
     ],
   })
+  await prisma.publicationCategory.createMany({
+    data: [
+      { name: "Metabolism", order: 1 },
+      { name: "Clinical Trials", order: 2 },
+      { name: "Nutrition", order: 3 },
+    ],
+  })
+
+  const metabolismCategory = await prisma.publicationCategory.findUnique({
+    where: { name: "Metabolism" },
+  })
+
+  const clinicalTrialsCategory = await prisma.publicationCategory.findUnique({
+    where: { name: "Clinical Trials" },
+  })
+
+  const nutritionCategory = await prisma.publicationCategory.findUnique({
+    where: { name: "Nutrition" },
+  })
+
+  const jennifer = await getTeamMemberByName("Dr Jennifer Miles Chan")
+  const sally = await getTeamMemberByName("Prof Sally Poppitt")
+
+  if (!metabolismCategory || !clinicalTrialsCategory || !nutritionCategory) {
+    throw new Error("Publication categories were not created correctly.")
+  }
+
+  if (!jennifer || !sally) {
+    throw new Error("Required team members for publication seed were not found.")
+  }
+
+  const publication1 = await prisma.publication.create({
+    data: {
+      title: "Sample HNU Publication: Dietary interventions and metabolic health outcomes",
+      authorsRaw: "Jennifer Miles-Chan, Sally Poppitt",
+      journal: "Journal of Human Nutrition Research",
+      year: 2026,
+      pubType: "Journal Article",
+      url: "https://example.com/publication-1",
+      abstract:
+        "This sample publication record is seeded locally to test the HNU research archive page and publication card layout.",
+      affiliation: "Human Nutrition Unit, University of Auckland",
+      sourceType: "SEED",
+      sourceId: "seed-publication-1",
+      orcidSource: "0000-0003-0313-7048",
+      status: "Pending",
+      isVisible: true,
+      hiddenManually: false,
+      matchedKeywords: "dietary, metabolic, nutrition",
+      lastSyncedAt: new Date(),
+      categoryId: metabolismCategory.id,
+    },
+  })
+
+  const publication2 = await prisma.publication.create({
+    data: {
+      title: "Sample HNU Publication: Nutrition trial design in controlled residential settings",
+      authorsRaw: "Jennifer Miles-Chan",
+      journal: "Clinical Nutrition Methods",
+      year: 2025,
+      pubType: "Review",
+      url: "https://example.com/publication-2",
+      abstract:
+        "This is a second sample publication used to verify filtering, ordering, and rendering on the research page.",
+      affiliation: "Human Nutrition Unit, University of Auckland",
+      sourceType: "SEED",
+      sourceId: "seed-publication-2",
+      orcidSource: "0000-0003-0313-7048",
+      status: "Pending",
+      isVisible: true,
+      hiddenManually: false,
+      matchedKeywords: "trial, nutrition, residential",
+      lastSyncedAt: new Date(),
+      categoryId: clinicalTrialsCategory.id,
+    },
+  })
+
+  const publication3 = await prisma.publication.create({
+    data: {
+      title: "Sample HNU Publication: Appetite regulation and body composition in nutrition studies",
+      authorsRaw: "Sally Poppitt",
+      journal: "Nutrition and Metabolism Review",
+      year: 2024,
+      pubType: "Journal Article",
+      url: "https://example.com/publication-3",
+      abstract:
+        "This sample publication helps test multiple years, categories, and author display in the publications archive.",
+      affiliation: "Human Nutrition Unit, University of Auckland",
+      sourceType: "SEED",
+      sourceId: "seed-publication-3",
+      status: "Pending",
+      isVisible: true,
+      hiddenManually: false,
+      matchedKeywords: "appetite, body composition, nutrition",
+      lastSyncedAt: new Date(),
+      categoryId: nutritionCategory.id,
+    },
+  })
+
+  await prisma.publicationAuthor.createMany({
+    data: [
+      {
+        publicationId: publication1.id,
+        teamMemberId: jennifer.id,
+        order: 1,
+      },
+      {
+        publicationId: publication1.id,
+        teamMemberId: sally.id,
+        order: 2,
+      },
+      {
+        publicationId: publication2.id,
+        teamMemberId: jennifer.id,
+        order: 1,
+      },
+      {
+        publicationId: publication3.id,
+        teamMemberId: sally.id,
+        order: 1,
+      },
+    ],
+  })
 
   console.log('Seed completed successfully.')
 }
+
 
 main()
   .catch((e) => {
