@@ -48,7 +48,14 @@ function PartnerMarquee({
 }
 
 export default async function OurPartners() {
-  const partnerLogos = await fetchPartnerLogos();
+  let partnerLogos: PartnerLogoRecord[] = [];
+
+  try {
+    partnerLogos = await fetchPartnerLogos();
+  } catch (error) {
+    console.error("Partner logos fetch failed:", error);
+  }
+
   const collaborating = partnerLogos.filter((p) => p.group === "Collaborating");
   const industry = partnerLogos.filter((p) => p.group === "Industry");
 
