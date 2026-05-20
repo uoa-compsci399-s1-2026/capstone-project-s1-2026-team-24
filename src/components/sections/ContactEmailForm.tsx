@@ -34,8 +34,7 @@ export default function ContactEmailForm() {
   const [honeypot, setHoneypot] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
-  const [initialMountedAt] = useState(() => Date.now());
-  const mountedAtRef = useRef<number>(initialMountedAt);
+  const mountedAtRef = useRef<number>(0);
 
   useEffect(() => {
     mountedAtRef.current = Date.now();
@@ -76,7 +75,7 @@ export default function ContactEmailForm() {
           category,
           message: message.trim(),
           honeypot: honeypot.trim(),
-          elapsedMs: Date.now() - mountedAtRef.current,
+          elapsedMs: Date.now() - (mountedAtRef.current || Date.now()),
         }),
       });
 
