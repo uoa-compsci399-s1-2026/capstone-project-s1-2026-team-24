@@ -9,14 +9,14 @@ export default function DiscoverCapabilities() {
       */}
       <div
         className="hidden lg:block absolute top-0 bottom-0 right-0"
-        style={{ left: '25%' }}
+        style={{ left: "25%" }}
       >
         <div
           className="absolute inset-0 z-10 pointer-events-none"
           aria-hidden="true"
           style={{
             background:
-              'linear-gradient(to right, rgb(238,238,238) 35.3%, rgba(238,238,238,0.94) 39.9%, rgba(238,238,238,0.80) 42.2%, rgba(238,238,238,0.70) 44.7%, rgba(238,238,238,0.46) 46.9%, rgba(238,238,238,0) 55.1%)',
+              "linear-gradient(to right, rgb(238,238,238) 35.3%, rgba(238,238,238,0.94) 39.9%, rgba(238,238,238,0.80) 42.2%, rgba(238,238,238,0.70) 44.7%, rgba(238,238,238,0.46) 46.9%, rgba(238,238,238,0) 55.1%)",
           }}
         />
         <img
@@ -31,15 +31,16 @@ export default function DiscoverCapabilities() {
       <div className="relative z-10 max-w-[1512px] mx-auto px-4 sm:px-8 lg:px-[93px] py-14 sm:py-16 lg:py-20 flex flex-col justify-center lg:min-h-[755px]">
         <div className="lg:max-w-[45%]">
           <h3 className="text-2xl sm:text-3xl lg:text-[48px] font-bold text-[#0a4479] leading-tight tracking-[0.96px] mb-4 sm:mb-6">
-            Capabilities
+            Services & Expertise
           </h3>
           <p className="text-base sm:text-xl lg:text-[30px] font-normal text-[#0a4479] leading-relaxed tracking-[0.6px] mb-6 sm:mb-8">
-            The Unit is equipped to deliver highly controlled and precise nutrition research.
-            Capabilities include controlled diet provision, energy expenditure measurement,
-            anthropometric assessments such as body composition analysis, and clinical
-            procedures including phlebotomy and venous cannulation. Additional services include
-            urine and faecal sample collection, with external nursing support available for
-            overnight studies when required.
+            The Human Nutrition Unit provides a comprehensive range of services
+            across both academic and commercially funded research. These include
+            consultancy on nutrition regulatory issues and health claims, trial
+            design and protocol development, participant recruitment and
+            screening, and full trial management and coordination. The team also
+            delivers data collection, analysis, interpretation, and the
+            publication of peer-reviewed scientific research.
           </p>
           <a
             href="/research"
