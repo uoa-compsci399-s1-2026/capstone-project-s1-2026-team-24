@@ -1,41 +1,43 @@
-import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import StudyContent from './StudyContent';
-import TrialDesign from '@/components/sections/TrialDesign';
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import StudyContent from "./StudyContent";
+import { prisma } from "@/lib/prisma";
+
+
+export const dynamic = "force-dynamic";
 
 type Props = {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 async function fetchStudy(slug: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/studies/${slug}`, { cache: 'no-store' });
-  if (!res.ok) return null;
-  return res.json();
-}
-
-export async function generateStaticParams() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
-  const res = await fetch(`${baseUrl}/api/studies`, { cache: 'no-store' });
-  if (!res.ok) return [];
-  const studies: { slug: string }[] = await res.json();
-  return studies.map(s => ({ slug: s.slug }));
+  return prisma.study.findFirst({
+    where: { slug },
+    include: {
+      pdfs: {
+        orderBy: [{ order: "asc" }, { uploadedAt: "asc" }],
+      },
+    },
+  });
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const study = await fetchStudy(slug);
   if (!study || !study.isActive) {
-    return { title: 'Study Not Found | HNU Auckland' };
+    return { title: "Study Not Found | HNU Auckland" };
   }
   return {
     title: `${study.title} | HNU Auckland`,
     description: study.shortDescription,
   };
 }
+
+const FALLBACK_IMAGE = "/services-and-expertise.jpg";
 
 export default async function StudyPage({ params }: Props) {
   const { slug } = await params;
@@ -45,50 +47,50 @@ export default async function StudyPage({ params }: Props) {
     notFound();
   }
 
+  const heroImage = study.imagePath?.trim() ? study.imagePath : FALLBACK_IMAGE;
+
   return (
     <>
       <Navbar />
 
-      {/* Hero — extends behind the transparent main nav (same -180px pattern as StudiesHero) */}
+      {/* Hero — image bleeds up behind the transparent navbar */}
       <section
-        className="relative w-full overflow-hidden flex flex-col justify-end h-[400px] sm:h-[480px] lg:h-[554px]"
-        style={{ backgroundColor: '#0c0c48', marginTop: '-180px' }}
+        className="relative w-full overflow-hidden h-[420px] sm:h-[480px] lg:h-[554px]"
+        style={{ marginTop: "-180px" }}
+        aria-label={`${study.title} hero`}
       >
-        <div
-          className="absolute inset-0 overflow-hidden pointer-events-none"
+        <Image
+          src={heroImage}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+          style={{ objectPosition: "center center" }}
           aria-hidden="true"
-        >
-          <div
-            style={{
-              position: 'absolute',
-              width: '4018px',
-              height: '296px',
-              top: '85%',
-              left: '50%',
-              transform: 'translate(-50%, -50%) rotate(-8deg)',
-              opacity: 0.25,
-              backgroundImage: 'url(/maori-pattern.svg)',
-              backgroundRepeat: 'repeat-x',
-              backgroundSize: 'auto 100%',
-            }}
-          />
-        </div>
-
-        <div className="relative px-6 sm:px-12 lg:px-[93px] pb-10 sm:pb-14">
-          <p className="text-white/60 text-sm sm:text-base font-medium tracking-widest uppercase mb-2">
+        />
+        <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
+        <div className="absolute inset-x-0 bottom-0 px-6 sm:px-12 lg:px-[45px] pb-10 sm:pb-14">
+          <p className="text-white/75 text-xs sm:text-sm font-semibold tracking-[2px] uppercase mb-3">
             Our Studies
           </p>
-          <h1 className="text-3xl sm:text-5xl lg:text-[64px] font-extrabold text-white tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl lg:text-[64px] font-extrabold text-white leading-tight tracking-[1.2px] max-w-[1100px]">
             {study.title}
           </h1>
         </div>
       </section>
 
       {/* Breadcrumb */}
-      <nav aria-label="Breadcrumb" className="px-6 sm:px-12 lg:px-[52px] py-5">
-        <ol className="flex items-center gap-2 text-[20px] text-[#0c0c48] tracking-[0.4px]">
+      <nav
+        aria-label="Breadcrumb"
+        className="bg-white px-6 sm:px-12 lg:px-[52px] py-5"
+      >
+        <ol className="flex items-center gap-2 text-[18px] text-[#0c0c48] tracking-[0.36px]">
           <li>
-            <Link href="/studies" className="hover:opacity-70 transition-opacity">
+            <Link
+              href="/studies"
+              className="hover:opacity-70 transition-opacity"
+            >
               Studies
             </Link>
           </li>
@@ -100,22 +102,28 @@ export default async function StudyPage({ params }: Props) {
       </nav>
 
       <main id="main-content" className="bg-white">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-8 lg:px-[93px]">
-          <StudyContent
-            fullDescriptionEn={study.fullDescriptionEn}
-            fullDescriptionZh={study.fullDescriptionZh}
-            eligibilityEn={study.eligibilityEn}
-            eligibilityZh={study.eligibilityZh}
-            compensationEn={study.compensationEn}
-            compensationZh={study.compensationZh}
-            redcapUrl={study.redcapUrl}
-            contactEmail={study.contactEmail}
-            contactPhone={study.contactPhone}
-            contactPhoneZh={study.contactPhoneZh}
-            ethicsStatement={study.ethicsStatement}
-          />
-          <TrialDesign />
-        </div>
+        <StudyContent
+          fullDescriptionEn={study.fullDescriptionEn}
+          fullDescriptionZh={study.fullDescriptionZh}
+          eligibilityEn={study.eligibilityEn}
+          eligibilityZh={study.eligibilityZh}
+          compensationEn={study.compensationEn}
+          compensationZh={study.compensationZh}
+          redcapUrl={study.redcapUrl}
+          contactEmail={study.contactEmail}
+          contactPhone={study.contactPhone}
+          contactPhoneZh={study.contactPhoneZh}
+          ethicsStatement={study.ethicsStatement}
+          status={study.status}
+          publishedAt={
+            study.publishedAt ? study.publishedAt.toISOString() : null
+          }
+          pdfs={study.pdfs.map((pdf) => ({
+            id: pdf.id,
+            title: pdf.title,
+            pdfPath: pdf.pdfPath,
+          }))}
+        />
       </main>
 
       <Footer />
