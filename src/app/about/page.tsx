@@ -10,6 +10,10 @@ import DiscoverFacilities from "@/components/sections/DiscoverFacilities";
 import InfoCard from "@/components/ui/InfoCardLeft";
 import InfoCardRight from "@/components/ui/InfoCardRight";
 import InfoCardLeft from "@/components/ui/InfoCardLeft";
+import CalloutBanner from "@/components/ui/CalloutBanner";
+import StudyCard from "@/components/ui/StudyCard";
+import Button from "@/components/ui/Button";
+import OurPartners from "@/components/sections/OurPartners";
 
 export const metadata: Metadata = {
   title: "Discover HNU | Human Nutrition Unit",
@@ -24,6 +28,16 @@ export default function AboutPage() {
       <DiscoverHero />
       <main id="main-content">
         <DiscoverVideo />
+
+        <CalloutBanner
+          tag="Tūhuratia | Discover"
+          title="Want to collaborate with us?"
+          description="Whether academic or industry, we'd love to explore how we can work together to advance nutrition science."
+          buttonLabel="Read More →"
+          buttonHref="/collaborations"
+          backgroundImage="/images/partners/360_F_1441177330_DVwBGXbUqAfpiwWtTcGqPgZDuIVSPgg3.jpg"
+        />
+
         <section className="bg-white py-10 sm:py-12 lg:py-16">
           <h2 className="text-3xl sm:text-4xl lg:text-[64px] font-extrabold text-[#0a4479] text-center tracking-[1.28px] leading-tight">
             What we do
@@ -43,6 +57,35 @@ export default function AboutPage() {
           imageAlt="Healthy food on a table"
         />
 
+        <section className="relative w-full bg-[#f0f0f0] py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48] justify-center text-center mb-10">
+            Here are some of our previous research
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
+            <StudyCard
+              title="LactoPharma consortium"
+              description="Dairy bioactives and health"
+              imageSrc="/daniel-quiceno-m-4MQtWCxUrYc-unsplash.jpg"
+              imageAlt="Academic Collaborators"
+              imagePosition="center"
+            />
+            <StudyCard
+              title="Marine polysaccharide Chitosan and weight loss"
+              description="Collaboration with the University of Queensland, Australia"
+              imageSrc="/joachim-schnurle-TLEI9o1HdY4-unsplash.jpg"
+              imageAlt="Academic Collaborators"
+              imagePosition="center"
+            />
+          </div>
+
+          <div className="flex justify-center mt-10">
+            <Button href="/collaborations/academic" color="dark">
+              View all publications
+            </Button>
+          </div>
+        </section>
+
         <InfoCardRight
           title="Capabilities"
           imagePosition="right"
@@ -52,6 +95,13 @@ export default function AboutPage() {
           ]}
           imageSrc="/Our Research.jpg"
           imageAlt="Modern research laboratory"
+        />
+
+        <CalloutBanner
+          title="Funding & Partnerships"
+          description="Interested in supporting nutrition research or collaborating with the Human Nutrition Unit? Explore our funding partners, learn more about current research opportunities, or get in touch to discuss how you can help support future studies and innovation."
+          buttonLabel="Our funding partners →"
+          buttonHref="/funding"
         />
 
         <InfoCardLeft
@@ -69,6 +119,21 @@ export default function AboutPage() {
           imageAlt="Interior of the Human Nutrition Unit facilities"
         />
       </main>
+
+      <CalloutBanner
+        title="Visit Us"
+        description="Visit us or get in touch to learn more about our facilities and research. The Human Nutrition Unit is based at the University of Auckland, and we welcome enquiries from researchers, industry partners, and participants interested in our studies."
+        buttonLabel="Find us and get in contact →"
+        buttonHref="/contact"
+      />
+
+      <section className="w-full h-32 bg-white px-6 sm:px-12 lg:px-45 flex items-end justify-center pb-6">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48]">
+          Our partners
+        </h2>
+      </section>
+      <OurPartners />
+
       <Footer />
     </>
   );
