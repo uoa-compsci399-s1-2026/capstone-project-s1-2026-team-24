@@ -6,6 +6,7 @@ import HomepageStudies from "@/components/sections/HomepageStudies";
 import OurPartners from "@/components/sections/OurPartners";
 import InfoCardLeft from "@/components/ui/InfoCardLeft";
 import InfoCardRight from "@/components/ui/InfoCardRight";
+import BenefitsRow from "@/components/sections/BenefitsRow";
 
 export const metadata: Metadata = {
   title: "Home | Human Nutrition Unit",
@@ -39,6 +40,13 @@ export default function HomePage() {
           imageSrc="/1630363804706 (1).jpg"
           imageAlt="HNU team member standing by blue railings"
         />
+
+        <BenefitsRow variant="academic">   
+          
+        </BenefitsRow>
+
+
+
         <InfoCardRight
           title="Our Research"
           imagePosition="left"
@@ -53,12 +61,6 @@ export default function HomePage() {
           imageSrc="/services-and-expertise.jpg"
           imageAlt="HNU research being conducted in the clinical room"
         />
-        <section className="w-full h-32 bg-white px-6 sm:px-12 lg:px-45 flex items-end justify-center pb-6">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48]">
-            Our partners
-          </h2>
-        </section>
-        <OurPartners />
       </main>
       <Footer />
     </>
