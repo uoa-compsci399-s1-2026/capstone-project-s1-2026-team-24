@@ -20,8 +20,8 @@ export default function StudyHero({
       style={{
         position: "relative",
         width: "100%",
-        height: "450px",
-        marginTop: "0px",
+        height: "550px",
+        marginTop: "-180px",
         overflow: "hidden",
       }}
     >
@@ -37,25 +37,30 @@ export default function StudyHero({
           position: "absolute",
           inset: 0,
           backgroundColor: "rgba(0,0,0,0.5)",
+          zIndex: 1,
         }}
         aria-hidden="true"
       />
       <div
+        className="px-6 sm:px-12 lg:px-45"
         style={{
           position: "absolute",
-          bottom: "32px",
-          left: "45px",
+          inset: 0,
+          zIndex: 2,
+          display: "flex",
+          alignItems: "flex-end",
+          paddingBottom: "50px",
         }}
       >
         <h1
           style={{
             fontFamily: "Inter, sans-serif",
-            fontSize: "76px",
+            fontSize: "clamp(40px, 6vw, 76px)",
             fontWeight: 800,
-            color: "white",
-            margin: 0,
+            color: "rgba(255,255,255,0.75)",
+            letterSpacing: "1.52px",
             lineHeight: 1.1,
-            opacity: 0.75,
+            margin: 0,
           }}
         >
           {title}
