@@ -4,13 +4,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import SubpageHero from "@/components/layout/SubpageHero";
-import AcademicCollaborators from "@/components/sections/AcademicCollaborators";
-import IndustryCollaborators from "@/components/sections/IndustryCollaborators";
-import StudyCard from "@/components/ui/StudyCard";
 
 const PARTNER_IMAGES = [
   "/images/partners/1722396919-ocs_art_37_the_great_kiwi_earthworm_survey_agresearch_logo-colour.jpg",
-  "/images/partners/dta-logo-uc.jpeg",
   "/images/partners/HPSNZ-Black-Horizontal.jpg",
   "/images/partners/Logo_astar_sifbi-e1619082277983.png",
   "/images/partners/logo_wageningen.png",
@@ -34,15 +30,26 @@ export default function IndustryPartnersPage() {
         <SubpageHero
           title="Industry Partners"
           subtitle="Research collaborations and partnerships with industry and academic units, nationally and internationally."
+          subtitleMaxWidth={657}
         />
+
         <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
           <div className="max-w-[1400px] mx-auto">
-            <div
-              className="
-        grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-4
-        gap-2 sm:gap-2 items-center
-      "
-            >
+            {/* Breadcrumbs */}
+            <nav className="mb-10 text-[16px] tracking-[0.4px] text-[#0c0c48]">
+              <Link href="/" className="hover:underline">
+                Home
+              </Link>
+              <span className="mx-2">›</span>
+              <Link href="/collaborations" className="hover:underline">
+                Collaborations
+              </Link>
+              <span className="mx-2">›</span>
+              <strong>Industry Partners</strong>
+            </nav>
+
+            {/* Partner grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {PARTNER_IMAGES.map((src, i) => {
                 const alt =
                   src
@@ -55,7 +62,11 @@ export default function IndustryPartnersPage() {
                 return (
                   <div
                     key={src}
-                    className=" relative w-full aspect-[4/3] rounded-20 border border-gray-200 bg-white p-3 flex items-center justify-center hover:shadow-sm transition-shadow padding-3"
+                    className="relative w-full aspect-[4/3] bg-white flex items-center justify-center"
+                    style={{
+                      borderRadius: "30px",
+                      border: "1px solid #e5e7eb",
+                    }}
                     title={alt}
                   >
                     <Image
@@ -63,7 +74,7 @@ export default function IndustryPartnersPage() {
                       alt={alt}
                       fill
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
-                      className="object-contain"
+                      className="object-contain p-[10px]"
                       priority={i < 8}
                     />
                   </div>

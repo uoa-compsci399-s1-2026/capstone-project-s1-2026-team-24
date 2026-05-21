@@ -5,6 +5,11 @@ import Button from "../ui/Button";
 export default function AcademicCollaborators() {
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
+      <div className="flex justify-center items-center">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48] pb-15 text-center">
+          Featured Academic Collaborations
+        </h2>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
         <StudyCard
           title="LactoPharma consortium"
