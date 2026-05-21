@@ -6,15 +6,9 @@ import { useState } from "react";
 type ColorVariant = "dark" | "standard" | "light";
 
 const blueColors: Record<ColorVariant, string> = {
-  dark: "#0c0c48f2",
-  standard: "#0a437902",
-  light: "#1a6ab102",
-};
-
-const blueHoverColors: Record<ColorVariant, string> = {
-  dark: "#080830",
-  standard: "#083059",
-  light: "#155a96",
+  dark: "#0c0c48",
+  standard: "#0a4379",
+  light: "#1a6ab1",
 };
 
 interface ButtonProps {
@@ -34,7 +28,7 @@ export default function Button({
   children,
   className = "",
   type = "button",
-  color = "standard",
+  color = "dark",
 }: ButtonProps) {
   const [hovered, setHovered] = useState(false);
 
@@ -42,13 +36,14 @@ export default function Button({
     "inline-flex items-center justify-center font-semibold rounded-full text-[16px] transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 w-fit";
 
   const blueStyle = {
-    backgroundColor: hovered ? blueHoverColors[color] : blueColors[color],
+    backgroundColor: blueColors[color],
     color: "white",
-    padding: "0.6em 1.5em",
+    padding: "1em 3em",
+    textDecoration: hovered ? "underline" : "none",
   };
 
   const whiteStyle = {
-    backgroundColor: hovered ? blueColors[color] : "white",
+    backgroundColor: hovered ? "transparent" : "white",
     color: hovered ? "white" : "#0c0c48",
     padding: "1em 3em",
     border: `1px solid white`,

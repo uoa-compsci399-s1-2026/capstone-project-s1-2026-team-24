@@ -1,7 +1,8 @@
 // src/components/ui/CalloutBanner.tsx
 import Link from "next/link";
+import Button from "../ui/Button";
 
-interface CalloutBannerProps {
+interface CalloutBannerRightProps {
   tag?: string;
   title: string;
   description: string;
@@ -9,26 +10,33 @@ interface CalloutBannerProps {
   buttonHref?: string;
   backgroundImage?: string;
   backgroundColor?: string;
+  leftTitle?: string;
+  leftDescription?: string;
+  showButton?: boolean;
 }
 
-export default function CalloutBanner({
+export default function CalloutBannerRight({
   title,
   description,
   buttonLabel = "Find out more",
   buttonHref = "#",
   backgroundImage,
-  backgroundColor = "linear-gradient(135deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
-}: CalloutBannerProps) {
+  backgroundColor = "linear-gradient(112deg,   #092d65 0%, #06699b 50%, #02a8d0 100%)",
+  leftTitle,
+  leftDescription,
+  showButton = false,
+}: CalloutBannerRightProps) {
   return (
     <section
-      className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden"
+      className="relative w-full py-16 px-6 sm:px-12 lg:px-45 overflow-hidden"
       style={{
         display: "flex",
-        justifyContent: "flex-end",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "40px",
         background: backgroundColor,
       }}
     >
-      {/* Background image if provided */}
       {backgroundImage && (
         <img
           src={backgroundImage}
@@ -46,6 +54,45 @@ export default function CalloutBanner({
         />
       )}
 
+      {/* Left text */}
+      {(leftTitle || leftDescription) && (
+        <div
+          style={{
+            position: "relative",
+            zIndex: 10,
+            flex: 1,
+            maxWidth: "500px",
+          }}
+        >
+          {leftTitle && (
+            <h2
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "42px",
+                fontWeight: 800,
+                color: "white",
+                marginBottom: "16px",
+                lineHeight: 1.2,
+              }}
+            >
+              {leftTitle}
+            </h2>
+          )}
+          {leftDescription && (
+            <p
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "18px",
+                color: "rgba(255,255,255,0.8)",
+                lineHeight: 1.6,
+              }}
+            >
+              {leftDescription}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* White card */}
       <div
         style={{
@@ -57,10 +104,10 @@ export default function CalloutBanner({
           paddingRight: "80px",
           maxWidth: "550px",
           width: "100%",
-          boxShadow: "0 0px 20px 20PX rgba(0,0,0,0.15)",
+          boxShadow: "0 0px 20px 20px rgba(0,0,0,0.15)",
+          flexShrink: 0,
         }}
       >
-
         <h2
           style={{
             fontFamily: "Inter, sans-serif",
@@ -86,27 +133,14 @@ export default function CalloutBanner({
           {description}
         </p>
 
-        <Link
-          href={buttonHref}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#0c0c48",
-            color: "white",
-            fontFamily: "Inter, sans-serif",
-            fontSize: "16px",
-            fontWeight: 600,
-            padding: "14px 28px",
-            borderRadius: "9999px",
-            textDecoration: "none",
-          }}
-        >
-          {buttonLabel}
-        </Link>
+        {showButton && (
+          <Button href={buttonHref} variant="blue">
+            {buttonLabel}
+          </Button>
+        )}
       </div>
       <div
-        className="absolute inset-0 overflow-hidden pointer-events-none"
+        className="absolute inset-0 overflow-hidden pointer-events-none hidden"
         aria-hidden="true"
       >
         <div
