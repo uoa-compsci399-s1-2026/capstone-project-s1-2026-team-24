@@ -10,10 +10,12 @@ import DiscoverFacilities from "@/components/sections/DiscoverFacilities";
 import InfoCard from "@/components/ui/InfoCardLeft";
 import InfoCardRight from "@/components/ui/InfoCardRight";
 import InfoCardLeft from "@/components/ui/InfoCardLeft";
-import CalloutBanner from "@/components/ui/CalloutBanner";
+import CalloutBannerRight from "@/components/ui/CalloutBannerRight";
+import CalloutBannerLeft from "@/components/ui/CalloutBannerLeft";
 import StudyCard from "@/components/ui/StudyCard";
 import Button from "@/components/ui/Button";
 import OurPartners from "@/components/sections/OurPartners";
+import RecentPublications from "@/components/sections/RecentPublications";
 
 export const metadata: Metadata = {
   title: "Discover HNU | Human Nutrition Unit",
@@ -29,20 +31,15 @@ export default function AboutPage() {
       <main id="main-content">
         <DiscoverVideo />
 
-        <CalloutBanner
-          tag="Tūhuratia | Discover"
-          title="Want to collaborate with us?"
-          description="Whether academic or industry, we'd love to explore how we can work together to advance nutrition science."
-          buttonLabel="Read More →"
-          buttonHref="/collaborations"
-          backgroundImage="/images/partners/360_F_1441177330_DVwBGXbUqAfpiwWtTcGqPgZDuIVSPgg3.jpg"
+        <CalloutBannerRight
+          leftTitle="Collaborate With Us"
+          leftDescription="Partner with New Zealand's leading nutrition research facility. We work with academic institutions, industry leaders, and government agencies to advance nutrition science."
+          title="Let's work together"
+          description="Whether you're looking to fund research, co-develop a study, or explore industry partnerships — we'd love to hear from you."
+          buttonLabel="Get in touch →"
+          buttonHref="/contact"
+          showButton
         />
-
-        <section className="bg-white py-10 sm:py-12 lg:py-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-[64px] font-extrabold text-[#0a4479] text-center tracking-[1.28px] leading-tight">
-            What we do
-          </h2>
-        </section>
 
         <InfoCardLeft
           title="Services & Expertise"
@@ -57,51 +54,25 @@ export default function AboutPage() {
           imageAlt="Healthy food on a table"
         />
 
-        <section className="relative w-full bg-[#f0f0f0] py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48] justify-center text-center mb-10">
-            Here are some of our previous research
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
-            <StudyCard
-              title="LactoPharma consortium"
-              description="Dairy bioactives and health"
-              imageSrc="/daniel-quiceno-m-4MQtWCxUrYc-unsplash.jpg"
-              imageAlt="Academic Collaborators"
-              imagePosition="center"
-            />
-            <StudyCard
-              title="Marine polysaccharide Chitosan and weight loss"
-              description="Collaboration with the University of Queensland, Australia"
-              imageSrc="/joachim-schnurle-TLEI9o1HdY4-unsplash.jpg"
-              imageAlt="Academic Collaborators"
-              imagePosition="center"
-            />
-          </div>
-
-          <div className="flex justify-center mt-10">
-            <Button href="/collaborations/academic" color="dark">
-              View all publications
-            </Button>
-          </div>
-        </section>
+        <RecentPublications />
 
         <InfoCardRight
           title="Capabilities"
           imagePosition="right"
           cardBg="light"
           paragraphs={[
-            "The Unit is equipped to deliver highly controlled and precise nutrition research. Capabilities include controlled diet provision, energy expenditure measurement, anthropometric assessments such as body composition analysis, and clinical procedures including phlebotomy and venous cannulation. Additional services include urine and faecal sample collection, with external nursing support available for overnight studies when required.",
+            "The Unit is equipped to deliver highly controlled and precise nutrition research. Capabilities include controlled diet provision, energy expenditure measurement, anthropometric assessments such as body composition analysis, and clinical procedures including phlebotomy and venous cannulation.",
+            "Additional services include urine and faecal sample collection, with external nursing support available for overnight studies when required.",
           ]}
           imageSrc="/Our Research.jpg"
           imageAlt="Modern research laboratory"
         />
 
-        <CalloutBanner
-          title="Funding & Partnerships"
-          description="Interested in supporting nutrition research or collaborating with the Human Nutrition Unit? Explore our funding partners, learn more about current research opportunities, or get in touch to discuss how you can help support future studies and innovation."
-          buttonLabel="Our funding partners →"
-          buttonHref="/funding"
+        <CalloutBannerRight
+          leftTitle="Trial Design"
+          leftDescription="The Human Nutrition Unit conducts rigorously controlled nutrition intervention trials exploring the relationship between diet, health, and disease outcomes. Studies include randomised, placebo-controlled, single and double-blind designs using both cross-over and parallel methodologies to ensure reliable scientific results. All research follows strict human ethics procedures and Good Clinical Practice (GCP) standards, with approvals from Human Ethics Committees, SCOTT, and MedSafe where required."
+          title="Residential & Community Studies"
+          description="Research ranges from single-day clinical visits to fully controlled residential studies lasting up to four weeks, where participants follow carefully managed dietary programmes within the Unit’s facilities. Longer-term community trials allow participants to continue daily life while attending scheduled clinic visits for assessments and dietary interventions. These flexible study models provide highly accurate nutritional research while supporting strong participant compliance and scientifically robust outcomes."
         />
 
         <InfoCardLeft
@@ -120,19 +91,14 @@ export default function AboutPage() {
         />
       </main>
 
-      <CalloutBanner
+      <CalloutBannerRight
         title="Visit Us"
         description="Visit us or get in touch to learn more about our facilities and research. The Human Nutrition Unit is based at the University of Auckland, and we welcome enquiries from researchers, industry partners, and participants interested in our studies."
+        leftDescription=" "
         buttonLabel="Find us and get in contact →"
         buttonHref="/contact"
+        showButton
       />
-
-      <section className="w-full h-32 bg-white px-6 sm:px-12 lg:px-45 flex items-end justify-center pb-6">
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48]">
-          Our partners
-        </h2>
-      </section>
-      <OurPartners />
 
       <Footer />
     </>

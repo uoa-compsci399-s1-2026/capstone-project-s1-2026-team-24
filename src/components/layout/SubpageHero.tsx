@@ -34,7 +34,7 @@ export default function SubpageHero({
         marginTop: `0`,
         paddingTop: 250,
         backgroundImage: SUBPAGE_HERO_GRADIENT,
-        backgroundColor: '#092d65',
+        backgroundColor: '#ffffff',
         height: 600,
       }}
     >

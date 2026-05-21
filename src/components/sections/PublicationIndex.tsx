@@ -63,6 +63,40 @@ export default function PublicationIndex() {
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All");
+  const MAX_PUBLICATIONS = 5;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return publications.filter((p) => {
+      const matchesYear =
+        selectedYear === "All" || String(p.year ?? "") === selectedYear;
+      const searchable = [
+        p.title,
+        p.authorsRaw,
+        p.journal ?? "",
+        p.abstract ?? "",
+        p.category?.name ?? "",
+        p.pubType,
+      ]
+        .join(" ")
+        .toLowerCase();
+      const matchesQuery = !q || searchable.includes(q);
+      return matchesYear && matchesQuery;
+    });
+  }, [publications, query, selectedYear]);
+
+  const pageSize = 10;
+  const totalPages = Math.ceil(filtered.length / pageSize);
+
+  const paginatedPublications = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, selectedYear]);
 
   useEffect(() => {
     let cancelled = false;
@@ -96,6 +130,30 @@ export default function PublicationIndex() {
     };
   }, []);
 
+  const Pagination = () => (
+    <div className="flex items-center justify-center gap-3 py-4">
+      <button
+        onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+        disabled={currentPage === 1}
+        className="px-4 py-2 rounded-full border text-sm disabled:opacity-40"
+      >
+        Previous
+      </button>
+
+      <span className="text-sm text-[#0a4479] font-semibold">
+        Page {currentPage} of {totalPages || 1}
+      </span>
+
+      <button
+        onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages || 1))}
+        disabled={currentPage === totalPages || totalPages === 0}
+        className="px-4 py-2 rounded-full border text-sm disabled:opacity-40"
+      >
+        Next
+      </button>
+    </div>
+  );
+
   const availableYears = useMemo(() => {
     const years = publications
       .map((p) => p.year)
@@ -104,55 +162,14 @@ export default function PublicationIndex() {
     return ["All", ...Array.from(new Set(years)).map(String)];
   }, [publications]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return publications.filter((p) => {
-      const matchesYear =
-        selectedYear === "All" || String(p.year ?? "") === selectedYear;
-      const searchable = [
-        p.title,
-        p.authorsRaw,
-        p.journal ?? "",
-        p.abstract ?? "",
-        p.category?.name ?? "",
-        p.pubType,
-      ]
-        .join(" ")
-        .toLowerCase();
-      const matchesQuery = !q || searchable.includes(q);
-      return matchesYear && matchesQuery;
-    });
-  }, [publications, query, selectedYear]);
-
   return (
-    <section className="bg-white px-6 py-14 md:px-10 lg:px-[71px]">
+    <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
       <div className="mx-auto max-w-[1412px]">
-        <nav
-          aria-label="Breadcrumb"
-          className="text-[18px] text-[#0c0c48] mb-6 tracking-[0.36px]"
-        >
-          <ol className="flex items-center gap-2">
-            <li>
-              <Link href="/about" className="hover:underline">
-                About
-              </Link>
-            </li>
-            <li aria-hidden="true">&gt;</li>
-            <li aria-current="page" className="font-bold">
-              Our Research
-            </li>
-          </ol>
-        </nav>
-
-        <div className="grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
-          {/* Filters card */}
-          <aside className="h-fit bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.12)] p-7">
-            <h2 className="text-xl font-bold text-[#0c0c48] tracking-tight">
-              Filters
-            </h2>
-
-            <div className="mt-5 space-y-5">
-              <div>
+        <div className="flex flex-col gap-8">
+          {/* Filters bar — full width on top */}
+          <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.12)] p-7">
+            <div className="flex flex-wrap gap-6 items-end">
+              <div className="flex-1 min-w-[200px]">
                 <label
                   htmlFor="publication-search"
                   className="mb-2 block text-sm font-semibold text-[#0a4479]"
@@ -169,7 +186,7 @@ export default function PublicationIndex() {
                 />
               </div>
 
-              <div>
+              <div className="min-w-[160px]">
                 <label
                   htmlFor="publication-year"
                   className="mb-2 block text-sm font-semibold text-[#0a4479]"
@@ -189,27 +206,28 @@ export default function PublicationIndex() {
                   ))}
                 </select>
               </div>
-            </div>
-          </aside>
 
-          {/* Main content card */}
-          <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.18)] p-8 sm:p-10">
-            <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-8">
-              <div>
-                <h1 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold text-[#0c0c48] tracking-[0.96px]">
-                  Publications
-                </h1>
-                <p className="mt-3 text-base text-[#0a4479]/80 max-w-2xl">
-                  Peer-reviewed research outputs from our team and collaborators
-                  in nutrition, metabolism, and clinical trial design.
-                </p>
-              </div>
               {!loading && !error && (
-                <p className="text-sm font-semibold text-[#0a4479]/70">
+                <p className="text-sm font-semibold text-[#0a4479]/70 pb-2">
                   {filtered.length} result{filtered.length === 1 ? "" : "s"}
                 </p>
               )}
+            </div>
+          </div>
+
+          {/* Main content card */}
+          <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.18)] p-8 sm:p-10">
+            <header className="mb-8">
+              <h1 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold text-[#0c0c48] tracking-[0.96px]">
+                Publications
+              </h1>
+              <p className="mt-3 text-base text-[#0a4479]/80 max-w-2xl">
+                Peer-reviewed research outputs from our team and collaborators
+                in nutrition, metabolism, and clinical trial design.
+              </p>
             </header>
+
+            {!loading && !error && <Pagination />}
 
             {loading ? (
               <div className="bg-[#f5f5f7] rounded-2xl px-6 py-12 text-center text-[#0a4479]/80">
@@ -225,7 +243,7 @@ export default function PublicationIndex() {
               </div>
             ) : (
               <div className="space-y-5">
-                {filtered.map((publication) => {
+                {paginatedPublications.map((publication) => {
                   const publicationUrl = buildPublicationUrl(publication);
                   const authorsText = buildAuthorsText(publication);
 
@@ -294,6 +312,7 @@ export default function PublicationIndex() {
                     </article>
                   );
                 })}
+                {!loading && !error && filtered.length > 0 && <Pagination />}
               </div>
             )}
           </div>
