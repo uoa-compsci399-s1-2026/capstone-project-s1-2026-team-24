@@ -1,8 +1,11 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
-type FormState = 'idle' | 'loading' | 'success' | 'error';
+type FormState = "idle" | "loading" | "success" | "error";
 
 type Study = {
   id: number;
@@ -10,45 +13,45 @@ type Study = {
 };
 
 function isStudy(data: unknown): data is Study {
-  if (typeof data !== 'object' || data === null) {
+  if (typeof data !== "object" || data === null) {
     return false;
   }
 
   const study = data as Record<string, unknown>;
 
-  return (
-    typeof study.id === 'number' &&
-    typeof study.title === 'string'
-  );
+  return typeof study.id === "number" && typeof study.title === "string";
 }
 
 const inputClass =
-  'w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors';
+  "w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors";
 
 const labelClass =
-  'block font-semibold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2';
+  "block font-semibold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2";
 
 export default function JoinStudyForm() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
   const [studies, setStudies] = useState<Study[]>([]);
   const [studiesLoading, setStudiesLoading] = useState(true);
-  const [name, setName] = useState('');
-  const [contact, setContact] = useState('');
-  const [study, setStudy] = useState('');
-  const [message, setMessage] = useState('');
-  const [state, setState] = useState<FormState>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [name, setName] = useState("");
+  const [contact, setContact] = useState("");
+  const [study, setStudy] = useState("");
+  const [message, setMessage] = useState("");
+  const [state, setState] = useState<FormState>("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     async function loadStudies() {
       try {
-        const res = await fetch('/api/studies');
+        const res = await fetch("/api/studies");
         if (!res.ok) {
-          throw new Error('Failed to fetch studies');
+          throw new Error("Failed to fetch studies");
         }
 
         const data: unknown = await res.json();
         if (!Array.isArray(data) || !data.every(isStudy)) {
-          throw new Error('Invalid studies response');
+          throw new Error("Invalid studies response");
         }
 
         setStudies(data);
@@ -63,25 +66,25 @@ export default function JoinStudyForm() {
   }, []);
 
   function clearError() {
-    if (state === 'error') setState('idle');
+    if (state === "error") setState("idle");
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!name.trim() || !contact.trim() || !study || !message.trim()) {
-      setErrorMsg('Please fill in all fields.');
-      setState('error');
+      setErrorMsg(t.studies.joinFormRequiredError);
+      setState("error");
       return;
     }
 
-    setState('loading');
-    setErrorMsg('');
+    setState("loading");
+    setErrorMsg("");
 
     try {
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
           email: contact.trim(),
@@ -92,24 +95,26 @@ export default function JoinStudyForm() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setErrorMsg(data.error || 'Submission failed. Please try again.');
-        setState('error');
+        setErrorMsg(data.error || t.studies.joinFormSubmissionError);
+        setState("error");
         return;
       }
 
-      setState('success');
+      setState("success");
     } catch {
-      setErrorMsg('Something went wrong. Please try again.');
-      setState('error');
+      setErrorMsg(t.studies.joinFormGenericError);
+      setState("error");
     }
   }
 
-  if (state === 'success') {
+  if (state === "success") {
     return (
       <div className="py-10">
-        <p className="text-[#0a4479] text-xl font-bold">Message sent!</p>
+        <p className="text-[#0a4479] text-xl font-bold">
+          {t.studies.joinFormSuccessTitle}
+        </p>
         <p className="text-[#0a4479] text-base mt-2">
-          Thank you for your interest. We&apos;ll get back to you soon.
+          {t.studies.joinFormSuccessText}
         </p>
       </div>
     );
@@ -119,59 +124,59 @@ export default function JoinStudyForm() {
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div>
         <label htmlFor="join-name" className={labelClass}>
-          Name
+          {t.studies.joinFormName}
         </label>
         <input
           id="join-name"
           type="text"
           value={name}
-          onChange={e => {
+          onChange={(e) => {
             setName(e.target.value);
             clearError();
           }}
-          placeholder="Enter your name"
+          placeholder={t.studies.joinFormNamePlaceholder}
           className={inputClass}
-          disabled={state === 'loading'}
+          disabled={state === "loading"}
         />
       </div>
 
       <div>
         <label htmlFor="join-contact" className={labelClass}>
-          Email / Phone
+          {t.studies.joinFormContact}
         </label>
         <input
           id="join-contact"
           type="text"
           value={contact}
-          onChange={e => {
+          onChange={(e) => {
             setContact(e.target.value);
             clearError();
           }}
           placeholder="example@gmail.com  /  012 3456 789"
           className={inputClass}
-          disabled={state === 'loading'}
+          disabled={state === "loading"}
         />
       </div>
 
       <div>
         <label htmlFor="join-study" className={labelClass}>
-          What study are you interested in?
+          {t.studies.joinFormStudy}
         </label>
         <div className="relative">
           <select
             id="join-study"
             value={study}
-            onChange={e => {
+            onChange={(e) => {
               setStudy(e.target.value);
               clearError();
             }}
             className={`${inputClass} appearance-none pr-12 cursor-pointer`}
-            disabled={state === 'loading' || studiesLoading}
+            disabled={state === "loading" || studiesLoading}
           >
             <option value="" disabled>
-              {studiesLoading ? 'Loading…' : 'Select'}
+              {studiesLoading ? t.common.loading : t.studies.joinFormSelect}
             </option>
-            {studies.map(s => (
+            {studies.map((s) => (
               <option key={s.id} value={s.title}>
                 {s.title}
               </option>
@@ -199,23 +204,23 @@ export default function JoinStudyForm() {
 
       <div>
         <label htmlFor="join-message" className={labelClass}>
-          Message
+          {t.studies.joinFormMessage}
         </label>
         <textarea
           id="join-message"
           value={message}
-          onChange={e => {
+          onChange={(e) => {
             setMessage(e.target.value);
             clearError();
           }}
-          placeholder="Write your message here..."
+          placeholder={t.studies.joinFormMessagePlaceholder}
           rows={6}
           className="w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none"
-          disabled={state === 'loading'}
+          disabled={state === "loading"}
         />
       </div>
 
-      {state === 'error' && (
+      {state === "error" && (
         <p className="text-red-500 text-sm ml-2" role="alert">
           {errorMsg}
         </p>
@@ -223,10 +228,12 @@ export default function JoinStudyForm() {
 
       <button
         type="submit"
-        disabled={state === 'loading'}
+        disabled={state === "loading"}
         className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {state === 'loading' ? 'Sending…' : 'Send Message'}
+        {state === "loading"
+          ? t.studies.joinFormSending
+          : t.studies.joinFormSend}
       </button>
     </form>
   );

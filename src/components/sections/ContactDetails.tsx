@@ -1,4 +1,9 @@
-import ContactEmailForm from './ContactEmailForm';
+"use client";
+
+import ContactEmailForm from "./ContactEmailForm";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 function PhoneIcon() {
   return (
@@ -30,6 +35,9 @@ function LocationIcon() {
 }
 
 export default function ContactDetails() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
       <div className="mx-auto max-w-[1412px] bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] p-8 sm:p-12 lg:p-[60px]">
@@ -40,35 +48,28 @@ export default function ContactDetails() {
             <div className="space-y-5 text-[#0a4479]">
               <div>
                 <h2 className="text-lg sm:text-[24px] font-bold leading-snug mb-2">
-                  MSc/PhD Opportunities
+                  {t.contactPage.phdOpportunitiesTitle}
                 </h2>
                 <p className="text-sm sm:text-[20px] leading-relaxed">
-                  From time to time, opportunities for MSc or PhD studentship may become
-                  available. Feel free to contact us with your expression of interest through
-                  the contact form.
+                  {t.contactPage.phdOpportunitiesText}
                 </p>
               </div>
 
               <div>
                 <h2 className="text-lg sm:text-[24px] font-bold leading-snug mb-2">
-                  Internship Opportunities
+                  {t.contactPage.internshipOpportunitiesTitle}
                 </h2>
                 <p className="text-sm sm:text-[20px] leading-relaxed">
-                  We do have plenty opportunities for voluntary internship opportunities for
-                  both local and international students. Many international students from
-                  overseas completed their internship with us as a part of their Bachelor&apos;s
-                  program. Use the contact form if you are interested in gaining practical
-                  experience in human clinical studies.
+                  {t.contactPage.internshipOpportunitiesText}
                 </p>
               </div>
 
               <div>
                 <h2 className="text-lg sm:text-[24px] font-bold leading-snug mb-2">
-                  Volunteering for Clinical Trial as a Study Participant
+                  {t.contactPage.volunteeringTitle}
                 </h2>
                 <p className="text-sm sm:text-[20px] leading-relaxed">
-                  See our current studies or express your interest to participate in a future
-                  study through the contact form.
+                  {t.contactPage.volunteeringText}
                 </p>
               </div>
             </div>
@@ -87,7 +88,7 @@ export default function ContactDetails() {
               <div className="grid grid-cols-[40px_1fr] items-center gap-x-3">
                 <LocationIcon />
                 <address className="not-italic text-sm sm:text-[20px] leading-relaxed">
-                  18 Carrick Place, Mt Eden, Auckland 1024, New Zealand
+                  {t.contactPage.address}
                 </address>
               </div>
             </div>

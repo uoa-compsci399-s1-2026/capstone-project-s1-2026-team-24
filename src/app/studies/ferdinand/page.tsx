@@ -1,22 +1,17 @@
-import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
+"use client";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StudyDetail from "@/components/sections/StudyDetail";
-import SubpageHero from "@/components/layout/SubpageHero";
 import StudiesHero from "@/components/layout/StudiesHero";
-
-export const metadata: Metadata = {
-  title: "Ferdinand | HNU Auckland",
-  description:
-    "A 6-month weight loss nutrition study investigating whether daily feijoa whole fruit powder alters the risk of developing type 2 diabetes.",
-};
-
-// Full navbar height (utility bar 40px + main nav 140px)
-const NAVBAR_HEIGHT = 180;
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 export default function FerdinandPage() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
   return (
     <>
       <Navbar />
@@ -24,36 +19,30 @@ export default function FerdinandPage() {
       <StudiesHero
         imageSrc="/ferdinand study.jpg"
         imageAlt="Ferdinand Study"
-        title="Ferdinand Study"
+        title={t.studies.ferdinandPageTitle}
       />
 
       <StudyDetail
-        title="Ferdinand Study"
+        title={t.studies.ferdinandPageTitle}
         status="Open"
-        deadline="31 December 2025"
+        deadline={t.studies.ferdinandDeadline}
         eligibility={[
-          "Have elevated blood glucose but are not diabetic",
-          "Are between 18-70 years",
-          "Are overweight or obese",
-          "Located in Tāmaki Makaurau (Auckland area)",
-          "Happy to complete 7 visits to the Human Nutrition Unit",
+          t.studies.ferdinandEligibilityGlucose,
+          t.studies.eligibilityAge18To70,
+          t.studies.ferdinandEligibilityWeight,
+          t.studies.eligibilityAuckland,
+          t.studies.ferdinandEligibilityVisits,
         ]}
         joinHref="/contact"
         contactHref="/contact"
         content={
           <div>
             <ul>
-              <li>
-                Would you like to participate in a 6-month nutrition study?
-              </li>
-              <li>Would you like to lose weight?</li>
-              <li>Are you concerned about your diabetes risk?</li>
+              <li>{t.studies.ferdinandQuestion1}</li>
+              <li>{t.studies.ferdinandQuestion2}</li>
+              <li>{t.studies.ferdinandQuestion3}</li>
             </ul>
-            <p>
-              We will investigate whether daily consumption of feijoa whole
-              fruit powder alters risk of developing type 2 diabetes.
-            </p>
-            {/* add more content */}
+            <p>{t.studies.ferdinandDescriptionText}</p>
           </div>
         }
       />

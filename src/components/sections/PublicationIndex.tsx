@@ -1,7 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 type PublicationAuthor = {
   id: number;
@@ -58,19 +60,25 @@ function buildAuthorsText(publication: Publication) {
 }
 
 export default function PublicationIndex() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All");
-  const MAX_PUBLICATIONS = 5;
   const [currentPage, setCurrentPage] = useState(1);
+
+  const pageSize = 10;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+
     return publications.filter((p) => {
       const matchesYear =
         selectedYear === "All" || String(p.year ?? "") === selectedYear;
+
       const searchable = [
         p.title,
         p.authorsRaw,
@@ -81,12 +89,13 @@ export default function PublicationIndex() {
       ]
         .join(" ")
         .toLowerCase();
+
       const matchesQuery = !q || searchable.includes(q);
+
       return matchesYear && matchesQuery;
     });
   }, [publications, query, selectedYear]);
 
-  const pageSize = 10;
   const totalPages = Math.ceil(filtered.length / pageSize);
 
   const paginatedPublications = useMemo(() => {
@@ -115,58 +124,69 @@ export default function PublicationIndex() {
         }
 
         const data: Publication[] = await response.json();
-        if (!cancelled) setPublications(data);
+
+        if (!cancelled) {
+          setPublications(data);
+        }
       } catch (err) {
         console.error(err);
-        if (!cancelled) setError("Could not load publications right now.");
+
+        if (!cancelled) {
+          setError(t.research.publicationsLoadError);
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
     loadPublications();
+
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  const Pagination = () => (
-    <div className="flex items-center justify-center gap-3 py-4">
-      <button
-        onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-        disabled={currentPage === 1}
-        className="px-4 py-2 rounded-full border text-sm disabled:opacity-40"
-      >
-        Previous
-      </button>
-
-      <span className="text-sm text-[#0a4479] font-semibold">
-        Page {currentPage} of {totalPages || 1}
-      </span>
-
-      <button
-        onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages || 1))}
-        disabled={currentPage === totalPages || totalPages === 0}
-        className="px-4 py-2 rounded-full border text-sm disabled:opacity-40"
-      >
-        Next
-      </button>
-    </div>
-  );
+  }, [t.research.publicationsLoadError]);
 
   const availableYears = useMemo(() => {
     const years = publications
       .map((p) => p.year)
       .filter((y): y is number => typeof y === "number")
       .sort((a, b) => b - a);
+
     return ["All", ...Array.from(new Set(years)).map(String)];
   }, [publications]);
+
+  const Pagination = () => (
+    <div className="flex items-center justify-center gap-3 py-4">
+      <button
+        type="button"
+        onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+        disabled={currentPage === 1}
+        className="px-4 py-2 rounded-full border text-sm disabled:opacity-40"
+      >
+        {t.research.previous}
+      </button>
+
+      <span className="text-sm text-[#0a4479] font-semibold">
+        {t.research.page} {currentPage} {t.research.of} {totalPages || 1}
+      </span>
+
+      <button
+        type="button"
+        onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages || 1))}
+        disabled={currentPage === totalPages || totalPages === 0}
+        className="px-4 py-2 rounded-full border text-sm disabled:opacity-40"
+      >
+        {t.research.next}
+      </button>
+    </div>
+  );
 
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
       <div className="mx-auto max-w-[1412px]">
         <div className="flex flex-col gap-8">
-          {/* Filters bar — full width on top */}
           <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.12)] p-7">
             <div className="flex flex-wrap gap-6 items-end">
               <div className="flex-1 min-w-[200px]">
@@ -174,14 +194,15 @@ export default function PublicationIndex() {
                   htmlFor="publication-search"
                   className="mb-2 block text-sm font-semibold text-[#0a4479]"
                 >
-                  Search
+                  {t.research.search}
                 </label>
+
                 <input
                   id="publication-search"
                   type="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Title, author, journal..."
+                  placeholder={t.research.searchPlaceholder}
                   className="w-full px-4 py-2.5 border-2 border-[#cac7c7] rounded-full text-sm text-[#0c0c48] placeholder:text-[#8e8d8d] focus:outline-none focus:border-[#0a4479] transition-colors"
                 />
               </div>
@@ -191,8 +212,9 @@ export default function PublicationIndex() {
                   htmlFor="publication-year"
                   className="mb-2 block text-sm font-semibold text-[#0a4479]"
                 >
-                  Year
+                  {t.research.year}
                 </label>
+
                 <select
                   id="publication-year"
                   value={selectedYear}
@@ -201,7 +223,7 @@ export default function PublicationIndex() {
                 >
                   {availableYears.map((year) => (
                     <option key={year} value={year}>
-                      {year === "All" ? "All years" : year}
+                      {year === "All" ? t.research.allYears : year}
                     </option>
                   ))}
                 </select>
@@ -209,21 +231,23 @@ export default function PublicationIndex() {
 
               {!loading && !error && (
                 <p className="text-sm font-semibold text-[#0a4479]/70 pb-2">
-                  {filtered.length} result{filtered.length === 1 ? "" : "s"}
+                  {filtered.length}{" "}
+                  {filtered.length === 1
+                    ? t.research.result
+                    : t.research.results}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Main content card */}
           <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.18)] p-8 sm:p-10">
             <header className="mb-8">
               <h1 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold text-[#0c0c48] tracking-[0.96px]">
-                Publications
+                {t.research.publicationsTitle}
               </h1>
+
               <p className="mt-3 text-base text-[#0a4479]/80 max-w-2xl">
-                Peer-reviewed research outputs from our team and collaborators
-                in nutrition, metabolism, and clinical trial design.
+                {t.research.publicationsIntro}
               </p>
             </header>
 
@@ -231,7 +255,7 @@ export default function PublicationIndex() {
 
             {loading ? (
               <div className="bg-[#f5f5f7] rounded-2xl px-6 py-12 text-center text-[#0a4479]/80">
-                Loading publications...
+                {t.research.loadingPublications}
               </div>
             ) : error ? (
               <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-6 text-sm text-red-700">
@@ -239,7 +263,7 @@ export default function PublicationIndex() {
               </div>
             ) : filtered.length === 0 ? (
               <div className="bg-[#f5f5f7] rounded-2xl px-6 py-12 text-center text-[#0a4479]/80">
-                No publications match your filters.
+                {t.research.noPublications}
               </div>
             ) : (
               <div className="space-y-5">
@@ -258,6 +282,7 @@ export default function PublicationIndex() {
                             <span className="rounded-full bg-[#0a4479]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#0a4479]">
                               {publication.pubType}
                             </span>
+
                             {publication.category?.name && (
                               <span className="rounded-full bg-[#0c0c48]/5 px-3 py-1 text-xs font-medium text-[#0c0c48]/80">
                                 {publication.category.name}
@@ -271,6 +296,7 @@ export default function PublicationIndex() {
 
                           <div className="mt-3 space-y-1 text-sm text-[#0a4479]/80">
                             {authorsText && <p>{authorsText}</p>}
+
                             <p className="italic">
                               {[publication.journal, publication.year]
                                 .filter(Boolean)
@@ -292,9 +318,10 @@ export default function PublicationIndex() {
                                 rel="noreferrer"
                                 className="inline-flex items-center bg-[#0a4479] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors"
                               >
-                                View publication
+                                {t.research.viewPublication}
                               </a>
                             )}
+
                             {publication.doi && (
                               <span className="inline-flex items-center rounded-full border border-[#0a4479]/30 px-4 py-2 text-xs font-medium text-[#0a4479]">
                                 DOI: {publication.doi}
@@ -312,6 +339,7 @@ export default function PublicationIndex() {
                     </article>
                   );
                 })}
+
                 {!loading && !error && filtered.length > 0 && <Pagination />}
               </div>
             )}

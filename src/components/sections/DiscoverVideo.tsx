@@ -1,15 +1,23 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 export default function DiscoverVideo() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [videoHovered, setVideoHovered] = useState(false);
-  const src = `https://www.youtube.com/embed/FSvG3KU8-uo?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=FSvG3KU8-uo&controls=1&rel=0&modestbranding=1`;
+
+  const src = `https://www.youtube.com/embed/FSvG3KU8-uo?autoplay=1&mute=${
+    muted ? 1 : 0
+  }&loop=1&playlist=FSvG3KU8-uo&controls=1&rel=0&modestbranding=1`;
 
   function postMessage(command: string) {
     iframeRef.current?.contentWindow?.postMessage(
@@ -36,7 +44,6 @@ export default function DiscoverVideo() {
     setPlaying((p) => !p);
   }
 
-  // Unmute when scrolled into view
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -47,7 +54,9 @@ export default function DiscoverVideo() {
       },
       { threshold: 0.5 },
     );
+
     if (sectionRef.current) observer.observe(sectionRef.current);
+
     return () => observer.disconnect();
   }, [muted]);
 
@@ -58,7 +67,6 @@ export default function DiscoverVideo() {
     >
       <div className="max-w-[1512px] mx-auto">
         <div className="relative flex flex-col lg:flex-row items-center gap-0 z-5">
-          {/* Video */}
           <div
             className="relative rounded-[28px] overflow-hidden flex-1 -mr-65"
             style={{ height: "550px" }}
@@ -80,7 +88,6 @@ export default function DiscoverVideo() {
             />
           </div>
 
-          {/* Blue text card */}
           <div
             className="relative z-10 flex-shrink-0 w-[340px] sm:w-[400px] lg:w-[550px] p-15 pl-20 flex flex-col gap-6"
             style={{
@@ -98,7 +105,7 @@ export default function DiscoverVideo() {
                 lineHeight: 1.2,
               }}
             >
-              Who are we
+              {t.aboutPage.whoAreWeTitle}
             </h2>
 
             <p
@@ -109,20 +116,16 @@ export default function DiscoverVideo() {
                 lineHeight: 1.6,
               }}
             >
-              HNU is a University of Auckland research facility, established in
-              1998 as a collaboration between the School of Biological Sciences
-              and the Department of Medicine at the University of Auckland.
-            </p>
-            <p>
-              It is New Zealand&apos;s only live-in nutrition trials facility
-              which has the capability to carry out long-term human residential
-              studies.
+              {t.aboutPage.whoAreWeParagraph1}
             </p>
 
-            {/* Controls */}
+            <p className="text-white/85">
+              {t.aboutPage.whoAreWeParagraph2}
+            </p>
+
             <div className="flex items-center gap-3 hidden">
-              {/* Play/Pause */}
               <button
+                type="button"
                 onClick={togglePlay}
                 className="flex items-center gap-2 w-fit bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-full"
               >
@@ -143,11 +146,11 @@ export default function DiscoverVideo() {
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 )}
-                {playing ? "Pause" : "Play"}
+                {playing ? t.aboutPage.pause : t.aboutPage.play}
               </button>
 
-              {/* Mute/Unmute */}
               <button
+                type="button"
                 onClick={toggleMute}
                 className="flex items-center gap-2 w-fit bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-full"
               >
@@ -172,7 +175,7 @@ export default function DiscoverVideo() {
                         d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
                       />
                     </svg>
-                    Unmute
+                    {t.aboutPage.unmute}
                   </>
                 ) : (
                   <>
@@ -189,7 +192,7 @@ export default function DiscoverVideo() {
                         d="M15.536 8.464a5 5 0 010 7.072M12 6v12m-3.536-9.536a5 5 0 000 7.072M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
                       />
                     </svg>
-                    Mute
+                    {t.aboutPage.mute}
                   </>
                 )}
               </button>
@@ -197,6 +200,7 @@ export default function DiscoverVideo() {
           </div>
         </div>
       </div>
+
       <div
         className="absolute inset-0 overflow-hidden pointer-events-none"
         aria-hidden="true"

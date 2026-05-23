@@ -1,4 +1,12 @@
+"use client";
+
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
+
 export default function DiscoverServicesExpertise() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
   return (
     <section className="bg-white py-12 sm:py-16 lg:py-20">
       <div className="max-w-[1512px] mx-auto px-4 sm:px-8 lg:px-[93px]">
@@ -21,15 +29,10 @@ export default function DiscoverServicesExpertise() {
           {/* Text — right */}
           <div className="flex-1 min-w-0 flex flex-col justify-center">
             <h3 className="text-2xl sm:text-3xl lg:text-[48px] font-bold text-[#0a4479] leading-tight tracking-[0.96px] mb-4 sm:mb-6">
-              Services &amp; Expertise
+              {t.aboutPage.servicesExpertiseTitle}
             </h3>
             <p className="text-base sm:text-xl lg:text-[30px] font-normal text-[#0a4479] leading-relaxed tracking-[0.6px]">
-              The Human Nutrition Unit provides a comprehensive range of services across both
-              academic and commercially funded research. These include consultancy on nutrition
-              regulatory issues and health claims, trial design and protocol development,
-              participant recruitment and screening, and full trial management and coordination.
-              The team also delivers data collection, analysis, interpretation, and the
-              publication of peer-reviewed scientific research.
+              {t.aboutPage.servicesExpertiseText}
             </p>
           </div>
         </div>
