@@ -52,6 +52,7 @@ function infoCardProps(c: Content) {
   return {
     title: str(c.title),
     paragraphs: strArray(c.paragraphs),
+    body: str(c.body) || undefined,
     imageSrc: str(c.imageSrc),
     imageAlt: str(c.imageAlt),
     imagePosition: imgPos(c.imagePosition),

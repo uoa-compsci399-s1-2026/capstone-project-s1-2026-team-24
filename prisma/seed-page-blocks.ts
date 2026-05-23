@@ -58,10 +58,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "right",
           cardBg: "standard",
           showButton: true,
-          paragraphs: [
-            "HNU is a nutrition research facility within The University of Auckland, New Zealand's most prestigious and largest University.",
-            "The Unit undertakes research to establish links between diet, health and disease prevention.",
-          ],
+          body:
+            "<p>HNU is a nutrition research facility within The University of Auckland, New Zealand's most prestigious and largest University.</p><p>The Unit undertakes research to establish links between diet, health and disease prevention.</p>",
           buttonLabel: "More Information",
           buttonHref: "/about",
           imageSrc: "/1630363804706 (1).jpg",
@@ -75,10 +73,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "left",
           cardBg: "light",
           showButton: true,
-          paragraphs: [
-            "We investigate the effects of whole foods, food components, bioactives and nutraceutical products on health and disease.",
-            "Our research focuses on key areas of human nutrition: obesity, appetite regulation, metabolic syndrome, cardiovascular risk, pre-diabetes and type 2 diabetes.",
-          ],
+          body:
+            "<p>We investigate the effects of whole foods, food components, bioactives and nutraceutical products on health and disease.</p><p>Our research focuses on key areas of human nutrition: obesity, appetite regulation, metabolic syndrome, cardiovascular risk, pre-diabetes and type 2 diabetes.</p>",
           buttonLabel: "Read More →",
           buttonHref: "/research",
           imageSrc: "/services-and-expertise.jpg",
@@ -119,9 +115,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "left",
           cardBg: "dark",
           showButton: false,
-          paragraphs: [
-            "The Human Nutrition Unit provides a comprehensive range of services across both academic and commercially funded research. These include consultancy on nutrition regulatory issues and health claims, trial design and protocol development, participant recruitment and screening, and full trial management and coordination. The team also delivers data collection, analysis, interpretation, and the publication of peer-reviewed scientific research.",
-          ],
+          body:
+            "<p>The Human Nutrition Unit provides a comprehensive range of services across both academic and commercially funded research. These include consultancy on nutrition regulatory issues and health claims, trial design and protocol development, participant recruitment and screening, and full trial management and coordination. The team also delivers data collection, analysis, interpretation, and the publication of peer-reviewed scientific research.</p>",
           buttonLabel: "Learn More",
           buttonHref: "/research",
           imageSrc: "/NZ Synergy Study.jpg",
@@ -136,10 +131,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "right",
           cardBg: "light",
           showButton: false,
-          paragraphs: [
-            "The Unit is equipped to deliver highly controlled and precise nutrition research. Capabilities include controlled diet provision, energy expenditure measurement, anthropometric assessments such as body composition analysis, and clinical procedures including phlebotomy and venous cannulation.",
-            "Additional services include urine and faecal sample collection, with external nursing support available for overnight studies when required.",
-          ],
+          body:
+            "<p>The Unit is equipped to deliver highly controlled and precise nutrition research. Capabilities include controlled diet provision, energy expenditure measurement, anthropometric assessments such as body composition analysis, and clinical procedures including phlebotomy and venous cannulation.</p><p>Additional services include urine and faecal sample collection, with external nursing support available for overnight studies when required.</p>",
           imageSrc: "/Our Research.jpg",
           imageAlt: "Modern research laboratory",
         },
@@ -162,11 +155,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "left",
           cardBg: "dark",
           showButton: false,
-          paragraphs: [
-            "HNU offers a purpose-built research environment designed to support controlled human nutrition studies. ",
-            "Facilities include a clinical room for blood collection, an indirect calorimetry room for measuring energy expenditure, an interview lounge, and a biological sample handling laboratory. ",
-            "The Unit also features a metabolic kitchen and five fully furnished residential bedrooms, along with bathroom facilities, enabling both short- and long-term live-in studies.",
-          ],
+          body:
+            "<p>HNU offers a purpose-built research environment designed to support controlled human nutrition studies.</p><p>Facilities include a clinical room for blood collection, an indirect calorimetry room for measuring energy expenditure, an interview lounge, and a biological sample handling laboratory.</p><p>The Unit also features a metabolic kitchen and five fully furnished residential bedrooms, along with bathroom facilities, enabling both short- and long-term live-in studies.</p>",
           buttonLabel: "Explore Our Facilities",
           buttonHref: "/facilities",
           imageSrc: "/facilities.png",

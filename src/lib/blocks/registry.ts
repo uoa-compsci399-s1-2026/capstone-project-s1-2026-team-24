@@ -17,7 +17,7 @@ const CARD_BG_OPTIONS = ["dark", "standard", "light"] as const;
 
 const INFO_CARD_FIELDS: readonly BlockField[] = [
   { key: "title", label: "Title", type: "text" },
-  { key: "paragraphs", label: "Paragraphs", type: "paragraphArray" },
+  { key: "body", label: "Body", type: "richText" },
   { key: "imageSrc", label: "Image", type: "image" },
   { key: "imageAlt", label: "Image alt text", type: "text" },
   {
@@ -39,7 +39,7 @@ const INFO_CARD_FIELDS: readonly BlockField[] = [
 
 const INFO_CARD_DEFAULT = {
   title: "New section",
-  paragraphs: ["Add your content here."],
+  body: "<p>Add your content here.</p>",
   imageSrc: "",
   imageAlt: "",
   imagePosition: "center",
@@ -51,7 +51,7 @@ const INFO_CARD_DEFAULT = {
 
 const CALLOUT_COMMON_FIELDS: readonly BlockField[] = [
   { key: "title", label: "Card title", type: "text" },
-  { key: "description", label: "Card description", type: "textarea" },
+  { key: "description", label: "Card description", type: "richText" },
   { key: "showButton", label: "Show button", type: "boolean" },
   { key: "buttonLabel", label: "Button label", type: "text" },
   { key: "buttonHref", label: "Button link", type: "url" },
