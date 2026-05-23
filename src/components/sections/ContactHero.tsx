@@ -1,14 +1,22 @@
-import SubpageHero from '@/components/layout/SubpageHero';
+"use client";
+
+import SubpageHero from "@/components/layout/SubpageHero";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 export default function ContactHero() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
   return (
     <SubpageHero
-      title="Contact Us"
+      title={t.contactPage.heroTitle}
       subtitle={
         <>
-          Have a question or enquiry?
+          {t.contactPage.heroSubtitleLine1}
           <br />
-          Get in touch with our team
+          {t.contactPage.heroSubtitleLine2}
         </>
       }
     />

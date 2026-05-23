@@ -1,15 +1,23 @@
-import SubpageHero from '@/components/layout/SubpageHero';
+"use client";
+
+import SubpageHero from "@/components/layout/SubpageHero";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 export default function DiscoverHero() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
   return (
     <SubpageHero
-      title="Discover HNU"
+      title={t.aboutPage.heroTitle}
       subtitleMaxWidth={697}
       subtitle={
         <>
-          Focused on better health through nutrition.
+          {t.aboutPage.heroSubtitleLine1}
           <br />
-          Learn more about our work and purpose
+          {t.aboutPage.heroSubtitleLine2}
         </>
       }
     />

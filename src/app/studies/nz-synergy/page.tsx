@@ -1,12 +1,18 @@
-import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
+"use client";
+
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StudiesHero from "@/components/layout/StudiesHero";
 import StudyDetail from "@/components/sections/StudyDetail";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
+
+export default function NZSynergyPage() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
 
 export const metadata: Metadata = {
   title: "NZ Synergy | HNU Auckland",
@@ -31,33 +37,29 @@ export default async function NZSynergyPage() {
       <StudiesHero
         imageSrc="/NZ Synergy study.jpg"
         imageAlt="NZ Synergy Study"
-        title="NZ Synergy Study"
+        title={t.studies.nzSynergyPageTitle}
         imagePosition="top"
       />
 
       <StudyDetail
-        title="NZ Synergy Study"
+        title={t.studies.nzSynergyPageTitle}
         status="Open"
-        deadline="31 December 2024"
+        deadline={t.studies.nzSynergyDeadline}
         eligibility={[
-          "Are between 18-70 years",
-          "Have a BMI between 18.5 and 30 kg/m²",
-          "Located in Tāmaki Makaurau (Auckland area)",
-          "Happy to stay at the Human Nutrition Unit for 2 weeks",
+          t.studies.eligibilityAge18To70,
+          t.studies.eligibilityBmi18To30,
+          t.studies.eligibilityAuckland,
+          t.studies.nzSynergyEligibilityStay,
         ]}
         joinHref="/contact"
         contactHref="/contact"
         content={
           <div>
             <ul>
-              <li>
-                Would you like to participate in a residential nutrition study?
-              </li>
-              <li>Would you like to learn about how diet affects diabetes risk?</li>
+              <li>{t.studies.nzSynergyQuestion1}</li>
+              <li>{t.studies.nzSynergyQuestion2}</li>
             </ul>
-            <p>
-              We will investigate how different diets affect markers of diabetes risk.
-            </p>
+            <p>{t.studies.nzSynergyDescriptionText}</p>
           </div>
         }
       />

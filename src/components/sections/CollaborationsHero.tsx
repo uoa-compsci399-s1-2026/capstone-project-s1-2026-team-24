@@ -1,15 +1,22 @@
-import SubpageHero from '@/components/layout/SubpageHero';
+"use client";
+
+import SubpageHero from "@/components/layout/SubpageHero";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 export default function CollaborationsHero() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
   return (
     <SubpageHero
-      title="Collaborations"
-      subtitleMaxWidth={669}
+      title={t.collaborations.heroTitle}
       subtitle={
         <>
-          Building partnerships in nutrition research.
+          {t.collaborations.heroSubtitleLine1}
           <br />
-          Learn more about our collaborative work and initiatives
+          {t.collaborations.heroSubtitleLine2}
         </>
       }
     />
