@@ -59,47 +59,106 @@ const CALLOUT_COMMON_FIELDS: readonly BlockField[] = [
   { key: "backgroundColor", label: "Background colour / gradient", type: "text" },
 ];
 
+// Shared by the subpage-style heroes (a title + line-broken subtitle over an
+// image). Used by `subpageHero` and the page-specific hero blocks.
+const SUBPAGE_HERO_FIELDS: readonly BlockField[] = [
+  { key: "title", label: "Title", type: "text" },
+  {
+    key: "subtitle",
+    label: "Subtitle",
+    type: "textarea",
+    help: "Each new line becomes a line break.",
+  },
+  {
+    key: "subtitleMaxWidth",
+    label: "Subtitle max width (px)",
+    type: "text",
+    help: "Optional. Leave blank for full width.",
+  },
+];
+
 const DEFINITIONS: BlockDefinition[] = [
   // ---- Heroes ----
   {
     type: "homepageHero",
     label: "Homepage hero",
     category: "Hero",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: [
+      {
+        key: "title",
+        label: "Title",
+        type: "text",
+        help: "Each new line becomes a line break.",
+      },
+      { key: "buttonLabel", label: "Button label", type: "text" },
+      { key: "buttonHref", label: "Button link", type: "url" },
+      {
+        key: "backgroundGradient",
+        label: "Background gradient (CSS)",
+        type: "text",
+      },
+      { key: "heroImageSrc", label: "Hero image", type: "image" },
+    ],
+    defaultContent: {
+      title: "Unlock the power of food with \n the Human Nutrition Unit",
+      buttonLabel: "JOIN A STUDY",
+      buttonHref: "/studies",
+      backgroundGradient:
+        "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
+      heroImageSrc: "/images/homepage-hero-bowl.webp",
+    },
   },
   {
     type: "discoverHero",
     label: "Discover hero",
     category: "Hero",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: SUBPAGE_HERO_FIELDS,
+    defaultContent: {
+      title: "Discover HNU",
+      subtitle:
+        "Focused on better health through nutrition.\nLearn more about our work and purpose",
+      subtitleMaxWidth: "697",
+    },
   },
   {
     type: "researchHero",
     label: "Research hero",
     category: "Hero",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: SUBPAGE_HERO_FIELDS,
+    defaultContent: {
+      title: "Our Research",
+      subtitle:
+        "Better health through nutrition science.\nExplore our research in diet, disease, and clinical trials",
+      subtitleMaxWidth: "626",
+    },
   },
   {
     type: "teamHero",
     label: "Team hero",
     category: "Hero",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: SUBPAGE_HERO_FIELDS,
+    defaultContent: {
+      title: "Our Team",
+      subtitle:
+        "We're passionate about what we do.\nFind out more about the people behind\nthe Human Nutrition Unit",
+      subtitleMaxWidth: "",
+    },
   },
   {
     type: "contactHero",
     label: "Contact hero",
     category: "Hero",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: SUBPAGE_HERO_FIELDS,
+    defaultContent: {
+      title: "Contact Us",
+      subtitle: "Have a question or enquiry?\nGet in touch with our team",
+      subtitleMaxWidth: "",
+    },
   },
   {
     type: "studiesHero",
@@ -287,9 +346,19 @@ const DEFINITIONS: BlockDefinition[] = [
     type: "contactMap",
     label: "Contact map",
     category: "Content",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: [
+      {
+        key: "mapUrl",
+        label: "Google Maps embed URL",
+        type: "url",
+        help: "The src URL from a Google Maps 'Embed a map' iframe.",
+      },
+    ],
+    defaultContent: {
+      mapUrl:
+        "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3191.62085243865!2d174.74999331301763!3d-36.87549318088687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d0d4771e23b727d%3A0x90ba816391e739dc!2sHuman%20Nutrition%20Unit!5e0!3m2!1sen!2snz!4v1777374580042!5m2!1sen!2snz",
+    },
   },
   {
     type: "contactDetails",

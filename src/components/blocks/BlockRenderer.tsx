@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
 
 import HomepageHero from "@/components/sections/HomepageHero";
-import DiscoverHero from "@/components/sections/DiscoverHero";
-import ResearchHero from "@/components/sections/ResearchHero";
-import ContactHero from "@/components/sections/ContactHero";
 import DiscoverVideo from "@/components/sections/DiscoverVideo";
 import StudiesOverview from "@/components/sections/StudiesOverview";
 import TrialDesign from "@/components/sections/TrialDesign";
@@ -19,7 +16,6 @@ import PartnerImageGrid from "@/components/sections/PartnerImageGrid";
 import StudiesContactCard from "@/components/sections/StudiesContactCard";
 import ContactMap from "@/components/sections/ContactMap";
 import ContactDetails from "@/components/sections/ContactDetails";
-import TeamHero from "@/components/team/TeamHero";
 import StudiesHero from "@/components/layout/StudiesHero";
 import InfoCardLeft from "@/components/ui/InfoCardLeft";
 import InfoCardRight from "@/components/ui/InfoCardRight";
@@ -30,6 +26,7 @@ import TeamSectionsBlock from "@/components/blocks/TeamSectionsBlock";
 import HomepageStudiesBlock from "@/components/blocks/HomepageStudiesBlock";
 
 import { parseBlockContent } from "@/lib/blocks/validate";
+import { getBlockDefinition } from "@/lib/blocks/registry";
 import type { StudyCardContent } from "@/lib/blocks/types";
 
 type Content = Record<string, unknown>;
@@ -63,6 +60,26 @@ function infoCardProps(c: Content) {
   };
 }
 
+// Builds SubpageHeroBlock props from block content, falling back to the block
+// type's registry defaults (the original hardcoded title/subtitle) when a field
+// is empty — so a freshly-converted block with empty content renders unchanged.
+function subpageHeroFromContent(type: string, c: Content) {
+  const dc = getBlockDefinition(type)?.defaultContent ?? {};
+  const width = c.subtitleMaxWidth;
+  const defWidth = dc.subtitleMaxWidth;
+  const resolvedWidth =
+    typeof width === "number" || (typeof width === "string" && width !== "")
+      ? width
+      : typeof defWidth === "number" || typeof defWidth === "string"
+        ? defWidth
+        : undefined;
+  return {
+    title: str(c.title) || str(dc.title),
+    subtitle: str(c.subtitle) || str(dc.subtitle),
+    subtitleMaxWidth: resolvedWidth as string | number | undefined,
+  };
+}
+
 /** Renders a single block given its type and raw JSON content string. */
 export default function BlockRenderer({
   type,
@@ -74,17 +91,24 @@ export default function BlockRenderer({
   const c = parseBlockContent(rawContent);
 
   switch (type) {
-    // Heroes (content-frozen)
+    // Heroes
     case "homepageHero":
-      return <HomepageHero />;
+      return (
+        <HomepageHero
+          title={str(c.title) || undefined}
+          buttonLabel={str(c.buttonLabel) || undefined}
+          buttonHref={str(c.buttonHref) || undefined}
+          backgroundGradient={str(c.backgroundGradient) || undefined}
+          heroImageSrc={str(c.heroImageSrc) || undefined}
+        />
+      );
+    // The page-specific heroes share the SubpageHero markup; empty content
+    // falls back to the registry defaults (the original hardcoded values).
     case "discoverHero":
-      return <DiscoverHero />;
     case "researchHero":
-      return <ResearchHero />;
     case "teamHero":
-      return <TeamHero />;
     case "contactHero":
-      return <ContactHero />;
+      return <SubpageHeroBlock {...subpageHeroFromContent(type, c)} />;
     case "studiesHero":
       return <StudiesHero />;
 
@@ -183,7 +207,7 @@ export default function BlockRenderer({
     case "discoverVideo":
       return <DiscoverVideo />;
     case "contactMap":
-      return <ContactMap />;
+      return <ContactMap mapUrl={str(c.mapUrl) || undefined} />;
     case "contactDetails":
       return <ContactDetails />;
 
