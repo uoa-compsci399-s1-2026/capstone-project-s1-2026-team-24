@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { AdminForm, FormErrorBanner } from "@/components/admin/AdminForm";
 import {
   StudyFormFields,
@@ -142,6 +143,23 @@ export default function EditStudy({ params }: Props) {
       </AdminForm>
       {Number.isInteger(numericId) && numericId > 0 && (
         <StudyPdfManager studyId={numericId} />
+      )}
+      {Number.isInteger(numericId) && numericId > 0 && (
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#0a4479]/15 bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
+          <div>
+            <h2 className="text-lg font-bold text-[#0c0c48]">Page layout</h2>
+            <p className="mt-1 text-sm text-[#0a4479]/80">
+              Rearrange this study page into custom sections and columns, or
+              leave it on the default layout.
+            </p>
+          </div>
+          <Link
+            href={`/admin/studies/${numericId}/layout`}
+            className="inline-flex items-center justify-center rounded-full bg-[#0a4479] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#083559] transition-colors"
+          >
+            Customize layout →
+          </Link>
+        </div>
       )}
     </>
   );

@@ -3,9 +3,9 @@ import Image from "next/image";
 type ImagePosition = "left" | "right" | "top" | "center" | "bottom";
 
 interface StudyHeroProps {
-  imageSrc: string;
+  imageSrc?: string;
   imageAlt?: string;
-  title: string;
+  title?: string;
   imagePosition?: ImagePosition;
 }
 
@@ -25,13 +25,15 @@ export default function StudyHero({
         overflow: "hidden",
       }}
     >
-      <Image
-        src={imageSrc}
-        alt={imageAlt}
-        fill
-        style={{ objectFit: "cover", objectPosition: imagePosition }}
-        priority
-      />
+      {imageSrc && (
+        <Image
+          src={imageSrc}
+          alt={imageAlt}
+          fill
+          style={{ objectFit: "cover", objectPosition: imagePosition }}
+          priority
+        />
+      )}
       <div
         style={{
           position: "absolute",

@@ -6,6 +6,8 @@ import { useState } from "react";
 
 const NAV_LINKS = [
   { href: "/admin", label: "Dashboard", icon: DashboardIcon },
+  { href: "/admin/pages", label: "Pages", icon: PagesIcon },
+  { href: "/admin/media", label: "Media", icon: MediaIcon },
   { href: "/admin/studies", label: "Studies", icon: StudiesIcon },
   { href: "/admin/team", label: "Team", icon: TeamIcon },
   { href: "/admin/partners", label: "Partners", icon: PartnersIcon },
@@ -116,6 +118,46 @@ function DashboardIcon() {
       <rect x="14" y="3" width="7" height="5" rx="1.5" />
       <rect x="14" y="12" width="7" height="9" rx="1.5" />
       <rect x="3" y="16" width="7" height="5" rx="1.5" />
+    </svg>
+  );
+}
+
+function PagesIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 21V9" />
+    </svg>
+  );
+}
+
+function MediaIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="9" cy="9" r="2" />
+      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
     </svg>
   );
 }
