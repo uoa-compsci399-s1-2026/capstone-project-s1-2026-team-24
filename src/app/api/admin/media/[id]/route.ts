@@ -41,6 +41,14 @@ export async function PATCH(
     if (typeof body.altText === "string") data.altText = body.altText;
     if (typeof body.caption === "string") data.caption = body.caption;
 
+    const existing = await prisma.mediaAsset.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Asset not found" }, { status: 404 });
+    }
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json(existing);
+    }
+
     const updated = await prisma.mediaAsset.update({ where: { id }, data });
     return NextResponse.json(updated);
   } catch (error) {

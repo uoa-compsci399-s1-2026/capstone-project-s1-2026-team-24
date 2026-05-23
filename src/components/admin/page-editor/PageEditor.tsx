@@ -183,6 +183,7 @@ export default function PageEditor({
           <Link
             href={viewHref ?? publicPath(slug)}
             target="_blank"
+            rel="noopener noreferrer"
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
           >
             View live page ↗

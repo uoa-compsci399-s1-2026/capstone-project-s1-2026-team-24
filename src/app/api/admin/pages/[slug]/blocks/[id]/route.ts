@@ -15,13 +15,16 @@ export async function PATCH(
   { params }: { params: Promise<{ slug: string; id: string }> },
 ) {
   try {
-    const { id: rawId } = await params;
+    const { slug, id: rawId } = await params;
     const id = parseId(rawId);
     if (id === null) {
       return NextResponse.json({ error: "Invalid block id" }, { status: 400 });
     }
 
-    const existing = await prisma.pageBlock.findUnique({ where: { id } });
+    // Scope to the page in the URL so a block can't be edited via the wrong page.
+    const existing = await prisma.pageBlock.findFirst({
+      where: { id, page: { slug } },
+    });
     if (!existing) {
       return NextResponse.json({ error: "Block not found" }, { status: 404 });
     }
@@ -66,13 +69,16 @@ export async function DELETE(
   { params }: { params: Promise<{ slug: string; id: string }> },
 ) {
   try {
-    const { id: rawId } = await params;
+    const { slug, id: rawId } = await params;
     const id = parseId(rawId);
     if (id === null) {
       return NextResponse.json({ error: "Invalid block id" }, { status: 400 });
     }
 
-    const existing = await prisma.pageBlock.findUnique({ where: { id } });
+    // Scope to the page in the URL so a block can't be deleted via the wrong page.
+    const existing = await prisma.pageBlock.findFirst({
+      where: { id, page: { slug } },
+    });
     if (!existing) {
       return NextResponse.json({ error: "Block not found" }, { status: 404 });
     }

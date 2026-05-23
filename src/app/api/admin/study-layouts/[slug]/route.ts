@@ -32,19 +32,20 @@ export async function POST(
       create: { slug: STUDY_TEMPLATE_SLUG, title: "Study layout template" },
     });
 
-    await prisma.pageBlock.deleteMany({ where: { pageId: template.id } });
-    for (let i = 0; i < source.blocks.length; i++) {
-      const block = source.blocks[i];
-      await prisma.pageBlock.create({
-        data: {
-          pageId: template.id,
-          type: block.type,
-          content: block.content,
-          position: i,
-          isVisible: block.isVisible,
-        },
-      });
-    }
+    const blockData = source.blocks.map((block, i) => ({
+      pageId: template.id,
+      type: block.type,
+      content: block.content,
+      position: i,
+      isVisible: block.isVisible,
+    }));
+
+    // Atomic: a mid-write failure must not leave the shared template empty or
+    // partial, since it applies to every study without its own override.
+    await prisma.$transaction([
+      prisma.pageBlock.deleteMany({ where: { pageId: template.id } }),
+      prisma.pageBlock.createMany({ data: blockData }),
+    ]);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

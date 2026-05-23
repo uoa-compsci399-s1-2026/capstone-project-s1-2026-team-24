@@ -5,6 +5,15 @@ import { ROW_MAX_CHILDREN_PER_COLUMN } from "./types";
 
 export type BlockContent = Record<string, unknown>;
 
+// Collision-resistant id (Web Crypto works in both Node 19+ and the browser, so
+// this module stays safe to import from client code). Falls back if unavailable.
+function genId(): string {
+  if (typeof globalThis.crypto?.randomUUID === "function") {
+    return globalThis.crypto.randomUUID();
+  }
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 // Validates and normalizes a `row` block's nested content. Enforces: a known
 // variant, exactly two columns, each child has a registered non-row type and an
 // object content, and a per-column child cap (bounds payload size / nesting).
@@ -40,7 +49,7 @@ function normalizeRowContent(
           ? c.content
           : {};
       children.push({
-        id: typeof c.id === "string" ? c.id : `${Date.now()}-${children.length}`,
+        id: typeof c.id === "string" ? c.id : genId(),
         type: c.type,
         content: childContent,
       });
