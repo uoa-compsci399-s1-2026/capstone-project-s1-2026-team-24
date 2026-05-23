@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import {
   DndContext,
@@ -34,10 +34,20 @@ export default function PageEditor({
   slug,
   title,
   initialBlocks,
+  scope = "page",
+  backHref = "/admin/pages",
+  backLabel = "← All pages",
+  viewHref,
+  headerExtra,
 }: {
   slug: string;
   title: string;
   initialBlocks: EditorBlock[];
+  scope?: "page" | "study";
+  backHref?: string;
+  backLabel?: string;
+  viewHref?: string;
+  headerExtra?: ReactNode;
 }) {
   const [blocks, setBlocks] = useState<EditorBlock[]>(initialBlocks);
   const [savingId, setSavingId] = useState<number | null>(null);
@@ -158,23 +168,26 @@ export default function PageEditor({
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <Link
-            href="/admin/pages"
+            href={backHref}
             className="text-xs font-medium text-gray-500 hover:text-[#0c0c48]"
           >
-            ← All pages
+            {backLabel}
           </Link>
           <h1 className="mt-1 text-2xl font-bold text-[#0c0c48]">{title}</h1>
         </div>
-        <Link
-          href={publicPath(slug)}
-          target="_blank"
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
-        >
-          View live page ↗
-        </Link>
+        <div className="flex flex-shrink-0 items-center gap-2">
+          {headerExtra}
+          <Link
+            href={viewHref ?? publicPath(slug)}
+            target="_blank"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
+          >
+            View live page ↗
+          </Link>
+        </div>
       </div>
 
       {error && (
@@ -183,7 +196,7 @@ export default function PageEditor({
         </div>
       )}
 
-      <AddBlockButton onAdd={(type) => handleAdd(type, 0)} />
+      <AddBlockButton scope={scope} onAdd={(type) => handleAdd(type, 0)} />
 
       <DndContext
         id={`page-editor-${slug}`}
@@ -207,6 +220,7 @@ export default function PageEditor({
                 />
                 <AddBlockButton
                   compact
+                  scope={scope}
                   onAdd={(type) => handleAdd(type, i + 1)}
                 />
               </div>

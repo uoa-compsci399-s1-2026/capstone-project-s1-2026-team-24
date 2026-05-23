@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPagesListPage() {
   const pages = await prisma.page.findMany({
+    where: { NOT: { slug: { startsWith: "studylayout-" } } },
     orderBy: { slug: "asc" },
     include: { _count: { select: { blocks: true } } },
   });

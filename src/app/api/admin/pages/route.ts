@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 export async function GET() {
   try {
     const pages = await prisma.page.findMany({
+      where: { NOT: { slug: { startsWith: "studylayout-" } } },
       orderBy: { slug: "asc" },
       include: { _count: { select: { blocks: true } } },
     });

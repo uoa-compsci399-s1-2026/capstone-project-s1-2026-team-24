@@ -4,17 +4,32 @@ import { useState } from "react";
 import { listBlockDefinitions } from "@/lib/blocks/registry";
 import type { BlockCategory } from "@/lib/blocks/types";
 
-const CATEGORY_ORDER: BlockCategory[] = ["Hero", "Heading", "Content", "Dynamic"];
+const CATEGORY_ORDER: BlockCategory[] = [
+  "Hero",
+  "Heading",
+  "Layout",
+  "Study",
+  "Content",
+  "Dynamic",
+];
 
 export default function AddBlockButton({
   onAdd,
   compact = false,
+  scope = "page",
+  label = "+ Add block",
+  exclude = [],
 }: {
   onAdd: (type: string) => void;
   compact?: boolean;
+  scope?: "page" | "study";
+  label?: string;
+  exclude?: string[];
 }) {
   const [open, setOpen] = useState(false);
-  const defs = listBlockDefinitions();
+  const defs = listBlockDefinitions(scope).filter(
+    (d) => !exclude.includes(d.type),
+  );
 
   return (
     <div className="relative flex justify-center">
@@ -27,7 +42,7 @@ export default function AddBlockButton({
             : "rounded-lg border border-dashed border-gray-400 px-4 py-2 text-sm font-semibold text-[#0c0c48] hover:bg-gray-100"
         }
       >
-        + Add block
+        {label}
       </button>
 
       {open && (

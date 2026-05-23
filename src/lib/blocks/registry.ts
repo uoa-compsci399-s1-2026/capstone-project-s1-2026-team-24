@@ -218,6 +218,7 @@ const DEFINITIONS: BlockDefinition[] = [
     type: "sectionHeading",
     label: "Section heading",
     category: "Heading",
+    scope: "both",
     editable: true,
     fields: [
       { key: "text", label: "Heading text", type: "text" },
@@ -364,13 +365,105 @@ const DEFINITIONS: BlockDefinition[] = [
     ],
     defaultContent: { variant: "academic", title: "" },
   },
+
+  // ---- Study layout blocks (study-layout builder only) ----
+  // These render live data from the study being viewed, so they have no
+  // editable content — they are placed, reordered and arranged into columns.
+  {
+    type: "studyStatusBar",
+    label: "Status & language bar",
+    category: "Study",
+    scope: "study",
+    editable: false,
+    fields: [],
+    defaultContent: {},
+  },
+  {
+    type: "studyDescription",
+    label: "Description",
+    category: "Study",
+    scope: "study",
+    editable: false,
+    fields: [],
+    defaultContent: {},
+  },
+  {
+    type: "studyCompensation",
+    label: "What you'll receive",
+    category: "Study",
+    scope: "study",
+    editable: false,
+    fields: [],
+    defaultContent: {},
+  },
+  {
+    type: "studyEligibility",
+    label: "Eligibility panel",
+    category: "Study",
+    scope: "study",
+    editable: false,
+    fields: [],
+    defaultContent: {},
+  },
+  {
+    type: "studyJoinButton",
+    label: "Join now (REDCap)",
+    category: "Study",
+    scope: "study",
+    editable: false,
+    fields: [],
+    defaultContent: {},
+  },
+  {
+    type: "studyContact",
+    label: "Contact details",
+    category: "Study",
+    scope: "study",
+    editable: false,
+    fields: [],
+    defaultContent: {},
+  },
+  {
+    type: "studyEthics",
+    label: "Ethics statement",
+    category: "Study",
+    scope: "study",
+    editable: false,
+    fields: [],
+    defaultContent: {},
+  },
+  {
+    type: "studyPdfs",
+    label: "Downloads",
+    category: "Study",
+    scope: "study",
+    editable: false,
+    fields: [],
+    defaultContent: {},
+  },
+  {
+    type: "row",
+    label: "Row (columns)",
+    category: "Layout",
+    scope: "study",
+    editable: true,
+    fields: [],
+    defaultContent: { variant: "twoColumn", columns: [[], []] },
+  },
 ];
 
 export const BLOCK_REGISTRY: Record<string, BlockDefinition> =
   Object.fromEntries(DEFINITIONS.map((def) => [def.type, def]));
 
-export function listBlockDefinitions(): BlockDefinition[] {
-  return DEFINITIONS;
+// List block definitions available in a given builder scope. A block's scope
+// defaults to "page"; "both" appears everywhere.
+export function listBlockDefinitions(
+  scope: "page" | "study" = "page",
+): BlockDefinition[] {
+  return DEFINITIONS.filter((def) => {
+    const defScope = def.scope ?? "page";
+    return defScope === "both" || defScope === scope;
+  });
 }
 
 export function getBlockDefinition(type: string): BlockDefinition | undefined {

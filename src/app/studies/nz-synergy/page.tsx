@@ -5,6 +5,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StudiesHero from "@/components/layout/StudiesHero";
 import StudyDetail from "@/components/sections/StudyDetail";
+import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
+import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 
 export const metadata: Metadata = {
   title: "NZ Synergy | HNU Auckland",
@@ -12,9 +14,16 @@ export const metadata: Metadata = {
     "A two-week residential nutrition study investigating dietary effects on diabetes risk markers.",
 };
 
+export const dynamic = "force-dynamic";
+
 const NAVBAR_HEIGHT = 180;
 
-export default function NZSynergyPage() {
+export default async function NZSynergyPage() {
+  const layout = await getStudyLayoutForSlug("nz-synergy");
+  if (layout) {
+    return <StudyLayoutView study={layout.study} blocks={layout.blocks} />;
+  }
+
   return (
     <>
       <Navbar />

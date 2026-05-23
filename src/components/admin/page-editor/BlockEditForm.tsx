@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { BlockDefinition } from "@/lib/blocks/types";
 import { Field } from "./fields";
+import RowEditor from "./RowEditor";
 
 export default function BlockEditForm({
   def,
@@ -24,14 +25,18 @@ export default function BlockEditForm({
 
   return (
     <div className="space-y-4 border-t border-gray-200 bg-gray-50 px-5 py-4">
-      {def.fields.map((field) => (
-        <Field
-          key={field.key}
-          field={field}
-          value={draft[field.key]}
-          onChange={(v) => setField(field.key, v)}
-        />
-      ))}
+      {def.type === "row" ? (
+        <RowEditor content={draft} onChange={setDraft} />
+      ) : (
+        def.fields.map((field) => (
+          <Field
+            key={field.key}
+            field={field}
+            value={draft[field.key]}
+            onChange={(v) => setField(field.key, v)}
+          />
+        ))
+      )}
       <div className="flex gap-2 pt-1">
         <button
           type="button"
