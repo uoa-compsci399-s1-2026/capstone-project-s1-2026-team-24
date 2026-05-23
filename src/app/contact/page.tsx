@@ -1,25 +1,21 @@
-import type { Metadata } from 'next';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import ContactHero from '@/components/sections/ContactHero';
-import ContactMap from '@/components/sections/ContactMap';
-import ContactDetails from '@/components/sections/ContactDetails';
+import type { Metadata } from "next";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import { renderPageBlocks } from "@/components/blocks/render-page";
 
 export const metadata: Metadata = {
-  title: 'Contact Us | HNU Auckland',
+  title: "Contact Us | HNU Auckland",
   description:
-    'Have a question or enquiry? Get in touch with the Human Nutrition Unit team.',
+    "Have a question or enquiry? Get in touch with the Human Nutrition Unit team.",
 };
 
-export default function ContactPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ContactPage() {
   return (
     <>
       <Navbar />
-      <ContactHero />
-      <main id="main-content">
-        <ContactMap />
-        <ContactDetails />
-      </main>
+      {await renderPageBlocks("contact")}
       <Footer />
     </>
   );

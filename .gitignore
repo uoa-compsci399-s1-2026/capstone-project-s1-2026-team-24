@@ -55,3 +55,7 @@ TASK1_TASK26_DELIVERY_NOTE.md
 prisma/dev.db
 scripts
 dev.db
+
+# Playwright MCP output and local screenshots
+.playwright-mcp/
+/*.png

@@ -7,6 +7,12 @@ import StudyContent from "./StudyContent";
 import { fetchStudyBySlug, fetchStudies } from "@/lib/fetch-api";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
+import { prisma } from "@/lib/prisma";
+import { resolveStudyLayoutBlocks } from "@/components/blocks/study/resolve-study-layout";
+import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
+
+
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -49,6 +55,14 @@ export default async function StudyDetailPage({ params }: PageProps) {
   const cookieStore = await cookies();
   const lang = cookieStore.get("lang")?.value === "ZH" ? "ZH" : "EN";
   const t = lang === "EN" ? en : zh;
+  // If an admin has built a custom layout (or a template applies), render it
+  // instead of the default StudyContent.
+  const layout = await resolveStudyLayoutBlocks(slug);
+  if (layout) {
+    return <StudyLayoutView study={study} blocks={layout} />;
+  }
+
+  const heroImage = study.imagePath?.trim() ? study.imagePath : FALLBACK_IMAGE;
 
   return (
     <>

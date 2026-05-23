@@ -7,10 +7,28 @@ import StudyDetail from "@/components/sections/StudyDetail";
 import { useLanguage } from "@/contexts/LanguageContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
-
+import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
+import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 export default function NZFoodAndBeveragePage() {
   const { lang } = useLanguage();
   const t = lang === "EN" ? en : zh;
+
+export const metadata: Metadata = {
+  title: "NZ Food and Beverage | HNU Auckland",
+  description:
+    "A short-term study investigating how different foods and beverages affect your metabolic rate, fat burn, blood sugar levels, and appetite.",
+};
+
+export const dynamic = "force-dynamic";
+
+// Full navbar height (utility bar 40px + main nav 140px)
+const NAVBAR_HEIGHT = 180;
+
+export default async function NZFoodAndBeveragePage() {
+  const layout = await getStudyLayoutForSlug("food-beverage");
+  if (layout) {
+    return <StudyLayoutView study={layout.study} blocks={layout.blocks} />;
+  }
 
   return (
     <>

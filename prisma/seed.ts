@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient, TeamSection } from "@prisma/client";
+import { seedPageBlocks } from "./seed-page-blocks";
 
 const adapter = new PrismaBetterSqlite3({
   url: process.env.DATABASE_URL || "file:./dev.db",
@@ -402,6 +403,9 @@ async function main() {
       order: index + 1,
     })),
   });
+
+  // Populate the page-builder blocks (preserves any existing blocks).
+  await seedPageBlocks(prisma);
 
   console.log("Seed completed successfully.");
 }

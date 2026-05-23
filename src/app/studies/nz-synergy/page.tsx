@@ -7,10 +7,28 @@ import StudyDetail from "@/components/sections/StudyDetail";
 import { useLanguage } from "@/contexts/LanguageContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
+import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
+import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 
 export default function NZSynergyPage() {
   const { lang } = useLanguage();
   const t = lang === "EN" ? en : zh;
+
+export const metadata: Metadata = {
+  title: "NZ Synergy | HNU Auckland",
+  description:
+    "A two-week residential nutrition study investigating dietary effects on diabetes risk markers.",
+};
+
+export const dynamic = "force-dynamic";
+
+const NAVBAR_HEIGHT = 180;
+
+export default async function NZSynergyPage() {
+  const layout = await getStudyLayoutForSlug("nz-synergy");
+  if (layout) {
+    return <StudyLayoutView study={layout.study} blocks={layout.blocks} />;
+  }
 
   return (
     <>
