@@ -501,8 +501,8 @@ const DEFINITIONS: BlockDefinition[] = [
   },
 
   // ---- Study layout blocks (study-layout builder only) ----
-  // These render live data from the study being viewed, so they have no
-  // editable content — they are placed, reordered and arranged into columns.
+  // Most render the live study data (no editable content); studyHero and
+  // studyProse carry editable content. All are study-scoped.
   {
     type: "studyStatusBar",
     label: "Status & language bar",
@@ -574,6 +574,42 @@ const DEFINITIONS: BlockDefinition[] = [
     editable: false,
     fields: [],
     defaultContent: {},
+  },
+  {
+    type: "studyHero",
+    label: "Study hero",
+    category: "Study",
+    scope: "study",
+    editable: true,
+    fields: [
+      { key: "eyebrow", label: "Eyebrow", type: "text" },
+      { key: "title", label: "Title (blank = study title)", type: "text" },
+      {
+        key: "image",
+        label: "Background image (blank = study image)",
+        type: "image",
+      },
+    ],
+    defaultContent: { eyebrow: "Our Studies", title: "", image: "" },
+  },
+  {
+    type: "studyProse",
+    label: "Free text / prose",
+    category: "Study",
+    scope: "study",
+    editable: true,
+    fields: [
+      { key: "heading", label: "Heading", type: "text" },
+      { key: "body", label: "Body", type: "richText" },
+      { key: "headingZh", label: "Heading (中文)", type: "text" },
+      { key: "bodyZh", label: "Body (中文)", type: "richText" },
+    ],
+    defaultContent: {
+      heading: "Section heading",
+      body: "<p>Add your content here.</p>",
+      headingZh: "",
+      bodyZh: "",
+    },
   },
   {
     type: "row",
