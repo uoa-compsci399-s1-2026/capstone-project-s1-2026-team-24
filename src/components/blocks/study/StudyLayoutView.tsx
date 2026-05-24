@@ -8,7 +8,9 @@ import { parseBlockContent } from "@/lib/blocks/validate";
 
 const FALLBACK_IMAGE = "/services-and-expertise.jpg";
 
-const asStr = (v: unknown): string => (typeof v === "string" ? v : "");
+// Trimmed so whitespace-only values fall through to the study defaults (a blank
+// image would otherwise feed Next/Image an invalid src).
+const asStr = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
 
 type StudyForView = Parameters<typeof toStudyData>[0] & { imagePath?: string };
 

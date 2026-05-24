@@ -18,20 +18,24 @@ export default async function StudyTemplatePage() {
     create: { slug: STUDY_TEMPLATE_SLUG, title: "Study layout template" },
     include: { blocks: { orderBy: { position: "asc" } } },
   });
-  const templateHasBlocks = template.blocks.length > 0;
+  // Match the render path, which only uses visible blocks: a template/override
+  // with only hidden blocks falls back to the built-in default.
+  const templateHasBlocks = template.blocks.some((b) => b.isVisible);
 
   const studies = await prisma.study.findMany({
     orderBy: { order: "asc" },
     select: { id: true, title: true, slug: true },
   });
 
+  const overridePages = await prisma.page.findMany({
+    where: { slug: { in: studies.map((s) => studyOverrideSlug(s.slug)) } },
+    select: {
+      slug: true,
+      blocks: { where: { isVisible: true }, select: { id: true } },
+    },
+  });
   const overrideCounts = new Map(
-    (
-      await prisma.page.findMany({
-        where: { slug: { in: studies.map((s) => studyOverrideSlug(s.slug)) } },
-        include: { _count: { select: { blocks: true } } },
-      })
-    ).map((p) => [p.slug, p._count.blocks]),
+    overridePages.map((p) => [p.slug, p.blocks.length]),
   );
 
   const studyStatus = studies.map((s) => {
