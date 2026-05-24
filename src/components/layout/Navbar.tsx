@@ -74,11 +74,6 @@ export default function Navbar() {
   ] as const;
 
   useEffect(() => {
-    setMounted(true);
-    setScrolled(window.scrollY > 10);
-  }, [pathname]);
-
-  useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 10) {
         setScrolled(true);
@@ -104,6 +99,9 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    // Close any open menus and re-evaluate transient scroll/mount UI on
+    // navigation — an intentional reset keyed on the pathname change.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
     setAboutOpen(false);
     setStudiesOpen(false);

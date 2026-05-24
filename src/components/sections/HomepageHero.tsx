@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function HomepageHero() {
   return (
@@ -46,7 +47,7 @@ export default function HomepageHero() {
             >
               Unlock the power of food with <br /> the Human Nutrition Unit
             </h2>
-            <a
+            <Link
               href="/studies"
               className="mt-15 inline-flex rounded-full border-[5px] border-white/75 px-10 py-3 font-bold tracking-wide text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               style={{
@@ -55,7 +56,7 @@ export default function HomepageHero() {
               }}
             >
               JOIN A STUDY
-            </a>
+            </Link>
           </div>
         </div>
 
