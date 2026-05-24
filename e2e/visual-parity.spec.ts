@@ -38,6 +38,26 @@ async function settlePage(page: Page) {
       }),
   );
   await page.evaluate(() => document.fonts.ready);
+  // Wait for every image to finish loading/decoding so lazy-loaded images don't
+  // race the screenshot (a load race shows up as a diff in the image region).
+  await page.evaluate(async () => {
+    // `complete` is true once an image's load attempt finished — whether it
+    // succeeded or errored. Only wait on in-flight images, and cap the wait so a
+    // single stalled request (e.g. a marquee logo) can never time out the test;
+    // Playwright's screenshot stabilization covers any remaining settling.
+    const images = Promise.all(
+      Array.from(document.images).map((img) =>
+        img.complete
+          ? Promise.resolve()
+          : new Promise<void>((resolve) => {
+              img.addEventListener("load", () => resolve(), { once: true });
+              img.addEventListener("error", () => resolve(), { once: true });
+            }),
+      ),
+    );
+    const cap = new Promise<void>((resolve) => setTimeout(resolve, 8000));
+    await Promise.race([images, cap]);
+  });
 }
 
 test.describe("public site visual parity", () => {
