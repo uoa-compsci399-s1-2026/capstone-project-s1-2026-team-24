@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 
 import type { BlockField, StudyCardContent } from "@/lib/blocks/types";
 import MediaPicker from "@/components/admin/media/MediaPicker";
+import { useMediaResolver } from "@/components/admin/media/useMediaResolver";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#0c0c48] focus:border-[#0c0c48] focus:outline-none focus:ring-1 focus:ring-[#0c0c48]";
@@ -36,14 +37,16 @@ function ImageField({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const { resolve } = useMediaResolver();
+  const preview = resolve(value);
   return (
     <div>
       <label className={labelClass}>{label}</label>
       <div className="flex items-start gap-3">
-        {value ? (
+        {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={value}
+            src={preview}
             alt=""
             className="h-16 w-16 flex-shrink-0 rounded-lg border border-gray-200 object-cover"
           />
@@ -125,16 +128,17 @@ function ImageArrayField({
   onChange: (v: string[]) => void;
 }) {
   const items = Array.isArray(value) ? value : [];
+  const { resolve } = useMediaResolver();
   return (
     <div>
       <label className={labelClass}>{label}</label>
       <div className="space-y-2">
         {items.map((src, i) => (
           <div key={i} className="flex items-center gap-2">
-            {src ? (
+            {resolve(src) ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={src}
+                src={resolve(src)}
                 alt=""
                 className="h-12 w-12 flex-shrink-0 rounded border border-gray-200 object-contain"
               />

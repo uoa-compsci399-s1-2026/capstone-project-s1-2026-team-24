@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toMediaRef } from "@/lib/media-refs";
+import { primeMediaCache } from "./useMediaResolver";
 
 export type MediaAsset = {
   id: number;
@@ -10,13 +12,16 @@ export type MediaAsset = {
   caption: string;
   mimeType: string;
   size: number;
+  width: number | null;
+  height: number | null;
 };
 
 export default function MediaPicker({
   onSelect,
   label = "Choose from library",
 }: {
-  onSelect: (filePath: string) => void;
+  /** Receives a "media:{id}" reference for the chosen asset. */
+  onSelect: (value: string) => void;
   label?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -31,8 +36,11 @@ export default function MediaPicker({
     setError(null);
     try {
       const res = await fetch("/api/admin/media");
-      if (res.ok) setAssets(await res.json());
-      else setError("Could not load media library.");
+      if (res.ok) {
+        const data = await res.json();
+        setAssets(data);
+        primeMediaCache(data);
+      } else setError("Could not load media library.");
     } catch {
       setError("Could not load media library.");
     } finally {
@@ -55,7 +63,11 @@ export default function MediaPicker({
       const res = await fetch("/api/admin/media", { method: "POST", body: fd });
       if (res.ok) {
         const asset = (await res.json()) as MediaAsset;
-        setAssets((prev) => [asset, ...prev]);
+        setAssets((prev) => {
+          const next = [asset, ...prev];
+          primeMediaCache(next);
+          return next;
+        });
       } else {
         const body = await res.json().catch(() => ({}));
         setError(body.error ?? "Upload failed.");
@@ -129,7 +141,7 @@ export default function MediaPicker({
                       key={asset.id}
                       type="button"
                       onClick={() => {
-                        onSelect(asset.filePath);
+                        onSelect(toMediaRef(asset.id));
                         setOpen(false);
                       }}
                       className="group overflow-hidden rounded-lg border border-gray-200 text-left hover:border-[#0c0c48]"

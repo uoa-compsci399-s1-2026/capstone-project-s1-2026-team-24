@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { mkdir, writeFile, unlink } from "fs/promises";
 import path from "path";
+import { getImageDimensions } from "@/lib/image-dimensions";
 
 export const runtime = "nodejs";
 
@@ -71,12 +72,12 @@ export async function POST(request: NextRequest) {
 
     const uploadDir = path.join(process.cwd(), "public", MEDIA_UPLOAD_PREFIX);
     await mkdir(uploadDir, { recursive: true });
+    const buffer = Buffer.from(await file.arrayBuffer());
     const safeFileName = `${Date.now()}-${sanitizeFileName(file.name)}`;
-    await writeFile(
-      path.join(uploadDir, safeFileName),
-      Buffer.from(await file.arrayBuffer()),
-    );
+    await writeFile(path.join(uploadDir, safeFileName), buffer);
     savedPath = `/${MEDIA_UPLOAD_PREFIX}/${safeFileName}`;
+
+    const dimensions = getImageDimensions(buffer);
 
     const asset = await prisma.mediaAsset.create({
       data: {
@@ -86,6 +87,8 @@ export async function POST(request: NextRequest) {
         caption: typeof caption === "string" ? caption : "",
         mimeType: file.type || "application/octet-stream",
         size: file.size,
+        width: dimensions?.width ?? null,
+        height: dimensions?.height ?? null,
       },
     });
 

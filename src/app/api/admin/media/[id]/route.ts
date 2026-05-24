@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { unlink } from "fs/promises";
 import path from "path";
+import { findAssetUsage } from "@/lib/media-resolve";
 
 export const runtime = "nodejs";
 
@@ -62,7 +63,7 @@ export async function PATCH(
 
 // Delete an asset record and its underlying file.
 export async function DELETE(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
@@ -75,6 +76,23 @@ export async function DELETE(
     if (!existing) {
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
+
+    // Block deletion of an asset that's still referenced (unless ?force=1),
+    // returning where it's used so the admin can fix those pages first.
+    const force = new URL(request.url).searchParams.get("force") === "1";
+    if (!force) {
+      const usage = await findAssetUsage(existing);
+      if (usage.length > 0) {
+        return NextResponse.json(
+          {
+            error: "This image is still in use. Remove or replace it on those pages first, or delete with force.",
+            usage,
+          },
+          { status: 409 },
+        );
+      }
+    }
+
     await prisma.mediaAsset.delete({ where: { id } });
     await tryRemoveFile(existing.filePath);
     return NextResponse.json({ ok: true });
