@@ -1,12 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import type { StudyData } from "./study-context";
+import { resolveBlockContents } from "@/lib/media-resolve";
+import { sanitizeBlockContent } from "@/lib/sanitize";
+import { STUDY_TEMPLATE_SLUG, studyOverrideSlug } from "./study-slugs";
 
-// URL-safe Page slugs (reused by the admin /api/admin/pages endpoints).
-export const STUDY_TEMPLATE_SLUG = "studylayout-__default__";
-
-export function studyOverrideSlug(studySlug: string): string {
-  return `studylayout-${studySlug}`;
-}
+// Re-export the (pure) slug helpers so existing server imports of them from this
+// module keep working; client code should import from ./study-slugs directly.
+export { STUDY_TEMPLATE_SLUG, studyOverrideSlug };
 
 export interface ResolvedLayoutBlock {
   id: number;
@@ -30,15 +30,32 @@ export async function resolveStudyLayoutBlocks(
     where: { slug: studyOverrideSlug(studySlug) },
     include: visible,
   });
-  if (override && override.blocks.length > 0) return override.blocks;
+  if (override && override.blocks.length > 0) {
+    return prepareLayoutForRender(override.blocks);
+  }
 
   const template = await prisma.page.findUnique({
     where: { slug: STUDY_TEMPLATE_SLUG },
     include: visible,
   });
-  if (template && template.blocks.length > 0) return template.blocks;
+  if (template && template.blocks.length > 0) {
+    return prepareLayoutForRender(template.blocks);
+  }
 
   return null;
+}
+
+// Make stored layout blocks render-ready: resolve "media:{id}" image references
+// to paths and sanitize rich-text fields (study blocks render client-side, so
+// they can't sanitize at render time the way the page <RichText/> does).
+async function prepareLayoutForRender(
+  blocks: ResolvedLayoutBlock[],
+): Promise<ResolvedLayoutBlock[]> {
+  const resolved = await resolveBlockContents(blocks.map((b) => b.content));
+  return blocks.map((b, i) => ({
+    ...b,
+    content: sanitizeBlockContent(b.type, resolved[i]),
+  }));
 }
 
 // Convenience for routes (incl. the hardcoded ones): fetch the active study and

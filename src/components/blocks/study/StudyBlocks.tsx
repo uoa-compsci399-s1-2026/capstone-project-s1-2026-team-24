@@ -224,6 +224,35 @@ function StudyPdfs() {
   );
 }
 
+// Free-text / prose section. Its body is rich-text HTML, sanitized server-side
+// before it reaches this client component (see resolve-study-layout).
+function StudyProse({ content }: { content: Record<string, unknown> }) {
+  const { lang } = useStudy();
+  const s = (v: unknown) => (typeof v === "string" ? v : "");
+  const heading =
+    lang === "zh"
+      ? s(content.headingZh) || s(content.heading)
+      : s(content.heading);
+  const body =
+    lang === "zh" ? s(content.bodyZh) || s(content.body) : s(content.body);
+  if (!heading && !body) return null;
+  return (
+    <div className={CARD}>
+      {heading && (
+        <h2 className="text-[#0c0c48] text-xl lg:text-2xl font-bold mb-4">
+          {heading}
+        </h2>
+      )}
+      {body && (
+        <div
+          className="text-[#1f2937] text-base lg:text-[17px] leading-[1.8] [&_p]:mb-4 [&_p:last-child]:mb-0 [&_a]:text-[#1f2bd4] [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+          dangerouslySetInnerHTML={{ __html: body }}
+        />
+      )}
+    </div>
+  );
+}
+
 function asRowContent(content: Record<string, unknown>): RowContent {
   const variant = content.variant === "oneColumn" ? "oneColumn" : "twoColumn";
   const cols = Array.isArray(content.columns) ? content.columns : [];
@@ -287,6 +316,11 @@ export default function StudyBlockRenderer({
       return <StudyEthics />;
     case "studyPdfs":
       return <StudyPdfs />;
+    case "studyProse":
+      return <StudyProse content={content} />;
+    case "studyHero":
+      // Rendered by StudyLayoutView as the full-width page hero.
+      return null;
     case "sectionHeading":
       return (
         <SectionHeading

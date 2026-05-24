@@ -45,10 +45,10 @@ export default function StudyLayoutEditor({
     }
   }
 
-  async function resetToDefault() {
+  async function resetToTemplate() {
     if (
       !window.confirm(
-        "Reset this study to its default layout? This deletes the custom layout for this study.",
+        "Clear this study's custom layout? It will then use the shared template (or the site's built-in default if there is no template). Your blocks for this study will be removed.",
       )
     ) {
       return;
@@ -69,6 +69,31 @@ export default function StudyLayoutEditor({
     }
   }
 
+  async function resetToOriginal() {
+    if (
+      !window.confirm(
+        "Replace this study's layout with the original built-in design? This always works — even if the shared template has been changed or removed.",
+      )
+    ) {
+      return;
+    }
+    setBusy(true);
+    setMessage(null);
+    try {
+      const res = await fetch(
+        `/api/admin/study-layouts/${studySlug}/reset-original`,
+        { method: "POST" },
+      );
+      if (res.ok) {
+        window.location.reload();
+        return;
+      }
+      setMessage("Could not restore the original layout.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const headerExtra = (
     <>
       <button
@@ -81,11 +106,19 @@ export default function StudyLayoutEditor({
       </button>
       <button
         type="button"
-        onClick={resetToDefault}
+        onClick={resetToTemplate}
         disabled={busy}
-        className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-60"
+        className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100 disabled:opacity-60"
       >
-        Reset to default
+        Reset to shared template
+      </button>
+      <button
+        type="button"
+        onClick={resetToOriginal}
+        disabled={busy}
+        className="rounded-lg border border-amber-300 px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-60"
+      >
+        Reset to original default
       </button>
     </>
   );
@@ -93,9 +126,11 @@ export default function StudyLayoutEditor({
   return (
     <div>
       <p className="mb-4 rounded-lg border border-blue-100 bg-blue-50 px-4 py-2 text-sm text-[#0a4479]">
-        Blocks here render this study&apos;s live data. With no blocks, the page
-        shows its default layout. &ldquo;Save as template&rdquo; applies this
-        arrangement to all studies that don&apos;t have their own.
+        Blocks here render this study&apos;s live data. &ldquo;Save as
+        template&rdquo; applies this arrangement to studies without their own.
+        &ldquo;Reset to shared template&rdquo; clears this study&apos;s blocks so
+        it follows the template; &ldquo;Reset to original default&rdquo; always
+        restores the built-in design, even if the template has been changed.
       </p>
       {message && (
         <div className="mb-4 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-[#0c0c48]">
