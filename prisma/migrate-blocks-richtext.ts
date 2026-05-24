@@ -23,6 +23,10 @@ const BACKFILL_FROM_DEFAULTS = new Set([
   "teamHero",
   "contactHero",
   "contactMap",
+  "recentPublications",
+  "ourPartners",
+  "publicationIndex",
+  "teamSections",
 ]);
 
 function escapeHtml(s: string): string {

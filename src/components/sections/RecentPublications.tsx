@@ -14,7 +14,11 @@ type Publication = {
   doi: string | null;
 };
 
-export default function RecentPublications() {
+export default function RecentPublications({
+  limit = 2,
+}: {
+  limit?: number;
+} = {}) {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,12 +28,12 @@ export default function RecentPublications() {
         const res = await fetch("/api/publications", { cache: "no-store" });
         if (!res.ok) return;
         const data: Publication[] = await res.json();
-        // Sort by year descending, take top 2
-        const top2 = data
+        // Sort by year descending, take the top N
+        const top = data
           .filter((p) => p.year)
           .sort((a, b) => (b.year ?? 0) - (a.year ?? 0))
-          .slice(0, 2);
-        setPublications(top2);
+          .slice(0, limit);
+        setPublications(top);
       } catch {
         // silently fail
       } finally {
@@ -37,7 +41,7 @@ export default function RecentPublications() {
       }
     }
     load();
-  }, []);
+  }, [limit]);
 
   return (
     <section className="relative w-full bg-[#f0f0f0] py-16 px-6 sm:px-12 lg:px-45">

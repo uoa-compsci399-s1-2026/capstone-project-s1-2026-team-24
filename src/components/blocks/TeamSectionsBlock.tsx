@@ -6,7 +6,13 @@ import { fetchTeamData } from "@/lib/fetch-api";
 
 // The Team page's filterable member sections. Self-contained: fetches its own
 // data so it can be placed as a block. Mirrors the previous page-level composition.
-export default async function TeamSectionsBlock() {
+type TeamTab = "all" | "board" | "research" | "alumni";
+
+export default async function TeamSectionsBlock({
+  defaultTab = "all",
+}: {
+  defaultTab?: TeamTab;
+} = {}) {
   const { boardOfDirectors, researchTeam, alumni } = await fetchTeamData();
 
   return (
@@ -15,6 +21,7 @@ export default async function TeamSectionsBlock() {
       research={<ResearchTeam members={researchTeam} />}
       alumni={<AlumniSection members={alumni} />}
       hasAlumni={alumni.length > 0}
+      defaultTab={defaultTab}
     />
   );
 }

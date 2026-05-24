@@ -47,7 +47,11 @@ function PartnerMarquee({
   );
 }
 
-export default async function OurPartners() {
+export default async function OurPartners({
+  group = "both",
+}: {
+  group?: "both" | "Collaborating" | "Industry";
+} = {}) {
   let partnerLogos: PartnerLogoRecord[] = [];
 
   try {
@@ -61,7 +65,8 @@ export default async function OurPartners() {
 
   return (
     <section className="bg-white py-14 sm:py-18 lg:py-24">
-      {collaborating.length > 0 && (
+      {(group === "both" || group === "Collaborating") &&
+        collaborating.length > 0 && (
         <div className="mb-10 sm:mb-14">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0c0c48] text-center mb-8 px-6">
             Collaborating Partners
@@ -73,7 +78,7 @@ export default async function OurPartners() {
         </div>
       )}
 
-      {industry.length > 0 && (
+      {(group === "both" || group === "Industry") && industry.length > 0 && (
         <div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0c0c48] text-center mb-8 px-6">
             Current Industry Partners

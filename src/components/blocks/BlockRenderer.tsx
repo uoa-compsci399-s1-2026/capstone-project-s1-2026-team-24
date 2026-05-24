@@ -44,6 +44,16 @@ const imgPos = (v: unknown): ImagePosition | undefined =>
     : undefined;
 const cardBg = (v: unknown): "dark" | "standard" | "light" | undefined =>
   v === "dark" || v === "standard" || v === "light" ? v : undefined;
+const partnerGroup = (
+  v: unknown,
+): "both" | "Collaborating" | "Industry" | undefined =>
+  v === "both" || v === "Collaborating" || v === "Industry" ? v : undefined;
+const teamTab = (
+  v: unknown,
+): "all" | "board" | "research" | "alumni" | undefined =>
+  v === "all" || v === "board" || v === "research" || v === "alumni"
+    ? v
+    : undefined;
 
 function infoCardProps(c: Content) {
   return {
@@ -211,19 +221,19 @@ export default function BlockRenderer({
     case "contactDetails":
       return <ContactDetails />;
 
-    // Dynamic (live data)
+    // Dynamic (live data, with optional display config)
     case "recentPublications":
-      return <RecentPublications />;
+      return <RecentPublications limit={Number(c.limit) || undefined} />;
     case "ourPartners":
-      return <OurPartners />;
+      return <OurPartners group={partnerGroup(c.group)} />;
     case "publicationIndex":
-      return <PublicationIndex />;
+      return <PublicationIndex pageSize={Number(c.pageSize) || undefined} />;
     case "academicCollaborators":
       return <AcademicCollaborators />;
     case "industryCollaborators":
       return <IndustryCollaborators />;
     case "teamSections":
-      return <TeamSectionsBlock />;
+      return <TeamSectionsBlock defaultTab={teamTab(c.defaultTab)} />;
 
     default:
       if (process.env.NODE_ENV !== "production") {
