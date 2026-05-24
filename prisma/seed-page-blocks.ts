@@ -1,6 +1,11 @@
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
+import {
+  CONTACT_DETAILS_DEFAULTS,
+  DISCOVER_VIDEO_DEFAULTS,
+  TRIAL_DESIGN_DEFAULTS,
+} from "../src/lib/blocks/default-content";
 
 // Seeds the page-builder tables (Page + PageBlock) with the content that was
 // previously hardcoded in each page's JSX. Running this reproduces the exact
@@ -111,7 +116,7 @@ const PAGE_SEEDS: PageSeed[] = [
           subtitleMaxWidth: "697",
         },
       },
-      { type: "discoverVideo", content: {} },
+      { type: "discoverVideo", content: { ...DISCOVER_VIDEO_DEFAULTS } },
       {
         type: "calloutBannerRight",
         content: {
@@ -201,7 +206,7 @@ const PAGE_SEEDS: PageSeed[] = [
     blocks: [
       { type: "studiesHero", content: {} },
       { type: "studiesOverview", content: {} },
-      { type: "trialDesign", content: {} },
+      { type: "trialDesign", content: { ...TRIAL_DESIGN_DEFAULTS } },
       { type: "studiesContactCard", content: {} },
     ],
   },
@@ -357,7 +362,7 @@ const PAGE_SEEDS: PageSeed[] = [
             "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3191.62085243865!2d174.74999331301763!3d-36.87549318088687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d0d4771e23b727d%3A0x90ba816391e739dc!2sHuman%20Nutrition%20Unit!5e0!3m2!1sen!2snz!4v1777374580042!5m2!1sen!2snz",
         },
       },
-      { type: "contactDetails", content: {} },
+      { type: "contactDetails", content: { ...CONTACT_DETAILS_DEFAULTS } },
     ],
   },
 ];

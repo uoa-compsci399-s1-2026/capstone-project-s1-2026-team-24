@@ -213,13 +213,41 @@ export default function BlockRenderer({
     case "studiesOverview":
       return <StudiesOverview />;
     case "trialDesign":
-      return <TrialDesign />;
+      return (
+        <TrialDesign
+          heading={str(c.heading) || undefined}
+          intro={str(c.intro) || undefined}
+          residentialHeading={str(c.residentialHeading) || undefined}
+          residentialBody={str(c.residentialBody) || undefined}
+          communityHeading={str(c.communityHeading) || undefined}
+          communityBody={str(c.communityBody) || undefined}
+        />
+      );
     case "discoverVideo":
-      return <DiscoverVideo />;
+      return (
+        <DiscoverVideo
+          videoId={str(c.videoId) || undefined}
+          cardTitle={str(c.cardTitle) || undefined}
+          cardParagraph1={str(c.cardParagraph1) || undefined}
+          cardParagraph2={str(c.cardParagraph2) || undefined}
+        />
+      );
     case "contactMap":
       return <ContactMap mapUrl={str(c.mapUrl) || undefined} />;
     case "contactDetails":
-      return <ContactDetails />;
+      return (
+        <ContactDetails
+          cardOneTitle={str(c.cardOneTitle) || undefined}
+          cardOneBody={str(c.cardOneBody) || undefined}
+          cardTwoTitle={str(c.cardTwoTitle) || undefined}
+          cardTwoBody={str(c.cardTwoBody) || undefined}
+          cardThreeTitle={str(c.cardThreeTitle) || undefined}
+          cardThreeBody={str(c.cardThreeBody) || undefined}
+          phone={str(c.phone) || undefined}
+          phoneHref={str(c.phoneHref) || undefined}
+          address={str(c.address) || undefined}
+        />
+      );
 
     // Dynamic (live data, with optional display config)
     case "recentPublications":

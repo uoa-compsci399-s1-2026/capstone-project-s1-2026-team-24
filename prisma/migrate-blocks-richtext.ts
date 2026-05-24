@@ -27,6 +27,9 @@ const BACKFILL_FROM_DEFAULTS = new Set([
   "ourPartners",
   "publicationIndex",
   "teamSections",
+  "discoverVideo",
+  "trialDesign",
+  "contactDetails",
 ]);
 
 function escapeHtml(s: string): string {

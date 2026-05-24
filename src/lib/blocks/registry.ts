@@ -4,6 +4,11 @@
 // which maps each `type` to a React component.
 
 import type { BlockDefinition, BlockField } from "./types";
+import {
+  CONTACT_DETAILS_DEFAULTS,
+  DISCOVER_VIDEO_DEFAULTS,
+  TRIAL_DESIGN_DEFAULTS,
+} from "./default-content";
 
 const IMAGE_POSITION_OPTIONS = [
   "center",
@@ -330,17 +335,34 @@ const DEFINITIONS: BlockDefinition[] = [
     type: "trialDesign",
     label: "Trial design",
     category: "Content",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: [
+      { key: "heading", label: "Heading", type: "text" },
+      { key: "intro", label: "Intro", type: "richText" },
+      { key: "residentialHeading", label: "Residential heading", type: "text" },
+      { key: "residentialBody", label: "Residential body", type: "richText" },
+      { key: "communityHeading", label: "Community heading", type: "text" },
+      { key: "communityBody", label: "Community body", type: "richText" },
+    ],
+    defaultContent: { ...TRIAL_DESIGN_DEFAULTS },
   },
   {
     type: "discoverVideo",
     label: "Discover video",
     category: "Content",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: [
+      {
+        key: "videoId",
+        label: "YouTube video ID",
+        type: "text",
+        help: "The id after youtube.com/embed/ or watch?v=.",
+      },
+      { key: "cardTitle", label: "Card title", type: "text" },
+      { key: "cardParagraph1", label: "Card paragraph 1", type: "textarea" },
+      { key: "cardParagraph2", label: "Card paragraph 2", type: "textarea" },
+    ],
+    defaultContent: { ...DISCOVER_VIDEO_DEFAULTS },
   },
   {
     type: "contactMap",
@@ -364,9 +386,24 @@ const DEFINITIONS: BlockDefinition[] = [
     type: "contactDetails",
     label: "Contact details",
     category: "Content",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: [
+      { key: "cardOneTitle", label: "Card 1 title", type: "text" },
+      { key: "cardOneBody", label: "Card 1 body", type: "textarea" },
+      { key: "cardTwoTitle", label: "Card 2 title", type: "text" },
+      { key: "cardTwoBody", label: "Card 2 body", type: "textarea" },
+      { key: "cardThreeTitle", label: "Card 3 title", type: "text" },
+      { key: "cardThreeBody", label: "Card 3 body", type: "textarea" },
+      { key: "phone", label: "Phone (display)", type: "text" },
+      {
+        key: "phoneHref",
+        label: "Phone link",
+        type: "text",
+        help: "e.g. tel:+6492345678",
+      },
+      { key: "address", label: "Address", type: "textarea" },
+    ],
+    defaultContent: { ...CONTACT_DETAILS_DEFAULTS },
   },
 
   // ---- Dynamic (pull live data from existing admin sections) ----
