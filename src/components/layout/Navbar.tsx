@@ -413,7 +413,7 @@ export default function Navbar() {
                               className="w-[300px] h-[200px] object-cover rounded-[30px]"
                               alt={item.label}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 rounded-[30px]" />
+                            <div className="absolute inset-[-1] bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90" />
                             <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
                               {item.label}
                             </p>
@@ -498,7 +498,7 @@ export default function Navbar() {
                               className="w-[300px] h-[200px] object-cover rounded-[30px]"
                               alt={item.label}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 rounded-[30px]" />
+                            <div className="absolute inset-[-1] bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 " />
                             <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
                               {item.label}
                             </p>
@@ -520,7 +520,23 @@ export default function Navbar() {
               {/* Search button */}
               <button
                 ref={searchTriggerRef}
-                onClick={() => setSearchOpen(!searchOpen)}
+                onClick={() => {
+                  setSearchOpen(!searchOpen);
+                  if (aboutOpen) {
+                    setAboutClosing(true);
+                    setTimeout(() => {
+                      setAboutOpen(false);
+                      setAboutClosing(false);
+                    }, 300);
+                  }
+                  if (studiesOpen) {
+                    setStudiesClosing(true);
+                    setTimeout(() => {
+                      setStudiesOpen(false);
+                      setStudiesClosing(false);
+                    }, 300);
+                  }
+                }}
                 aria-label={searchOpen ? "Close search" : "Open search"}
                 className={`flex items-center justify-center border-[3px] border-white text-white hover:bg-white/10 h-[57px] transition-all duration-300 ease-in-out ${
                   searchOpen
