@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MediaAsset } from "./MediaPicker";
+import { primeMediaCache } from "./useMediaResolver";
 
 type MediaUsage = {
   pageSlug: string;
@@ -48,8 +49,11 @@ export default function MediaLibrary() {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/media");
-      if (res.ok) setAssets(await res.json());
-      else setError("Could not load media.");
+      if (res.ok) {
+        const data = await res.json();
+        setAssets(data);
+        primeMediaCache(data);
+      } else setError("Could not load media.");
     } catch {
       setError("Could not load media.");
     } finally {
@@ -73,7 +77,11 @@ export default function MediaLibrary() {
         const res = await fetch("/api/admin/media", { method: "POST", body: fd });
         if (res.ok) {
           const asset = (await res.json()) as MediaAsset;
-          setAssets((prev) => [asset, ...prev]);
+          setAssets((prev) => {
+            const next = [asset, ...prev];
+            primeMediaCache(next);
+            return next;
+          });
         } else {
           const body = await res.json().catch(() => ({}));
           setError(body.error ?? "Upload failed.");
@@ -100,9 +108,11 @@ export default function MediaLibrary() {
       });
       if (res.ok) {
         const updated = (await res.json()) as MediaAsset;
-        setAssets((prev) =>
-          prev.map((a) => (a.id === updated.id ? updated : a)),
-        );
+        setAssets((prev) => {
+          const next = prev.map((a) => (a.id === updated.id ? updated : a));
+          primeMediaCache(next);
+          return next;
+        });
         setSelected(updated);
       } else {
         setError("Could not save changes.");
@@ -118,7 +128,11 @@ export default function MediaLibrary() {
       method: "DELETE",
     });
     if (res.ok) {
-      setAssets((prev) => prev.filter((a) => a.id !== id));
+      setAssets((prev) => {
+        const next = prev.filter((a) => a.id !== id);
+        primeMediaCache(next);
+        return next;
+      });
       setSelected((s) => (s?.id === id ? null : s));
       setError(null);
       return;
@@ -153,9 +167,11 @@ export default function MediaLibrary() {
       });
       if (res.ok) {
         const updated = (await res.json()) as MediaAsset;
-        setAssets((prev) =>
-          prev.map((a) => (a.id === updated.id ? updated : a)),
-        );
+        setAssets((prev) => {
+          const next = prev.map((a) => (a.id === updated.id ? updated : a));
+          primeMediaCache(next);
+          return next;
+        });
         setSelected(updated);
       } else {
         const body = await res.json().catch(() => ({}));
@@ -271,7 +287,7 @@ export default function MediaLibrary() {
             <p className="mb-2 break-all text-xs text-gray-400">
               {selected.filePath}
             </p>
-            {selected.width && selected.height ? (
+            {selected.width != null && selected.height != null ? (
               <p className="mb-3 text-xs text-gray-400">
                 {selected.width} × {selected.height} px
               </p>

@@ -133,12 +133,14 @@ function ImageArrayField({
     <div>
       <label className={labelClass}>{label}</label>
       <div className="space-y-2">
-        {items.map((src, i) => (
+        {items.map((src, i) => {
+          const preview = resolve(src);
+          return (
           <div key={i} className="flex items-center gap-2">
-            {resolve(src) ? (
+            {preview ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={resolve(src)}
+                src={preview}
                 alt=""
                 className="h-12 w-12 flex-shrink-0 rounded border border-gray-200 object-contain"
               />
@@ -164,7 +166,8 @@ function ImageArrayField({
               ✕
             </button>
           </div>
-        ))}
+          );
+        })}
         <MediaPicker
           label="+ Add image from library"
           onSelect={(path) => onChange([...items, path])}

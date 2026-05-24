@@ -49,6 +49,10 @@ function contentHasPath(value: unknown, target: string): boolean {
 export async function resolveBlockContents(
   contents: string[],
 ): Promise<string[]> {
+  // Cheap fast path: only blocks whose JSON actually contains a "media:" token
+  // need parsing/serialization — most pages have none, so skip the work.
+  if (!contents.some((c) => c.includes("media:"))) return contents;
+
   const parsed = contents.map((c) => parseBlockContent(c));
   const ids = new Set<number>();
   for (const c of parsed) collectIds(c, ids);
@@ -83,7 +87,12 @@ export async function findAssetUsage(asset: {
     where: {
       OR: [{ content: { contains: ref } }, { content: { contains: asset.filePath } }],
     },
-    include: { page: { select: { slug: true, title: true } } },
+    select: {
+      id: true,
+      type: true,
+      content: true,
+      page: { select: { slug: true, title: true } },
+    },
   });
 
   // `contains` can over-match (e.g. media:42 inside media:420), so confirm a

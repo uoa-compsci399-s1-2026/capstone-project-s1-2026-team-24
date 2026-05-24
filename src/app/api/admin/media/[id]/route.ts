@@ -1,26 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { unlink } from "fs/promises";
-import path from "path";
 import { findAssetUsage } from "@/lib/media-resolve";
+import { tryRemoveFile } from "@/lib/media-upload";
 
 export const runtime = "nodejs";
-
-const MEDIA_UPLOAD_PREFIX = "uploads/media";
 
 function parseId(raw: string) {
   const id = Number(raw);
   return Number.isInteger(id) && id > 0 ? id : null;
-}
-
-async function tryRemoveFile(filePath: string) {
-  const relative = filePath.replace(/^\/+/, "");
-  if (!relative.startsWith(MEDIA_UPLOAD_PREFIX)) return;
-  try {
-    await unlink(path.join(process.cwd(), "public", relative));
-  } catch (error) {
-    console.warn("Media file could not be removed:", error);
-  }
 }
 
 // Update an asset's alt text / caption.

@@ -1,35 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { mkdir, writeFile, unlink } from "fs/promises";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { getImageDimensions } from "@/lib/image-dimensions";
+import {
+  MAX_FILE_SIZE,
+  MEDIA_UPLOAD_PREFIX,
+  sanitizeFileName,
+  isAllowedImage,
+  tryRemoveFile,
+} from "@/lib/media-upload";
 
 export const runtime = "nodejs";
-
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const MEDIA_UPLOAD_PREFIX = "uploads/media";
-
-function sanitizeFileName(fileName: string) {
-  return fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
-}
-
-// Raster formats only — SVG is excluded to avoid stored-XSS via uploaded markup.
-function isAllowedImage(file: File) {
-  return (
-    /^image\/(png|jpe?g|webp|gif|avif)$/i.test(file.type) ||
-    /\.(png|jpe?g|webp|gif|avif)$/i.test(file.name)
-  );
-}
-
-async function tryRemoveFile(filePath: string) {
-  const relative = filePath.replace(/^\/+/, "");
-  if (!relative.startsWith(MEDIA_UPLOAD_PREFIX)) return;
-  try {
-    await unlink(path.join(process.cwd(), "public", relative));
-  } catch (error) {
-    console.warn("Media file could not be removed:", error);
-  }
-}
 
 export async function GET() {
   try {
