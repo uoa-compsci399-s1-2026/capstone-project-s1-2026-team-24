@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import DiscoverHero from "@/components/sections/DiscoverHero";
-import DiscoverVideo from "@/components/sections/DiscoverVideo";
-import AboutPageContent from "@/components/sections/AboutPageContent";
 import { renderPageBlocks } from "@/components/blocks/render-page";
 
 export const metadata: Metadata = {
@@ -18,9 +15,6 @@ export default async function AboutPage() {
   return (
     <>
       <Navbar />
-      <DiscoverHero />
-      <DiscoverVideo />
-      <AboutPageContent />
       {await renderPageBlocks("about")}
       <Footer />
     </>

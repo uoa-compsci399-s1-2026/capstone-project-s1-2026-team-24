@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+
+type Lang = "en" | "zh";
 
 interface StudyPdfRecord {
   id: number;
@@ -28,13 +28,10 @@ interface StudyContentProps {
   pdfs: StudyPdfRecord[];
 }
 
-const STATUS_STYLES: Record<
-  string,
-  { dot: string; label: { EN: string; ZH: string } }
-> = {
-  Recruiting: { dot: "#1a7f37", label: { EN: "Recruiting", ZH: "招募中" } },
-  Active: { dot: "#0a4479", label: { EN: "Active", ZH: "进行中" } },
-  Completed: { dot: "#8e8d8d", label: { EN: "Completed", ZH: "已结束" } },
+const STATUS_STYLES: Record<string, { dot: string; label: { en: string; zh: string } }> = {
+  Recruiting: { dot: "#1a7f37", label: { en: "Recruiting", zh: "招募中" } },
+  Active: { dot: "#0a4479", label: { en: "Active", zh: "进行中" } },
+  Completed: { dot: "#8e8d8d", label: { en: "Completed", zh: "已结束" } },
 };
 
 export default function StudyContent({
@@ -53,21 +50,23 @@ export default function StudyContent({
   publishedAt,
   pdfs,
 }: StudyContentProps) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  // Single global toggle (Navbar) drives the study-page language too.
+  const { lang: globalLang, setLang: setGlobalLang } = useLanguage();
+  const lang: Lang = globalLang === "ZH" ? "zh" : "en";
+  const setLang = (next: Lang) => setGlobalLang(next === "zh" ? "ZH" : "EN");
 
-  const description = lang === "EN" ? fullDescriptionEn : fullDescriptionZh;
-  const eligibility = (lang === "EN" ? eligibilityEn : eligibilityZh)
+  const description = lang === "en" ? fullDescriptionEn : fullDescriptionZh;
+  const eligibility = (lang === "en" ? eligibilityEn : eligibilityZh)
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
-  const compensation = lang === "EN" ? compensationEn : compensationZh;
-  const phone = lang === "EN" ? contactPhone : contactPhoneZh;
+  const compensation = lang === "en" ? compensationEn : compensationZh;
+  const phone = lang === "en" ? contactPhone : contactPhoneZh;
 
   const statusStyle = STATUS_STYLES[status] || STATUS_STYLES.Completed;
 
   const deadlineDisplay = publishedAt
-    ? new Date(publishedAt).toLocaleDateString(lang === "EN" ? "en-NZ" : "zh-CN", {
+    ? new Date(publishedAt).toLocaleDateString("en-NZ", {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -76,11 +75,12 @@ export default function StudyContent({
 
   return (
     <section className="relative w-full bg-white py-10 sm:py-16 px-6 sm:px-12 lg:px-[45px] overflow-hidden">
+      {/* Top row: status pill + deadline pill + language toggle */}
       <div className="flex flex-wrap items-center gap-3 mb-8">
         <div
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-[#0c0c48]"
           style={{ border: "1.5px solid #0c0c48" }}
-          aria-label={`${t.studies.status}: ${statusStyle.label[lang]}`}
+          aria-label={`Status: ${statusStyle.label[lang]}`}
         >
           <span
             className="inline-block w-2 h-2 rounded-full"
@@ -109,24 +109,56 @@ export default function StudyContent({
             {deadlineDisplay}
           </div>
         )}
+
+        <div
+          className="ml-auto flex gap-2"
+          role="group"
+          aria-label="Language"
+        >
+          <button
+            type="button"
+            aria-pressed={lang === "en"}
+            onClick={() => setLang("en")}
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+              lang === "en"
+                ? "bg-[#0c0c48] text-white"
+                : "border border-[#0c0c48] text-[#0c0c48] hover:bg-[#0c0c48]/10"
+            }`}
+          >
+            English
+          </button>
+          <button
+            type="button"
+            aria-pressed={lang === "zh"}
+            onClick={() => setLang("zh")}
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+              lang === "zh"
+                ? "bg-[#0c0c48] text-white"
+                : "border border-[#0c0c48] text-[#0c0c48] hover:bg-[#0c0c48]/10"
+            }`}
+          >
+            中文
+          </button>
+        </div>
       </div>
 
+      {/* Two-column main layout */}
       <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+        {/* Left — content */}
         <div className="flex-1 bg-white rounded-[20px] shadow-[0_0_20px_rgba(0,0,0,0.08)] p-8 lg:p-10">
           <div className="text-[#1f2937] text-base lg:text-[17px] leading-[1.8] space-y-5">
             <p className="whitespace-pre-wrap">{description}</p>
 
             <h2 className="text-[#0c0c48] text-xl lg:text-2xl font-bold pt-3">
-              {t.studies.whatYouReceive}
+              {lang === "en" ? "What you'll receive" : "参与补偿"}
             </h2>
             <p className="whitespace-pre-wrap">{compensation}</p>
 
             {pdfs.length > 0 && (
               <>
                 <h2 className="text-[#0c0c48] text-xl lg:text-2xl font-bold pt-3">
-                  {t.studies.downloads}
+                  {lang === "en" ? "Downloads" : "下载资料"}
                 </h2>
-
                 <ul className="flex flex-col gap-2 list-none p-0 m-0">
                   {pdfs.map((pdf) => (
                     <li key={pdf.id}>
@@ -161,11 +193,12 @@ export default function StudyContent({
             )}
 
             <h2 className="text-[#0c0c48] text-xl lg:text-2xl font-bold pt-3">
-              {t.studies.contact}
+              {lang === "en" ? "Contact" : "联系方式"}
             </h2>
-
             <p>
-              <span className="font-semibold">{t.studies.emailLabel}</span>
+              <span className="font-semibold">
+                {lang === "en" ? "Email: " : "电子邮箱："}
+              </span>
               <a
                 href={`mailto:${contactEmail}`}
                 className="text-[#1f2bd4] hover:underline"
@@ -173,28 +206,32 @@ export default function StudyContent({
                 {contactEmail}
               </a>
             </p>
-
             <p>
-              <span className="font-semibold">{t.studies.phoneLabel}</span>
+              <span className="font-semibold">
+                {lang === "en" ? "Phone: " : "电话："}
+              </span>
               {phone}
             </p>
 
             <p className="text-[#8e8d8d] text-sm leading-relaxed pt-6 border-t border-[#e5e5e5]">
-              <span className="font-semibold">{t.studies.ethicsLabel}</span>
+              <span className="font-semibold">
+                {lang === "en" ? "Ethics: " : "伦理审批："}
+              </span>
               {ethicsStatement}
             </p>
           </div>
         </div>
 
+        {/* Right — eligibility + join */}
         <aside className="w-full lg:w-[340px] flex-shrink-0 flex flex-col gap-6">
+          {/* Eligibility */}
           <div
             className="rounded-2xl p-6 bg-white"
             style={{ border: "2px solid #0c0c48" }}
           >
             <h2 className="text-[#0c0c48] text-lg font-bold mb-4">
-              {t.studies.eligibility}
+              {lang === "en" ? "Eligibility" : "纳入条件"}
             </h2>
-
             <ul className="flex flex-col gap-3 list-none p-0">
               {eligibility.map((item, i) => (
                 <li
@@ -211,26 +248,31 @@ export default function StudyContent({
             </ul>
           </div>
 
+          {/* Join now (REDCap) */}
           <a
             href={redcapUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center rounded-2xl py-6 text-xl font-semibold text-[#0c0c48] bg-white hover:bg-[#0c0c48] hover:text-white transition-colors"
             style={{ border: "2px solid #0c0c48" }}
-            aria-label={t.studies.joinViaRedcap}
+            aria-label={
+              lang === "en" ? "Join the study via REDCap" : "通过 REDCap 报名"
+            }
           >
-            {t.studies.joinNow}
+            {lang === "en" ? "Join now" : "立即报名"}
           </a>
 
           <Link
             href="/contact"
             className="text-center text-sm text-[#0c0c48] underline hover:opacity-70 transition-opacity"
           >
-            {t.studies.haveQuestions}
+            {lang === "en" ? "Have questions? Contact us" : "有问题？联系我们"}
           </Link>
 
           <p className="text-[#8e8d8d] text-xs leading-relaxed">
-            {t.studies.redcapNotice}
+            {lang === "en"
+              ? "You will be redirected to REDCap, the University's secure questionnaire system. HNU does not collect personal health information on this website."
+              : "您将被重定向至 REDCap，奥克兰大学的安全问卷系统。HNU 不会在本网站收集个人健康信息。"}
           </p>
         </aside>
       </div>

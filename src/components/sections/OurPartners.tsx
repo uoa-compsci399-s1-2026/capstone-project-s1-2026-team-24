@@ -1,7 +1,4 @@
-import { cookies } from "next/headers";
 import { fetchPartnerLogos, type PartnerLogoRecord } from "@/lib/fetch-api";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 function PartnerMarquee({
   partners,
@@ -51,10 +48,6 @@ function PartnerMarquee({
 }
 
 export default async function OurPartners() {
-  const cookieStore = await cookies();
-  const lang = cookieStore.get("lang")?.value === "ZH" ? "ZH" : "EN";
-  const t = lang === "EN" ? en : zh;
-
   let partnerLogos: PartnerLogoRecord[] = [];
 
   try {
@@ -71,11 +64,11 @@ export default async function OurPartners() {
       {collaborating.length > 0 && (
         <div className="mb-10 sm:mb-14">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0c0c48] text-center mb-8 px-6">
-            {t.home.collaboratingPartners}
+            Collaborating Partners
           </h2>
           <PartnerMarquee
             partners={collaborating}
-            ariaLabel={t.home.collaboratingPartners}
+            ariaLabel="Collaborating partners"
           />
         </div>
       )}
@@ -83,11 +76,11 @@ export default async function OurPartners() {
       {industry.length > 0 && (
         <div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0c0c48] text-center mb-8 px-6">
-            {t.home.currentIndustryPartners}
+            Current Industry Partners
           </h2>
           <PartnerMarquee
             partners={industry}
-            ariaLabel={t.home.currentIndustryPartners}
+            ariaLabel="Current industry partners"
           />
         </div>
       )}

@@ -1,24 +1,16 @@
-"use client";
-
-import SubpageHero from "@/components/layout/SubpageHero";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import SubpageHero from '@/components/layout/SubpageHero';
 
 export default function TeamHero() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
-
   return (
     <SubpageHero
-      title={t.team.heroTitle}
+      title="Our Team"
       subtitle={
         <>
-          {t.team.heroSubtitleLine1}
+          We&apos;re passionate about what we do.
           <br />
-          {t.team.heroSubtitleLine2}
+          Find out more about the people behind
           <br />
-          {t.team.heroSubtitleLine3}
+          the Human Nutrition Unit
         </>
       }
     />

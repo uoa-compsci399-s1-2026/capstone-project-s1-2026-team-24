@@ -1,35 +1,26 @@
-"use client";
-
+import Link from "next/link";
 import StudyCard from "@/components/ui/StudyCard";
 import Button from "../ui/Button";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 export default function AcademicCollaborators() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
-
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
       <div className="flex justify-center items-center">
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48] pb-15 text-center">
-          {t.collaborations.featuredAcademicTitle}
+          Featured Academic Collaborations
         </h2>
       </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
         <StudyCard
-          title={t.collaborations.lactoPharmaTitle}
-          description={t.collaborations.lactoPharmaDescription}
+          title="LactoPharma consortium"
+          description="Dairy bioactives and health"
           imageSrc="/daniel-quiceno-m-4MQtWCxUrYc-unsplash.jpg"
           imageAlt="Academic Collaborators"
           imagePosition="center"
         />
-
         <StudyCard
-          title={t.collaborations.chitosanTitle}
-          description={t.collaborations.chitosanDescription}
+          title="Marine polysaccharide Chitosan and weight loss"
+          description="Collaboration with the University of Queensland, Australia"
           imageSrc="/joachim-schnurle-TLEI9o1HdY4-unsplash.jpg"
           imageAlt="Academic Collaborators"
           imagePosition="center"
@@ -40,16 +31,15 @@ export default function AcademicCollaborators() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
         <StudyCard
-          title={t.collaborations.omega3Title}
-          description={t.collaborations.omega3Description}
+          title="Omega-3 polyunsaturated fatty acids (fish oils) and stroke"
+          description="Collaboration with the George Institute, Aus"
           imageSrc="/alex-saks-rCAJjRuTHyE-unsplash.jpg"
           imageAlt="Academic Collaborators"
           imagePosition="center"
         />
-
         <StudyCard
-          title={t.collaborations.adipokynesTitle}
-          description={t.collaborations.adipokynesDescription}
+          title="Adipokynes in obesity"
+          description="Collaboration with the University of Hong Kong"
           imageSrc="/siora-photography-cixohzDpNIo-unsplash.jpg"
           imageAlt="Academic Collaborators"
           imagePosition="center"
@@ -58,7 +48,7 @@ export default function AcademicCollaborators() {
 
       <div className="flex justify-center mt-10">
         <Button href="/collaborations/academic" color="dark">
-          {t.collaborations.viewAllAcademicPartners}
+          View all academic partners
         </Button>
       </div>
     </section>

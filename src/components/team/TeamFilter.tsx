@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 type FilterKey = "all" | "board" | "research" | "alumni";
 
@@ -24,16 +21,13 @@ export default function TeamFilter({
   alumni: ReactNode;
   hasAlumni: boolean;
 }) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
-
   const [filter, setFilter] = useState<FilterKey>("all");
 
   const options: FilterOption[] = [
-    { key: "all", label: t.team.filterAll },
-    { key: "board", label: t.team.boardOfDirectors },
-    { key: "research", label: t.team.researchTeam },
-    { key: "alumni", label: t.team.alumni, disabled: !hasAlumni },
+    { key: "all", label: "All" },
+    { key: "board", label: "Board" },
+    { key: "research", label: "Research" },
+    { key: "alumni", label: "Alumni", disabled: !hasAlumni },
   ];
 
   const show = (key: Exclude<FilterKey, "all">) =>
@@ -50,7 +44,6 @@ export default function TeamFilter({
         >
           {options.map((option) => {
             const active = filter === option.key;
-
             return (
               <button
                 key={option.key}

@@ -25,6 +25,9 @@ export function LanguageProvider({
     const savedLang = localStorage.getItem("lang");
 
     if (savedLang === "EN" || savedLang === "ZH") {
+      // One-time hydration-safe read of the persisted language; localStorage
+      // isn't available during SSR so this must run in an effect.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLang(savedLang);
     }
   }, []);
