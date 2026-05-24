@@ -1,14 +1,7 @@
-"use client";
-
 import Image from "next/image";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import Link from "next/link";
 
 export default function HomepageAboutUs() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
-
   return (
     <section
       style={{
@@ -21,8 +14,9 @@ export default function HomepageAboutUs() {
         paddingLeft: "50px",
         paddingRight: "50px",
         backgroundColor: "#ffffff",
+
       }}
-      aria-label="Homepage about us section"
+      aria-label="Homepage studies section"
       className="overflow-visible"
     >
       <div className="mt-22 overflow-hidden rounded-[30px] shadow-[0_15px_30px_rgba(0,0,0,0.12)]">
@@ -34,9 +28,10 @@ export default function HomepageAboutUs() {
             sizes="(min-width: 768px) 40vw, 100vw"
             className="object-cover object-top w-full h-full"
           />
-
+          {/* Blue overlay */}
           <div className="absolute inset-0 z-[5] bg-[linear-gradient(to_right,#0A4479_0%,#0A4479_40%,rgba(10,68,121,0)_70%,rgba(10,68,121,0)_100%)]" />
 
+          {/* Text container */}
           <div className="absolute inset-0 z-10 flex items-center pl-[90px] text-white">
             <div className="h-[550px] w-[450px] flex flex-col gap-5">
               <h3
@@ -46,7 +41,7 @@ export default function HomepageAboutUs() {
                   fontWeight: 800,
                 }}
               >
-                {t.home.aboutTitle}
+                About Us
               </h3>
 
               <p
@@ -57,7 +52,9 @@ export default function HomepageAboutUs() {
                   fontWeight: 400,
                 }}
               >
-                {t.home.aboutText}
+                HNU is a nutrition research facility within The University of
+                Auckland, New Zealand&apos;s most prestigious and largest
+                University.
               </p>
 
               <p
@@ -68,7 +65,8 @@ export default function HomepageAboutUs() {
                   fontWeight: 400,
                 }}
               >
-                {t.home.aboutText2}
+                The Unit undertakes research to establish links between diet,
+                health and disease prevention.
               </p>
 
               <a
@@ -80,7 +78,7 @@ export default function HomepageAboutUs() {
                   fontWeight: 400,
                 }}
               >
-                {t.home.readMore}
+                Read More &rarr;
               </a>
             </div>
           </div>

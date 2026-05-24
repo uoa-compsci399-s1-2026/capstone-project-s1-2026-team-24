@@ -1,7 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 import type { ReactNode } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type StudyLang = "en" | "zh";
 
@@ -39,7 +40,13 @@ export function StudyProvider({
   study: StudyData;
   children: ReactNode;
 }) {
-  const [lang, setLang] = useState<StudyLang>("en");
+  // Derive the study language from the single global toggle so the Navbar
+  // EN/ZH switch controls study content too (one toggle for the whole site).
+  // The study blocks' own toggle delegates back to the same global state.
+  const { lang: globalLang, setLang: setGlobalLang } = useLanguage();
+  const lang: StudyLang = globalLang === "ZH" ? "zh" : "en";
+  const setLang = (next: StudyLang) =>
+    setGlobalLang(next === "zh" ? "ZH" : "EN");
   return (
     <StudyContext.Provider value={{ study, lang, setLang }}>
       {children}

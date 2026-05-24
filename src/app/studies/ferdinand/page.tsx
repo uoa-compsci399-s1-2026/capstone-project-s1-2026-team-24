@@ -1,18 +1,13 @@
-"use client";
-
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StudyDetail from "@/components/sections/StudyDetail";
+import SubpageHero from "@/components/layout/SubpageHero";
 import StudiesHero from "@/components/layout/StudiesHero";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
-
-export default function FerdinandPage() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
 
 export const metadata: Metadata = {
   title: "Ferdinand | HNU Auckland",
@@ -38,30 +33,36 @@ export default async function FerdinandPage() {
       <StudiesHero
         imageSrc="/ferdinand study.jpg"
         imageAlt="Ferdinand Study"
-        title={t.studies.ferdinandPageTitle}
+        title="Ferdinand Study"
       />
 
       <StudyDetail
-        title={t.studies.ferdinandPageTitle}
+        title="Ferdinand Study"
         status="Open"
-        deadline={t.studies.ferdinandDeadline}
+        deadline="31 December 2025"
         eligibility={[
-          t.studies.ferdinandEligibilityGlucose,
-          t.studies.eligibilityAge18To70,
-          t.studies.ferdinandEligibilityWeight,
-          t.studies.eligibilityAuckland,
-          t.studies.ferdinandEligibilityVisits,
+          "Have elevated blood glucose but are not diabetic",
+          "Are between 18-70 years",
+          "Are overweight or obese",
+          "Located in Tāmaki Makaurau (Auckland area)",
+          "Happy to complete 7 visits to the Human Nutrition Unit",
         ]}
         joinHref="/contact"
         contactHref="/contact"
         content={
           <div>
             <ul>
-              <li>{t.studies.ferdinandQuestion1}</li>
-              <li>{t.studies.ferdinandQuestion2}</li>
-              <li>{t.studies.ferdinandQuestion3}</li>
+              <li>
+                Would you like to participate in a 6-month nutrition study?
+              </li>
+              <li>Would you like to lose weight?</li>
+              <li>Are you concerned about your diabetes risk?</li>
             </ul>
-            <p>{t.studies.ferdinandDescriptionText}</p>
+            <p>
+              We will investigate whether daily consumption of feijoa whole
+              fruit powder alters risk of developing type 2 diabetes.
+            </p>
+            {/* add more content */}
           </div>
         }
       />

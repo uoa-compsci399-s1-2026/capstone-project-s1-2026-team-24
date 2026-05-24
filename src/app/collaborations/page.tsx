@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import CollaborationsPageContent from "@/components/sections/CollaborationsPageContent";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { renderPageBlocks } from "@/components/blocks/render-page";
@@ -10,9 +9,6 @@ export const metadata: Metadata = {
     "Research collaborations and partnerships with industry and academic units, nationally and internationally.",
 };
 
-export default function CollaborationsPage() {
-  return <CollaborationsPageContent />;
-}
 export const dynamic = "force-dynamic";
 
 export default async function CollaborationsPage() {

@@ -1,9 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 interface StudyDetailProps {
   title: string;
@@ -21,19 +18,6 @@ const statusColors: Record<string, { bg: string; color: string }> = {
   "Coming Soon": { bg: "#fff8e1", color: "#b07d00" },
 };
 
-function translateStatus(status: string, t: typeof en) {
-  switch (status) {
-    case "Open":
-      return t.studies.statusOpen;
-    case "Closed":
-      return t.studies.statusClosed;
-    case "Coming Soon":
-      return t.studies.statusComingSoon;
-    default:
-      return status;
-  }
-}
-
 export default function StudyDetail({
   title,
   status,
@@ -43,12 +27,11 @@ export default function StudyDetail({
   joinHref = "/contact",
   content,
 }: StudyDetailProps) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
   const statusStyle = statusColors[status];
 
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
+      {/* Top pills */}
       <div style={{ display: "flex", gap: "12px", marginBottom: "32px" }}>
         <div
           style={{
@@ -72,7 +55,7 @@ export default function StudyDetail({
               display: "inline-block",
             }}
           />
-          {translateStatus(status, t)}
+          {status}
         </div>
 
         {deadline && (
@@ -105,7 +88,9 @@ export default function StudyDetail({
         )}
       </div>
 
+      {/* Main layout */}
       <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
+        {/* Left — study info */}
         <div
           style={{
             flex: 1,
@@ -128,6 +113,7 @@ export default function StudyDetail({
           </div>
         </div>
 
+        {/* Right — eligibility + join */}
         <div
           style={{
             width: "320px",
@@ -137,6 +123,7 @@ export default function StudyDetail({
             gap: "24px",
           }}
         >
+          {/* Eligibility */}
           <div
             style={{
               border: "2px solid #0c0c48",
@@ -153,9 +140,8 @@ export default function StudyDetail({
                 marginBottom: "16px",
               }}
             >
-              {t.studies.eligibility}
+              Eligibility
             </h2>
-
             <ul
               style={{
                 display: "flex",
@@ -195,6 +181,7 @@ export default function StudyDetail({
             </ul>
           </div>
 
+          {/* Join now */}
           <Link
             href={joinHref}
             style={{
@@ -222,9 +209,10 @@ export default function StudyDetail({
               (e.currentTarget as HTMLElement).style.color = "#0c0c48";
             }}
           >
-            {t.studies.joinNow}
+            Join now
           </Link>
 
+          {/* Contact link */}
           <Link
             href={contactHref}
             style={{
@@ -235,7 +223,7 @@ export default function StudyDetail({
               textDecoration: "underline",
             }}
           >
-            {t.studies.haveQuestions}
+            Have questions? Contact us
           </Link>
         </div>
       </div>

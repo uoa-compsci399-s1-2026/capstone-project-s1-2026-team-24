@@ -1,21 +1,15 @@
-"use client";
-
 import Image from "next/image";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import Link from "next/link";
+import { NAVBAR_HEIGHT } from "../layout/SubpageHero";
 
 export default function HomepageHero() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
-
   return (
     <section
       style={{
         width: "full",
         marginLeft: 0,
         marginRight: 0,
-        marginTop: 0,
+        marginTop:0,
         marginBottom: "0px",
       }}
       aria-label="Human Nutrition Unit hero section"
@@ -28,6 +22,7 @@ export default function HomepageHero() {
             "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
         }}
       >
+        {/* Hero bowl image */}
         <div className="pointer-events-none absolute -left-75 bottom-[-400px] h-[1000px] w-[1000px]">
           <Image
             src="/images/homepage-hero-bowl.webp"
@@ -51,9 +46,8 @@ export default function HomepageHero() {
                 opacity: 0.75,
               }}
             >
-              {t.home.heroTitle}
+              Unlock the power of food with <br /> the Human Nutrition Unit
             </h2>
-
             <a
               href="/studies"
               className="mt-15 inline-flex rounded-full border-[5px] border-white/75 px-10 py-3 font-bold tracking-wide text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
@@ -62,7 +56,7 @@ export default function HomepageHero() {
                 opacity: 0.75,
               }}
             >
-              {t.home.joinStudy}
+              JOIN A STUDY
             </a>
           </div>
         </div>
@@ -78,13 +72,11 @@ export default function HomepageHero() {
               style={{ opacity: 0.5 }}
             />
           </div>
-
           <div
             className="mb-5 h-[75px] w-[3px] bg-white/100 mr-[15]"
             aria-hidden="true"
             style={{ opacity: 0.5 }}
           />
-
           <div className="relative h-[120px] w-[200px]">
             <Image
               src="/images/logos/UoA-Logo-Primary-RGB-Reversed-Large.png"

@@ -1,35 +1,27 @@
-"use client";
-
+import Link from "next/link";
 import StudyCard from "@/components/ui/StudyCard";
 import Button from "../ui/Button";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 export default function IndustryCollaborators() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
-
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
       <div className="flex justify-center items-center">
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48] pb-15 text-center">
-          {t.collaborations.featuredIndustryTitle}
+          Featured Industry Collaborations
         </h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
         <StudyCard
-          title={t.collaborations.pharmaceuticalTitle}
-          description={t.collaborations.pharmaceuticalDescription}
+          title="Pharmaceutical"
+          description="New therapeutics for treatment of diabetic cardiomyopathy Complete diet balance studies"
           imageSrc="/roberto-sorin-RS0-h_pyByk-unsplash.jpg"
           imageAlt="Industry Collaborators"
           imagePosition="center"
         />
-
         <StudyCard
-          title={t.collaborations.foodTitle}
-          description={t.collaborations.foodDescription}
+          title="Food"
+          description="Novel butter fat and cardiovascular risk - Dairy lipids & proteins and cholesterol lowering"
           imageSrc="/lily-banse--YHSwy6uqvk-unsplash.jpg"
           imageAlt="Industry Collaborators"
           imagePosition="center"
@@ -40,16 +32,15 @@ export default function IndustryCollaborators() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
         <StudyCard
-          title={t.collaborations.foodIngredientsTitle}
-          description={t.collaborations.foodIngredientsDescription}
+          title="Food Ingredients"
+          description="Barley ß-glucan Glucagel and cholesterol lowering - Barley ß-glucan Cerogen and glucose control"
           imageSrc="/dan-gold-4_jhDO54BYg-unsplash.jpg"
           imageAlt="Industry Collaborators"
           imagePosition="center"
         />
-
         <StudyCard
-          title={t.collaborations.nutraceuticalsTitle}
-          description={t.collaborations.nutraceuticalsDescription}
+          title="Nutraceuticals"
+          description="Marine polysaccharide Chitosan and weight loss - Omega-3 polyunsaturated fatty acids (fish oils) and stroke"
           imageSrc="/towfiqu-barbhuiya-4N0dLUmdLAY-unsplash.jpg"
           imageAlt="Industry Collaborators"
           imagePosition="center"
@@ -58,7 +49,7 @@ export default function IndustryCollaborators() {
 
       <div className="flex justify-center mt-10">
         <Button href="/collaborations/industry" color="dark">
-          {t.collaborations.viewAllIndustryPartners}
+          View all industry partners
         </Button>
       </div>
     </section>

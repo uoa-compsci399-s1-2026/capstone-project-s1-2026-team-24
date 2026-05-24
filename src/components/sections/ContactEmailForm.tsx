@@ -1,64 +1,39 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import { useEffect, useRef, useState } from 'react';
 
-type FormState = "idle" | "loading" | "success" | "error";
+type FormState = 'idle' | 'loading' | 'success' | 'error';
 
 const INQUIRY_TYPES = [
-  "Study Participant Enquiry",
-  "Industry Partnership",
-  "Internship or PhD Opportunity",
-  "Donation",
-  "General Enquiry",
-  "Other",
+  'Study Participant Enquiry',
+  'Industry Partnership',
+  'Internship or PhD Opportunity',
+  'Donation',
+  'General Enquiry',
+  'Other',
 ] as const;
 
 const inputClass =
-  "w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors";
+  'w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors';
 
 const labelClass =
-  "block font-bold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2";
+  'block font-bold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2';
 
 const textareaClass =
-  "w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none";
+  'w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none';
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function translateInquiryType(type: string, t: typeof en) {
-  switch (type) {
-    case "Study Participant Enquiry":
-      return t.contactPage.inquiryStudyParticipant;
-    case "Industry Partnership":
-      return t.contactPage.inquiryIndustryPartnership;
-    case "Internship or PhD Opportunity":
-      return t.contactPage.inquiryInternshipPhd;
-    case "Donation":
-      return t.contactPage.inquiryDonation;
-    case "General Enquiry":
-      return t.contactPage.inquiryGeneral;
-    case "Other":
-      return t.contactPage.inquiryOther;
-    default:
-      return type;
-  }
-}
-
 export default function ContactEmailForm() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [category, setCategory] = useState("");
-  const [message, setMessage] = useState("");
-  const [honeypot, setHoneypot] = useState("");
-  const [state, setState] = useState<FormState>("idle");
-  const [errorMsg, setErrorMsg] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [category, setCategory] = useState('');
+  const [message, setMessage] = useState('');
+  const [honeypot, setHoneypot] = useState('');
+  const [state, setState] = useState<FormState>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
   const mountedAtRef = useRef<number>(0);
 
   useEffect(() => {
@@ -66,9 +41,9 @@ export default function ContactEmailForm() {
   }, []);
 
   function clearError() {
-    if (state === "error") {
-      setState("idle");
-      setErrorMsg("");
+    if (state === 'error') {
+      setState('idle');
+      setErrorMsg('');
     }
   }
 
@@ -76,24 +51,24 @@ export default function ContactEmailForm() {
     e.preventDefault();
 
     if (!name.trim() || !email.trim() || !category || !message.trim()) {
-      setErrorMsg(t.contactPage.requiredError);
-      setState("error");
+      setErrorMsg('Please fill in all fields.');
+      setState('error');
       return;
     }
 
     if (!isValidEmail(email.trim())) {
-      setErrorMsg(t.contactPage.invalidEmailError);
-      setState("error");
+      setErrorMsg('Please enter a valid email address.');
+      setState('error');
       return;
     }
 
-    setState("loading");
-    setErrorMsg("");
+    setState('loading');
+    setErrorMsg('');
 
     try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
@@ -106,26 +81,24 @@ export default function ContactEmailForm() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setErrorMsg(data.error || t.contactPage.submissionError);
-        setState("error");
+        setErrorMsg(data.error || 'Submission failed. Please try again.');
+        setState('error');
         return;
       }
 
-      setState("success");
+      setState('success');
     } catch {
-      setErrorMsg(t.contactPage.genericError);
-      setState("error");
+      setErrorMsg('Something went wrong. Please try again.');
+      setState('error');
     }
   }
 
-  if (state === "success") {
+  if (state === 'success') {
     return (
       <div className="flex flex-col gap-3 py-10">
-        <p className="text-[#0a4479] text-xl font-bold">
-          {t.contactPage.successTitle}
-        </p>
+        <p className="text-[#0a4479] text-xl font-bold">Message sent!</p>
         <p className="text-[#0a4479] text-base">
-          {t.contactPage.successText}
+          Thank you for reaching out. We&apos;ll get back to you soon.
         </p>
       </div>
     );
@@ -135,61 +108,61 @@ export default function ContactEmailForm() {
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div>
         <label htmlFor="contact-name" className={labelClass}>
-          {t.contactPage.nameLabel}
+          Name
         </label>
         <input
           id="contact-name"
           type="text"
           value={name}
-          onChange={(e) => {
+          onChange={e => {
             setName(e.target.value);
             clearError();
           }}
-          placeholder={t.contactPage.namePlaceholder}
+          placeholder="Enter your name"
           className={inputClass}
-          disabled={state === "loading"}
+          disabled={state === 'loading'}
         />
       </div>
 
       <div>
         <label htmlFor="contact-email" className={labelClass}>
-          {t.contactPage.emailLabel}
+          Email
         </label>
         <input
           id="contact-email"
           type="email"
           value={email}
-          onChange={(e) => {
+          onChange={e => {
             setEmail(e.target.value);
             clearError();
           }}
           placeholder="example@gmail.com"
           className={inputClass}
-          disabled={state === "loading"}
+          disabled={state === 'loading'}
         />
       </div>
 
       <div>
         <label htmlFor="contact-category" className={labelClass}>
-          {t.contactPage.inquiryTypeLabel}
+          Inquiry Type
         </label>
         <div className="relative">
           <select
             id="contact-category"
             value={category}
-            onChange={(e) => {
+            onChange={e => {
               setCategory(e.target.value);
               clearError();
             }}
             className={`${inputClass} appearance-none pr-12 cursor-pointer`}
-            disabled={state === "loading"}
+            disabled={state === 'loading'}
           >
             <option value="" disabled>
-              {t.contactPage.selectPlaceholder}
+              Select
             </option>
-            {INQUIRY_TYPES.map((type) => (
+            {INQUIRY_TYPES.map(type => (
               <option key={type} value={type}>
-                {translateInquiryType(type, t)}
+                {type}
               </option>
             ))}
           </select>
@@ -215,19 +188,19 @@ export default function ContactEmailForm() {
 
       <div>
         <label htmlFor="contact-message" className={labelClass}>
-          {t.contactPage.messageLabel}
+          Message
         </label>
         <textarea
           id="contact-message"
           value={message}
-          onChange={(e) => {
+          onChange={e => {
             setMessage(e.target.value);
             clearError();
           }}
-          placeholder={t.contactPage.messagePlaceholder}
+          placeholder="Write your message here..."
           rows={6}
           className={textareaClass}
-          disabled={state === "loading"}
+          disabled={state === 'loading'}
         />
       </div>
 
@@ -242,11 +215,11 @@ export default function ContactEmailForm() {
           tabIndex={-1}
           autoComplete="off"
           value={honeypot}
-          onChange={(e) => setHoneypot(e.target.value)}
+          onChange={e => setHoneypot(e.target.value)}
         />
       </div>
 
-      {state === "error" && (
+      {state === 'error' && (
         <p className="text-red-500 text-sm ml-2" role="alert">
           {errorMsg}
         </p>
@@ -254,12 +227,10 @@ export default function ContactEmailForm() {
 
       <button
         type="submit"
-        disabled={state === "loading"}
+        disabled={state === 'loading'}
         className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {state === "loading"
-          ? t.contactPage.sending
-          : t.contactPage.sendMessage}
+        {state === 'loading' ? 'Sending…' : 'Send Message'}
       </button>
     </form>
   );

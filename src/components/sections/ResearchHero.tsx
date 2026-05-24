@@ -1,23 +1,15 @@
-"use client";
-
-import SubpageHero from "@/components/layout/SubpageHero";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import SubpageHero from '@/components/layout/SubpageHero';
 
 export default function ResearchHero() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
-
   return (
     <SubpageHero
-      title={t.research.heroTitle}
+      title="Our Research"
       subtitleMaxWidth={626}
       subtitle={
         <>
-          {t.research.heroSubtitleLine1}
+          Better health through nutrition science.
           <br />
-          {t.research.heroSubtitleLine2}
+          Explore our research in diet, disease, and clinical trials
         </>
       }
     />
