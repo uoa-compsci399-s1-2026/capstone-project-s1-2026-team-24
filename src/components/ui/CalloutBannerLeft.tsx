@@ -1,5 +1,6 @@
 // src/components/ui/CalloutBanner.tsx
 import Link from "next/link";
+import RichText from "@/components/blocks/RichText";
 
 interface CalloutBannerLeftProps {
   tag?: string;
@@ -81,7 +82,9 @@ export default function CalloutBannerLeft({
           {title}
         </h2>
 
-        <p
+        <RichText
+          html={description}
+          className="[&_p]:mb-4 [&_p:last-child]:mb-0 [&_a]:text-[#0c0c48] [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
           style={{
             fontFamily: "Inter, sans-serif",
             fontSize: "16px",
@@ -89,9 +92,7 @@ export default function CalloutBannerLeft({
             lineHeight: 1.6,
             marginBottom: "28px",
           }}
-        >
-          {description}
-        </p>
+        />
 
         {showButton && (
           <Link

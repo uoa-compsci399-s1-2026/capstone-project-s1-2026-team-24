@@ -85,12 +85,20 @@ export default function AdminStudies() {
             Recruitment status, eligibility, REDCap links, and bilingual copy.
           </p>
         </div>
-        <Link
-          href="/admin/studies/new"
-          className="inline-flex items-center justify-center bg-[#0a4479] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors w-fit"
-        >
-          + Add study
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/admin/studies/template"
+            className="inline-flex items-center justify-center border border-[#0a4479]/30 text-[#0a4479] px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#0a4479]/5 transition-colors w-fit"
+          >
+            Edit shared template
+          </Link>
+          <Link
+            href="/admin/studies/new"
+            className="inline-flex items-center justify-center bg-[#0a4479] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors w-fit"
+          >
+            + Add study
+          </Link>
+        </div>
       </header>
 
       {error && (

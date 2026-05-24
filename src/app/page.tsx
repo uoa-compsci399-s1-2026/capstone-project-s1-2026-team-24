@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+<<<<<<< HEAD
 import HomepageHero from "@/components/sections/HomepageHero";
 import HomepageStudies from "@/components/sections/HomepageStudies";
 import OurPartners from "@/components/sections/OurPartners";
@@ -8,6 +9,9 @@ import InfoCardLeft from "@/components/ui/InfoCardLeft";
 import InfoCardRight from "@/components/ui/InfoCardRight";
 import BenefitsRow from "@/components/sections/BenefitsRow";
 import Updates from "@/components/sections/Updates";
+=======
+import { renderPageBlocks } from "@/components/blocks/render-page";
+>>>>>>> 2157974476bfafae654c973df6d446fbec3428d9
 
 export const metadata: Metadata = {
   title: "Home | Human Nutrition Unit",
@@ -16,10 +20,11 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
+export default async function HomePage() {
   return (
     <>
       <Navbar />
+<<<<<<< HEAD
       <HomepageHero />
       <Updates
         updates={[
@@ -78,6 +83,9 @@ export default function HomePage() {
           imageAlt="HNU research being conducted in the clinical room"
         />
       </main>
+=======
+      {await renderPageBlocks("home")}
+>>>>>>> 2157974476bfafae654c973df6d446fbec3428d9
       <Footer />
     </>
   );

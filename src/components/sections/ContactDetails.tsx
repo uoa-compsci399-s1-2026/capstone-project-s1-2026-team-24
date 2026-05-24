@@ -1,4 +1,5 @@
 import ContactEmailForm from './ContactEmailForm';
+import { CONTACT_DETAILS_DEFAULTS } from "@/lib/blocks/default-content";
 
 function PhoneIcon() {
   return (
@@ -29,7 +30,29 @@ function LocationIcon() {
   );
 }
 
-export default function ContactDetails() {
+interface ContactDetailsProps {
+  cardOneTitle?: string;
+  cardOneBody?: string;
+  cardTwoTitle?: string;
+  cardTwoBody?: string;
+  cardThreeTitle?: string;
+  cardThreeBody?: string;
+  phone?: string;
+  phoneHref?: string;
+  address?: string;
+}
+
+export default function ContactDetails({
+  cardOneTitle = CONTACT_DETAILS_DEFAULTS.cardOneTitle,
+  cardOneBody = CONTACT_DETAILS_DEFAULTS.cardOneBody,
+  cardTwoTitle = CONTACT_DETAILS_DEFAULTS.cardTwoTitle,
+  cardTwoBody = CONTACT_DETAILS_DEFAULTS.cardTwoBody,
+  cardThreeTitle = CONTACT_DETAILS_DEFAULTS.cardThreeTitle,
+  cardThreeBody = CONTACT_DETAILS_DEFAULTS.cardThreeBody,
+  phone = CONTACT_DETAILS_DEFAULTS.phone,
+  phoneHref = CONTACT_DETAILS_DEFAULTS.phoneHref,
+  address = CONTACT_DETAILS_DEFAULTS.address,
+}: ContactDetailsProps = {}) {
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
       <div className="mx-auto max-w-[1412px] bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] p-8 sm:p-12 lg:p-[60px]">
@@ -40,35 +63,28 @@ export default function ContactDetails() {
             <div className="space-y-5 text-[#0a4479]">
               <div>
                 <h2 className="text-lg sm:text-[24px] font-bold leading-snug mb-2">
-                  MSc/PhD Opportunities
+                  {cardOneTitle}
                 </h2>
                 <p className="text-sm sm:text-[20px] leading-relaxed">
-                  From time to time, opportunities for MSc or PhD studentship may become
-                  available. Feel free to contact us with your expression of interest through
-                  the contact form.
+                  {cardOneBody}
                 </p>
               </div>
 
               <div>
                 <h2 className="text-lg sm:text-[24px] font-bold leading-snug mb-2">
-                  Internship Opportunities
+                  {cardTwoTitle}
                 </h2>
                 <p className="text-sm sm:text-[20px] leading-relaxed">
-                  We do have plenty opportunities for voluntary internship opportunities for
-                  both local and international students. Many international students from
-                  overseas completed their internship with us as a part of their Bachelor&apos;s
-                  program. Use the contact form if you are interested in gaining practical
-                  experience in human clinical studies.
+                  {cardTwoBody}
                 </p>
               </div>
 
               <div>
                 <h2 className="text-lg sm:text-[24px] font-bold leading-snug mb-2">
-                  Volunteering for Clinical Trial as a Study Participant
+                  {cardThreeTitle}
                 </h2>
                 <p className="text-sm sm:text-[20px] leading-relaxed">
-                  See our current studies or express your interest to participate in a future
-                  study through the contact form.
+                  {cardThreeBody}
                 </p>
               </div>
             </div>
@@ -77,17 +93,17 @@ export default function ContactDetails() {
               <div className="grid grid-cols-[40px_1fr] items-center gap-x-3">
                 <PhoneIcon />
                 <a
-                  href="tel:+6492345678"
+                  href={phoneHref}
                   className="text-sm sm:text-[20px] hover:underline"
                 >
-                  09 923 4567
+                  {phone}
                 </a>
               </div>
 
               <div className="grid grid-cols-[40px_1fr] items-center gap-x-3">
                 <LocationIcon />
                 <address className="not-italic text-sm sm:text-[20px] leading-relaxed">
-                  18 Carrick Place, Mt Eden, Auckland 1024, New Zealand
+                  {address}
                 </address>
               </div>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type Lang = "en" | "zh";
 
@@ -50,7 +50,10 @@ export default function StudyContent({
   publishedAt,
   pdfs,
 }: StudyContentProps) {
-  const [lang, setLang] = useState<Lang>("en");
+  // Single global toggle (Navbar) drives the study-page language too.
+  const { lang: globalLang, setLang: setGlobalLang } = useLanguage();
+  const lang: Lang = globalLang === "ZH" ? "zh" : "en";
+  const setLang = (next: Lang) => setGlobalLang(next === "zh" ? "ZH" : "EN");
 
   const description = lang === "en" ? fullDescriptionEn : fullDescriptionZh;
   const eligibility = (lang === "en" ? eligibilityEn : eligibilityZh)

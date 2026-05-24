@@ -169,3 +169,46 @@ model PublicationAuthor {
   @@unique([publicationId, teamMemberId])
   @@index([teamMemberId])
 }
+
+// A public page whose content is composed from an ordered list of blocks.
+model Page {
+  id        Int         @id @default(autoincrement())
+  slug      String      @unique
+  title     String
+  updatedAt DateTime    @updatedAt
+  createdAt DateTime    @default(now())
+
+  blocks    PageBlock[]
+}
+
+// A single content section on a page. `type` keys into the block registry in
+// src/lib/blocks/registry.ts; `content` is a JSON string holding type-specific props
+// (SQLite has no native JSON type).
+model PageBlock {
+  id        Int      @id @default(autoincrement())
+  pageId    Int
+  type      String
+  content   String   @default("{}")
+  position  Int      @default(0)
+  isVisible Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, position])
+}
+
+// A centrally managed image asset. Files live under /public/uploads/media.
+model MediaAsset {
+  id           Int      @id @default(autoincrement())
+  filePath     String   @unique
+  originalName String
+  altText      String   @default("")
+  caption      String   @default("")
+  width        Int?
+  height       Int?
+  mimeType     String
+  size         Int
+  uploadedAt   DateTime @default(now())
+}

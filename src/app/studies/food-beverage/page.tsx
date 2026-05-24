@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StudyHero from "@/components/layout/StudiesHero";
 import StudyDetail from "@/components/sections/StudyDetail";
+import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
+import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 
 export const metadata: Metadata = {
   title: "NZ Food and Beverage | HNU Auckland",
@@ -12,10 +12,17 @@ export const metadata: Metadata = {
     "A short-term study investigating how different foods and beverages affect your metabolic rate, fat burn, blood sugar levels, and appetite.",
 };
 
+export const dynamic = "force-dynamic";
+
 // Full navbar height (utility bar 40px + main nav 140px)
 const NAVBAR_HEIGHT = 180;
 
-export default function NZFoodAndBeveragePage() {
+export default async function NZFoodAndBeveragePage() {
+  const layout = await getStudyLayoutForSlug("food-beverage");
+  if (layout) {
+    return <StudyLayoutView study={layout.study} blocks={layout.blocks} />;
+  }
+
   return (
     <>
       <Navbar />

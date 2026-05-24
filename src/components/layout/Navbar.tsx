@@ -5,29 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
-const ABOUT_ITEMS = [
-  { label: "Discover HNU", href: "/about" },
-  { label: "Our Team", href: "/team" },
-  { label: "Our Research", href: "/research" },
-] as const;
 
-const TOP_BAR_LINKS = [
-  { label: "DONATIONS", href: "/collaborations/funding" },
-  { label: "CONTACT", href: "/contact" },
-] as const;
-
-const STUDIES_ITEMS = [
-  { label: "Studies Overview", href: "/studies" },
-  { label: "NZ Synergy Study", href: "/studies/nz-synergy" },
-  { label: "NZ Food & Beverage Study", href: "/studies/food-beverage" },
-  { label: "Ferdinand Study", href: "/studies/ferdinand" },
-] as const;
-
-const POPULAR_SEARCHES = [
-  { label: "Donations", href: "/collaborations/funding" },
-  { label: "Contact", href: "/contact" },
-] as const;
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -36,7 +18,8 @@ export default function Navbar() {
   const [studiesOpen, setStudiesOpen] = useState(false);
   const [searchStudiesOpen, setSearchStudiesOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const [lang, setLang] = useState<"EN" | "ZH">("EN");
+  const { lang, setLang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileStudiesOpen, setMobileStudiesOpen] = useState(false);
@@ -51,11 +34,44 @@ export default function Navbar() {
   const wasSearchOpenRef = useRef(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const ABOUT_ITEMS = [
+    { label: t.navbar.discoverHnu, image: "Discover HNU", href: "/about" },
+    { label: t.navbar.team, image: "Our Team", href: "/team" },
+    { label: t.navbar.research, image: "Our Research", href: "/research" },
+  ] as const;
 
-  useEffect(() => {
-    setMounted(true);
-    setScrolled(window.scrollY > 10);
-  }, [pathname]);
+  const TOP_BAR_LINKS = [
+    { label: t.navbar.donations, href: "/collaborations/funding" },
+    { label: t.navbar.contact, href: "/contact" },
+  ] as const;
+
+  const STUDIES_ITEMS = [
+    {
+      label: t.navbar.studiesOverview,
+      image: "Studies Overview",
+      href: "/studies",
+    },
+    {
+      label: t.navbar.nzSynergy,
+      image: "NZ Synergy Study",
+      href: "/studies/nz-synergy",
+    },
+    {
+      label: t.navbar.foodBeverage,
+      image: "NZ Food & Beverage Study",
+      href: "/studies/food-beverage",
+    },
+    {
+      label: t.navbar.ferdinand,
+      image: "Ferdinand Study",
+      href: "/studies/ferdinand",
+    },
+  ] as const;
+
+  const POPULAR_SEARCHES = [
+    { label: t.navbar.donations, href: "/collaborations/funding" },
+    { label: t.navbar.contact, href: "/contact" },
+  ] as const;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,6 +99,9 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    // Close any open menus and re-evaluate transient scroll/mount UI on
+    // navigation — an intentional reset keyed on the pathname change.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMobileOpen(false);
     setAboutOpen(false);
     setStudiesOpen(false);
@@ -222,7 +241,7 @@ export default function Navbar() {
         style={{ position: "fixed", top: 0, left: 0, right: 0 }}
       >
         {/* Top utility bar */}
-        <div className="bg-white">
+        <div className="relative z-[100] bg-white">
           <div className="max-w-[1512px] mx-auto px-12 flex items-center justify-end h-9.5">
             {TOP_BAR_LINKS.map((link) => (
               <Link
@@ -235,7 +254,7 @@ export default function Navbar() {
             ))}
 
             {/* Language switcher */}
-            <div className="relative ml-1">
+            <div className="relative z-[110] ml-1">
               <button
                 onClick={() => {
                   setLangOpen((open) => !open);
@@ -265,7 +284,7 @@ export default function Navbar() {
               {langOpen && (
                 <ul
                   role="listbox"
-                  className="absolute right-0 top-full mt-1 bg-white shadow-lg rounded border border-gray-100 z-50 min-w-[60px]"
+                  className="absolute right-0 top-full mt-1 z-[9999] min-w-[60px] rounded border border-gray-100 bg-white shadow-lg"
                 >
                   {(["EN", "ZH"] as const).map((l) => (
                     <li key={l} role="option" aria-selected={lang === l}>
@@ -363,7 +382,7 @@ export default function Navbar() {
                   aria-haspopup="true"
                   aria-controls="about-dropdown"
                 >
-                  About
+                  {t.navbar.about}
                   <svg
                     className={`w-3 h-3 transition-transform ${aboutOpen ? "rotate-180" : ""}`}
                     fill="none"
@@ -409,7 +428,7 @@ export default function Navbar() {
                             className="relative group block transition-transform duration-300 hover:scale-105"
                           >
                             <img
-                              src={`/${item.label}.jpg`}
+                              src={`/${item.image}.jpg`}
                               className="w-[300px] h-[200px] object-cover rounded-[30px]"
                               alt={item.label}
                             />
@@ -446,7 +465,7 @@ export default function Navbar() {
                   aria-haspopup="true"
                   aria-controls="studies-dropdown"
                 >
-                  Studies
+                  {t.navbar.studies}
                   <svg
                     className={`w-3 h-3 transition-transform ${studiesOpen ? "rotate-180" : ""}`}
                     fill="none"
@@ -494,7 +513,7 @@ export default function Navbar() {
                             className="relative group block transition-transform duration-300 hover:scale-105"
                           >
                             <img
-                              src={`/${item.label}.jpg`}
+                              src={`/${item.image}.jpg`}
                               className="w-[300px] h-[200px] object-cover rounded-[30px]"
                               alt={item.label}
                             />
@@ -514,7 +533,7 @@ export default function Navbar() {
                 href="/collaborations"
                 className="text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
               >
-                Collaborations
+                {t.navbar.collaborations}
               </Link>
 
               {/* Search button */}
@@ -587,7 +606,7 @@ export default function Navbar() {
                     searchOpen ? "w-0 opacity-0" : "w-auto opacity-100"
                   }`}
                 >
-                  Search
+                  {t.navbar.search}
                 </span>
               </button>
             </div>
@@ -643,7 +662,7 @@ export default function Navbar() {
                   href="/"
                   className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
                 >
-                  Home
+                  {t.navbar.home}
                 </Link>
               </li>
               <li>
@@ -652,7 +671,7 @@ export default function Navbar() {
                   onClick={() => setMobileAboutOpen(!mobileAboutOpen)}
                   aria-expanded={mobileAboutOpen}
                 >
-                  About
+                  {t.navbar.about}
                   <svg
                     className={`w-4 h-4 transition-transform ${mobileAboutOpen ? "rotate-180" : ""}`}
                     fill="none"
@@ -689,7 +708,7 @@ export default function Navbar() {
                   onClick={() => setMobileStudiesOpen(!mobileStudiesOpen)}
                   aria-expanded={mobileStudiesOpen}
                 >
-                  Studies
+                  {t.navbar.studies}
                   <svg
                     className={`w-4 h-4 transition-transform ${mobileStudiesOpen ? "rotate-180" : ""}`}
                     fill="none"
@@ -725,7 +744,7 @@ export default function Navbar() {
                   href="/collaborations"
                   className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
                 >
-                  Collaborations
+                  {t.navbar.collaborations}
                 </Link>
               </li>
               <li className="border-t border-white/15 pt-1 mt-1">
@@ -752,7 +771,7 @@ export default function Navbar() {
           style={{ backgroundColor: "#0c0c48" }}
           role="dialog"
           aria-modal="true"
-          aria-label="Search"
+          aria-label={t.navbar.search}
         >
           <div
             className="px-14 max-w-[1512px] mx-auto"
@@ -763,9 +782,9 @@ export default function Navbar() {
                 <input
                   ref={searchInputRef}
                   type="search"
-                  placeholder="Search"
+                  placeholder={t.navbar.search}
                   className="flex-1 bg-transparent text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
-                  aria-label="Search"
+                  aria-label={t.navbar.search}
                 />
                 <svg
                   className="w-10 h-10 text-white/75 flex-shrink-0"
@@ -785,7 +804,7 @@ export default function Navbar() {
 
               <div className="mt-3">
                 <p className="text-white text-[16px] tracking-[0.32px] mb-1">
-                  Popular searches
+                  {t.navbar.popularSearches}
                 </p>
                 <ul>
                   <li>
@@ -796,7 +815,7 @@ export default function Navbar() {
                       aria-haspopup="true"
                       aria-controls="search-studies-dropdown"
                     >
-                      Studies
+                      {t.navbar.studies}
                       <svg
                         className={`w-4 h-4 transition-transform ${searchStudiesOpen ? "rotate-180" : ""}`}
                         fill="none"

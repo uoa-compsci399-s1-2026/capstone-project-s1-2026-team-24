@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 type PublicationAuthor = {
@@ -57,7 +56,11 @@ function buildAuthorsText(publication: Publication) {
   return publication.authors.map((author) => author.teamMember.name).join(", ");
 }
 
-export default function PublicationIndex() {
+export default function PublicationIndex({
+  pageSize = 10,
+}: {
+  pageSize?: number;
+} = {}) {
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -86,13 +89,12 @@ export default function PublicationIndex() {
     });
   }, [publications, query, selectedYear]);
 
-  const pageSize = 10;
   const totalPages = Math.ceil(filtered.length / pageSize);
 
   const paginatedPublications = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     return filtered.slice(start, start + pageSize);
-  }, [filtered, currentPage]);
+  }, [filtered, currentPage, pageSize]);
 
   useEffect(() => {
     setCurrentPage(1);

@@ -1,15 +1,25 @@
 "use client";
 
-import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
+import { DISCOVER_VIDEO_DEFAULTS } from "@/lib/blocks/default-content";
 
-export default function DiscoverVideo() {
+export default function DiscoverVideo({
+  videoId = DISCOVER_VIDEO_DEFAULTS.videoId,
+  cardTitle = DISCOVER_VIDEO_DEFAULTS.cardTitle,
+  cardParagraph1 = DISCOVER_VIDEO_DEFAULTS.cardParagraph1,
+  cardParagraph2 = DISCOVER_VIDEO_DEFAULTS.cardParagraph2,
+}: {
+  videoId?: string;
+  cardTitle?: string;
+  cardParagraph1?: string;
+  cardParagraph2?: string;
+} = {}) {
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [videoHovered, setVideoHovered] = useState(false);
-  const src = `https://www.youtube.com/embed/FSvG3KU8-uo?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=FSvG3KU8-uo&controls=1&rel=0&modestbranding=1`;
+  const src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&rel=0&modestbranding=1`;
 
   function postMessage(command: string) {
     iframeRef.current?.contentWindow?.postMessage(
@@ -98,7 +108,7 @@ export default function DiscoverVideo() {
                 lineHeight: 1.2,
               }}
             >
-              Who are we
+              {cardTitle}
             </h2>
 
             <p
@@ -109,15 +119,9 @@ export default function DiscoverVideo() {
                 lineHeight: 1.6,
               }}
             >
-              HNU is a University of Auckland research facility, established in
-              1998 as a collaboration between the School of Biological Sciences
-              and the Department of Medicine at the University of Auckland.
+              {cardParagraph1}
             </p>
-            <p>
-              It is New Zealand&apos;s only live-in nutrition trials facility
-              which has the capability to carry out long-term human residential
-              studies.
-            </p>
+            <p>{cardParagraph2}</p>
 
             {/* Controls */}
             <div className="flex items-center gap-3 hidden">

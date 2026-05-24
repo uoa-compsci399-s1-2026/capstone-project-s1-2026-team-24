@@ -6,6 +6,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StudyContent from "./StudyContent";
 import { prisma } from "@/lib/prisma";
+import { resolveStudyLayoutBlocks } from "@/components/blocks/study/resolve-study-layout";
+import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 
 
 export const dynamic = "force-dynamic";
@@ -45,6 +47,13 @@ export default async function StudyPage({ params }: Props) {
 
   if (!study || !study.isActive) {
     notFound();
+  }
+
+  // If an admin has built a custom layout (or a template applies), render it
+  // instead of the default StudyContent.
+  const layout = await resolveStudyLayoutBlocks(slug);
+  if (layout) {
+    return <StudyLayoutView study={study} blocks={layout} />;
   }
 
   const heroImage = study.imagePath?.trim() ? study.imagePath : FALLBACK_IMAGE;
