@@ -1,5 +1,3 @@
-import React from 'react';
-
 const FOCUS_AREAS = [
   "Obesity and body-weight control",
   "Regulation of appetite",

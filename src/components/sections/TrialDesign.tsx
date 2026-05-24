@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function TrialDesign() {
   return (
     <section className="bg-white w-full">

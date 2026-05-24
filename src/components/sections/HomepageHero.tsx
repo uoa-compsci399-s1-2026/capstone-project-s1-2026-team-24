@@ -1,12 +1,10 @@
 import Image from "next/image";
-import Link from "next/link";
-import { NAVBAR_HEIGHT } from "../layout/SubpageHero";
 
 export default function HomepageHero() {
   return (
     <section
       style={{
-        width: "full",
+        width: "100%",
         marginLeft: 0,
         marginRight: 0,
         marginTop:0,

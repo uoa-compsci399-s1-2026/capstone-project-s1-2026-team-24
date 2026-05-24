@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StudyDetail from "@/components/sections/StudyDetail";
-import SubpageHero from "@/components/layout/SubpageHero";
 import StudiesHero from "@/components/layout/StudiesHero";
 import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";

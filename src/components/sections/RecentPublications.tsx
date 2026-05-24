@@ -43,7 +43,7 @@ export default function RecentPublications() {
     <section className="relative w-full bg-[#f0f0f0] py-16 px-6 sm:px-12 lg:px-45">
       <div className="flex justify-center items-center">
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48] pb-15 text-center">
-          Here are some of our previous research
+          Here is some of our previous research
         </h2>
       </div>
 
