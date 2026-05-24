@@ -15,6 +15,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.join(dirname, 'src'),
+      // Next provides `server-only` at build time; vitest has no bundler to
+      // resolve it, so stub it to a no-op for tests.
+      'server-only': path.join(dirname, 'src/test/server-only.stub.ts'),
     },
   },
   test: {

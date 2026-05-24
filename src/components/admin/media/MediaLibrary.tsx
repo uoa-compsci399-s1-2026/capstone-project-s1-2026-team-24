@@ -2,6 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MediaAsset } from "./MediaPicker";
+import { primeMediaCache } from "./useMediaResolver";
+
+type MediaUsage = {
+  pageSlug: string;
+  pageTitle: string;
+  blockType: string;
+  blockId: number;
+};
 
 export default function MediaLibrary() {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
@@ -10,15 +18,42 @@ export default function MediaLibrary() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [replacing, setReplacing] = useState(false);
+  const [usage, setUsage] = useState<MediaUsage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const replaceInput = useRef<HTMLInputElement>(null);
+
+  // Load "where is this used" whenever the selected asset changes.
+  useEffect(() => {
+    const id = selected?.id;
+    if (!id) {
+      setUsage([]);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/admin/media/${id}/usage`)
+      .then((r) => (r.ok ? r.json() : { usage: [] }))
+      .then((d) => {
+        if (!cancelled) setUsage(Array.isArray(d.usage) ? d.usage : []);
+      })
+      .catch(() => {
+        if (!cancelled) setUsage([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selected?.id]);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/media");
-      if (res.ok) setAssets(await res.json());
-      else setError("Could not load media.");
+      if (res.ok) {
+        const data = await res.json();
+        setAssets(data);
+        primeMediaCache(data);
+      } else setError("Could not load media.");
     } catch {
       setError("Could not load media.");
     } finally {
@@ -42,7 +77,11 @@ export default function MediaLibrary() {
         const res = await fetch("/api/admin/media", { method: "POST", body: fd });
         if (res.ok) {
           const asset = (await res.json()) as MediaAsset;
-          setAssets((prev) => [asset, ...prev]);
+          setAssets((prev) => {
+            const next = [asset, ...prev];
+            primeMediaCache(next);
+            return next;
+          });
         } else {
           const body = await res.json().catch(() => ({}));
           setError(body.error ?? "Upload failed.");
@@ -69,9 +108,11 @@ export default function MediaLibrary() {
       });
       if (res.ok) {
         const updated = (await res.json()) as MediaAsset;
-        setAssets((prev) =>
-          prev.map((a) => (a.id === updated.id ? updated : a)),
-        );
+        setAssets((prev) => {
+          const next = prev.map((a) => (a.id === updated.id ? updated : a));
+          primeMediaCache(next);
+          return next;
+        });
         setSelected(updated);
       } else {
         setError("Could not save changes.");
@@ -81,14 +122,64 @@ export default function MediaLibrary() {
     }
   }
 
-  async function deleteAsset(id: number) {
-    if (!window.confirm("Delete this image permanently?")) return;
-    const res = await fetch(`/api/admin/media/${id}`, { method: "DELETE" });
+  async function deleteAsset(id: number, force = false) {
+    if (!force && !window.confirm("Delete this image permanently?")) return;
+    const res = await fetch(`/api/admin/media/${id}${force ? "?force=1" : ""}`, {
+      method: "DELETE",
+    });
     if (res.ok) {
-      setAssets((prev) => prev.filter((a) => a.id !== id));
+      setAssets((prev) => {
+        const next = prev.filter((a) => a.id !== id);
+        primeMediaCache(next);
+        return next;
+      });
       setSelected((s) => (s?.id === id ? null : s));
-    } else {
-      setError("Could not delete image.");
+      setError(null);
+      return;
+    }
+    if (res.status === 409) {
+      // In use — let the admin confirm a forced delete after the warning.
+      const body = await res.json().catch(() => ({}));
+      const count = Array.isArray(body.usage) ? body.usage.length : 0;
+      if (
+        window.confirm(
+          `This image is used in ${count} place(s). Deleting it will leave those blocks without an image. Delete anyway?`,
+        )
+      ) {
+        await deleteAsset(id, true);
+      }
+      return;
+    }
+    setError("Could not delete image.");
+  }
+
+  async function replaceAsset(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !selected) return;
+    setReplacing(true);
+    setError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch(`/api/admin/media/${selected.id}/replace`, {
+        method: "POST",
+        body: fd,
+      });
+      if (res.ok) {
+        const updated = (await res.json()) as MediaAsset;
+        setAssets((prev) => {
+          const next = prev.map((a) => (a.id === updated.id ? updated : a));
+          primeMediaCache(next);
+          return next;
+        });
+        setSelected(updated);
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? "Replace failed.");
+      }
+    } finally {
+      setReplacing(false);
+      if (replaceInput.current) replaceInput.current.value = "";
     }
   }
 
@@ -193,9 +284,32 @@ export default function MediaLibrary() {
                 className="max-h-40 max-w-full object-contain"
               />
             </div>
-            <p className="mb-3 break-all text-xs text-gray-400">
+            <p className="mb-2 break-all text-xs text-gray-400">
               {selected.filePath}
             </p>
+            {selected.width != null && selected.height != null ? (
+              <p className="mb-3 text-xs text-gray-400">
+                {selected.width} × {selected.height} px
+              </p>
+            ) : null}
+            <div className="mb-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Used in {usage.length} place{usage.length === 1 ? "" : "s"}
+              </p>
+              {usage.length > 0 && (
+                <ul className="mt-1 max-h-24 list-disc overflow-y-auto pl-4 text-xs text-gray-500">
+                  {usage.map((u) => (
+                    <li
+                      key={u.blockId}
+                      className="truncate"
+                      title={`${u.pageTitle} · ${u.blockType}`}
+                    >
+                      {u.pageTitle} — {u.blockType}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
               Alt text
             </label>
@@ -229,12 +343,27 @@ export default function MediaLibrary() {
               </button>
               <button
                 type="button"
+                onClick={() => replaceInput.current?.click()}
+                disabled={replacing}
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100 disabled:opacity-60"
+              >
+                {replacing ? "…" : "Replace"}
+              </button>
+              <button
+                type="button"
                 onClick={() => deleteAsset(selected.id)}
                 className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
               >
                 Delete
               </button>
             </div>
+            <input
+              ref={replaceInput}
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif,image/avif"
+              onChange={replaceAsset}
+              className="hidden"
+            />
           </aside>
         )}
       </div>
