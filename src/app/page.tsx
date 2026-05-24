@@ -7,6 +7,7 @@ import OurPartners from "@/components/sections/OurPartners";
 import InfoCardLeft from "@/components/ui/InfoCardLeft";
 import InfoCardRight from "@/components/ui/InfoCardRight";
 import BenefitsRow from "@/components/sections/BenefitsRow";
+import Updates from "@/components/sections/Updates";
 
 export const metadata: Metadata = {
   title: "Home | Human Nutrition Unit",
@@ -20,8 +21,27 @@ export default function HomePage() {
     <>
       <Navbar />
       <HomepageHero />
+      <Updates
+        updates={[
+          {
+            title: "NZ Synergy Study Now Recruiting",
+            date: "May 2026",
+            paragraphs: [
+              "We are now actively recruiting participants for our NZ Synergy residential nutrition study.",
+              "If you are aged 18–60 with elevated fasting blood sugar and a BMI of 24–40, you may be eligible.",
+            ],
+          },
+          {
+            title: "New Publication Released",
+            date: "April 2026",
+            paragraphs: [
+              "Our team has published new findings on feijoa whole fruit powder and type 2 diabetes risk markers.",
+            ],
+          },
+        ]}
+      />
       <main id="main-content">
-        <section className="w-full h-80 bg-white px-6 sm:px-12 lg:px-45 flex items-end justify-center pb-6">
+        <section className="w-full h-10 bg-white px-16 sm:px-12 lg:px-45 flex items-end justify-center pb-1">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48]">
             Check out our current studies!
           </h2>
@@ -41,11 +61,7 @@ export default function HomePage() {
           imageAlt="HNU team member standing by blue railings"
         />
 
-        <BenefitsRow variant="academic">   
-          
-        </BenefitsRow>
-
-
+        <BenefitsRow variant="academic"></BenefitsRow>
 
         <InfoCardRight
           title="Our Research"
