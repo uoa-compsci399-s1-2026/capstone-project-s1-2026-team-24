@@ -23,7 +23,8 @@ export type FieldType =
   | "url"
   | "enum"
   | "boolean"
-  | "studyCards";
+  | "studyCards"
+  | "richText";
 
 export interface BlockField {
   key: string;

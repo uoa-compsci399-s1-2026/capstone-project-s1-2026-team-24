@@ -1,9 +1,6 @@
 import type { ReactNode } from "react";
 
 import HomepageHero from "@/components/sections/HomepageHero";
-import DiscoverHero from "@/components/sections/DiscoverHero";
-import ResearchHero from "@/components/sections/ResearchHero";
-import ContactHero from "@/components/sections/ContactHero";
 import DiscoverVideo from "@/components/sections/DiscoverVideo";
 import StudiesOverview from "@/components/sections/StudiesOverview";
 import TrialDesign from "@/components/sections/TrialDesign";
@@ -19,7 +16,6 @@ import PartnerImageGrid from "@/components/sections/PartnerImageGrid";
 import StudiesContactCard from "@/components/sections/StudiesContactCard";
 import ContactMap from "@/components/sections/ContactMap";
 import ContactDetails from "@/components/sections/ContactDetails";
-import TeamHero from "@/components/team/TeamHero";
 import StudiesHero from "@/components/layout/StudiesHero";
 import InfoCardLeft from "@/components/ui/InfoCardLeft";
 import InfoCardRight from "@/components/ui/InfoCardRight";
@@ -30,6 +26,7 @@ import TeamSectionsBlock from "@/components/blocks/TeamSectionsBlock";
 import HomepageStudiesBlock from "@/components/blocks/HomepageStudiesBlock";
 
 import { parseBlockContent } from "@/lib/blocks/validate";
+import { getBlockDefinition } from "@/lib/blocks/registry";
 import type { StudyCardContent } from "@/lib/blocks/types";
 
 type Content = Record<string, unknown>;
@@ -47,11 +44,22 @@ const imgPos = (v: unknown): ImagePosition | undefined =>
     : undefined;
 const cardBg = (v: unknown): "dark" | "standard" | "light" | undefined =>
   v === "dark" || v === "standard" || v === "light" ? v : undefined;
+const partnerGroup = (
+  v: unknown,
+): "both" | "Collaborating" | "Industry" | undefined =>
+  v === "both" || v === "Collaborating" || v === "Industry" ? v : undefined;
+const teamTab = (
+  v: unknown,
+): "all" | "board" | "research" | "alumni" | undefined =>
+  v === "all" || v === "board" || v === "research" || v === "alumni"
+    ? v
+    : undefined;
 
 function infoCardProps(c: Content) {
   return {
     title: str(c.title),
     paragraphs: strArray(c.paragraphs),
+    body: str(c.body) || undefined,
     imageSrc: str(c.imageSrc),
     imageAlt: str(c.imageAlt),
     imagePosition: imgPos(c.imagePosition),
@@ -59,6 +67,26 @@ function infoCardProps(c: Content) {
     showButton: bool(c.showButton),
     buttonLabel: str(c.buttonLabel) || undefined,
     buttonHref: str(c.buttonHref) || undefined,
+  };
+}
+
+// Builds SubpageHeroBlock props from block content, falling back to the block
+// type's registry defaults (the original hardcoded title/subtitle) when a field
+// is empty — so a freshly-converted block with empty content renders unchanged.
+function subpageHeroFromContent(type: string, c: Content) {
+  const dc = getBlockDefinition(type)?.defaultContent ?? {};
+  const width = c.subtitleMaxWidth;
+  const defWidth = dc.subtitleMaxWidth;
+  const resolvedWidth =
+    typeof width === "number" || (typeof width === "string" && width !== "")
+      ? width
+      : typeof defWidth === "number" || typeof defWidth === "string"
+        ? defWidth
+        : undefined;
+  return {
+    title: str(c.title) || str(dc.title),
+    subtitle: str(c.subtitle) || str(dc.subtitle),
+    subtitleMaxWidth: resolvedWidth as string | number | undefined,
   };
 }
 
@@ -73,17 +101,24 @@ export default function BlockRenderer({
   const c = parseBlockContent(rawContent);
 
   switch (type) {
-    // Heroes (content-frozen)
+    // Heroes
     case "homepageHero":
-      return <HomepageHero />;
+      return (
+        <HomepageHero
+          title={str(c.title) || undefined}
+          buttonLabel={str(c.buttonLabel) || undefined}
+          buttonHref={str(c.buttonHref) || undefined}
+          backgroundGradient={str(c.backgroundGradient) || undefined}
+          heroImageSrc={str(c.heroImageSrc) || undefined}
+        />
+      );
+    // The page-specific heroes share the SubpageHero markup; empty content
+    // falls back to the registry defaults (the original hardcoded values).
     case "discoverHero":
-      return <DiscoverHero />;
     case "researchHero":
-      return <ResearchHero />;
     case "teamHero":
-      return <TeamHero />;
     case "contactHero":
-      return <ContactHero />;
+      return <SubpageHeroBlock {...subpageHeroFromContent(type, c)} />;
     case "studiesHero":
       return <StudiesHero />;
 
@@ -178,27 +213,55 @@ export default function BlockRenderer({
     case "studiesOverview":
       return <StudiesOverview />;
     case "trialDesign":
-      return <TrialDesign />;
+      return (
+        <TrialDesign
+          heading={str(c.heading) || undefined}
+          intro={str(c.intro) || undefined}
+          residentialHeading={str(c.residentialHeading) || undefined}
+          residentialBody={str(c.residentialBody) || undefined}
+          communityHeading={str(c.communityHeading) || undefined}
+          communityBody={str(c.communityBody) || undefined}
+        />
+      );
     case "discoverVideo":
-      return <DiscoverVideo />;
+      return (
+        <DiscoverVideo
+          videoId={str(c.videoId) || undefined}
+          cardTitle={str(c.cardTitle) || undefined}
+          cardParagraph1={str(c.cardParagraph1) || undefined}
+          cardParagraph2={str(c.cardParagraph2) || undefined}
+        />
+      );
     case "contactMap":
-      return <ContactMap />;
+      return <ContactMap mapUrl={str(c.mapUrl) || undefined} />;
     case "contactDetails":
-      return <ContactDetails />;
+      return (
+        <ContactDetails
+          cardOneTitle={str(c.cardOneTitle) || undefined}
+          cardOneBody={str(c.cardOneBody) || undefined}
+          cardTwoTitle={str(c.cardTwoTitle) || undefined}
+          cardTwoBody={str(c.cardTwoBody) || undefined}
+          cardThreeTitle={str(c.cardThreeTitle) || undefined}
+          cardThreeBody={str(c.cardThreeBody) || undefined}
+          phone={str(c.phone) || undefined}
+          phoneHref={str(c.phoneHref) || undefined}
+          address={str(c.address) || undefined}
+        />
+      );
 
-    // Dynamic (live data)
+    // Dynamic (live data, with optional display config)
     case "recentPublications":
-      return <RecentPublications />;
+      return <RecentPublications limit={Number(c.limit) || undefined} />;
     case "ourPartners":
-      return <OurPartners />;
+      return <OurPartners group={partnerGroup(c.group)} />;
     case "publicationIndex":
-      return <PublicationIndex />;
+      return <PublicationIndex pageSize={Number(c.pageSize) || undefined} />;
     case "academicCollaborators":
       return <AcademicCollaborators />;
     case "industryCollaborators":
       return <IndustryCollaborators />;
     case "teamSections":
-      return <TeamSectionsBlock />;
+      return <TeamSectionsBlock defaultTab={teamTab(c.defaultTab)} />;
 
     default:
       if (process.env.NODE_ENV !== "production") {

@@ -1,14 +1,30 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Fragment } from "react";
 
-export default function HomepageHero() {
+interface HomepageHeroProps {
+  title?: string;
+  buttonLabel?: string;
+  buttonHref?: string;
+  backgroundGradient?: string;
+  heroImageSrc?: string;
+}
+
+export default function HomepageHero({
+  title = "Unlock the power of food with \n the Human Nutrition Unit",
+  buttonLabel = "JOIN A STUDY",
+  buttonHref = "/studies",
+  backgroundGradient = "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
+  heroImageSrc = "/images/homepage-hero-bowl.webp",
+}: HomepageHeroProps = {}) {
+  const titleLines = title.split("\n");
   return (
     <section
       style={{
         width: "100%",
         marginLeft: 0,
         marginRight: 0,
-        marginTop:0,
+        marginTop: 0,
         marginBottom: "0px",
       }}
       aria-label="Human Nutrition Unit hero section"
@@ -17,14 +33,13 @@ export default function HomepageHero() {
       <div
         className="relative min-h-[810px] px-8 pb-24 pt-[315px] md:px-14 md:pb-28 md:pt-[315px] lg:px-15"
         style={{
-          background:
-            "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
+          background: backgroundGradient,
         }}
       >
         {/* Hero bowl image */}
         <div className="pointer-events-none absolute -left-75 bottom-[-400px] h-[1000px] w-[1000px]">
           <Image
-            src="/images/homepage-hero-bowl.webp"
+            src={heroImageSrc}
             alt="Colourful salad bowl with fresh vegetables"
             fill
             priority
@@ -45,17 +60,22 @@ export default function HomepageHero() {
                 opacity: 0.75,
               }}
             >
-              Unlock the power of food with <br /> the Human Nutrition Unit
+              {titleLines.map((line, i) => (
+                <Fragment key={i}>
+                  {line}
+                  {i < titleLines.length - 1 && <br />}
+                </Fragment>
+              ))}
             </h2>
             <Link
-              href="/studies"
+              href={buttonHref}
               className="mt-15 inline-flex rounded-full border-[5px] border-white/75 px-10 py-3 font-bold tracking-wide text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               style={{
                 fontSize: "28px",
                 opacity: 0.75,
               }}
             >
-              JOIN A STUDY
+              {buttonLabel}
             </Link>
           </div>
         </div>

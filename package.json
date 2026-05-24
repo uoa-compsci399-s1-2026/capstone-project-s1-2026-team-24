@@ -12,6 +12,7 @@
     "build-storybook": "storybook build",
     "seed": "prisma db seed",
     "seed:pages": "tsx prisma/seed-page-blocks.ts",
+    "migrate:richtext": "tsx prisma/migrate-blocks-richtext.ts",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots"
@@ -22,12 +23,17 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@prisma/adapter-better-sqlite3": "^7.7.0",
     "@prisma/client": "^7.7.0",
+    "@tiptap/extension-link": "^3.23.6",
+    "@tiptap/pm": "^3.23.6",
+    "@tiptap/react": "^3.23.6",
+    "@tiptap/starter-kit": "^3.23.6",
     "better-sqlite3": "^12.9.0",
     "jose": "^6.2.2",
     "next": "16.2.2",
     "prisma": "^7.7.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "sanitize-html": "^2.17.4"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.1.2",
@@ -41,6 +47,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.1",
     "@vitest/browser-playwright": "^4.1.4",
     "@vitest/coverage-v8": "^4.1.4",
     "eslint": "^9",

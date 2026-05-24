@@ -15,13 +15,15 @@ export default function TeamFilter({
   research,
   alumni,
   hasAlumni,
+  defaultTab = "all",
 }: {
   board: ReactNode;
   research: ReactNode;
   alumni: ReactNode;
   hasAlumni: boolean;
+  defaultTab?: FilterKey;
 }) {
-  const [filter, setFilter] = useState<FilterKey>("all");
+  const [filter, setFilter] = useState<FilterKey>(defaultTab);
 
   const options: FilterOption[] = [
     { key: "all", label: "All" },

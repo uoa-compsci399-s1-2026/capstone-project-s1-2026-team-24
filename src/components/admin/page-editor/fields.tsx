@@ -1,11 +1,24 @@
 "use client";
 
+import dynamic from "next/dynamic";
+
 import type { BlockField, StudyCardContent } from "@/lib/blocks/types";
 import MediaPicker from "@/components/admin/media/MediaPicker";
 
 const inputClass =
   "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-[#0c0c48] focus:border-[#0c0c48] focus:outline-none focus:ring-1 focus:ring-[#0c0c48]";
 const labelClass = "block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1";
+
+// Lazy-load the Tiptap editor so its bundle is only fetched when a rich-text
+// field is actually shown; the rest of the editor stays lightweight.
+const RichTextField = dynamic(() => import("./RichTextField"), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-400">
+      Loading editor…
+    </div>
+  ),
+});
 
 const IMAGE_POSITIONS = ["center", "right", "left", "top", "bottom"] as const;
 
@@ -297,6 +310,19 @@ export function Field({
             rows={4}
             value={asString(value)}
             onChange={(e) => onChange(e.target.value)}
+          />
+          {field.help && (
+            <p className="mt-1 text-xs text-gray-400">{field.help}</p>
+          )}
+        </div>
+      );
+    case "richText":
+      return (
+        <div>
+          <label className={labelClass}>{field.label}</label>
+          <RichTextField
+            value={asString(value)}
+            onChange={(html) => onChange(html)}
           />
           {field.help && (
             <p className="mt-1 text-xs text-gray-400">{field.help}</p>

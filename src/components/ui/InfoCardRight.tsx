@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import Button from "./Button";
+import RichText from "@/components/blocks/RichText";
 
 type BgVariant = "dark" | "standard" | "light";
 
@@ -12,7 +13,10 @@ const bgColors: Record<BgVariant, string> = {
 
 interface InfoCardProps {
   title: string;
+  /** Legacy plain-text paragraphs. Rendered only when `body` is empty. */
   paragraphs: string[];
+  /** Rich-text HTML body (preferred). Sanitized on render by <RichText/>. */
+  body?: string;
   buttonLabel?: string;
   buttonHref?: string;
   imageSrc: string;
@@ -25,6 +29,7 @@ interface InfoCardProps {
 export default function InfoCardRight({
   title,
   paragraphs,
+  body,
   buttonLabel = "More Information",
   buttonHref = "#",
   imageSrc,
@@ -70,21 +75,33 @@ export default function InfoCardRight({
               {title}
             </h2>
 
-            <div className="flex flex-col gap-4">
-              {paragraphs.map((para, i) => (
-                <p
-                  key={i}
-                  className="text-white/85"
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: "16px",
-                    lineHeight: 1.6,
-                  }}
-                >
-                  {para}
-                </p>
-              ))}
-            </div>
+            {body ? (
+              <RichText
+                html={body}
+                className="flex flex-col gap-4 text-white/85 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  fontSize: "16px",
+                  lineHeight: 1.6,
+                }}
+              />
+            ) : (
+              <div className="flex flex-col gap-4">
+                {paragraphs.map((para, i) => (
+                  <p
+                    key={i}
+                    className="text-white/85"
+                    style={{
+                      fontFamily: "Inter, sans-serif",
+                      fontSize: "16px",
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {para}
+                  </p>
+                ))}
+              </div>
+            )}
 
             {showButton && (
               <Button href={buttonHref} variant="white">

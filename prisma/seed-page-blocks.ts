@@ -1,6 +1,11 @@
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
+import {
+  CONTACT_DETAILS_DEFAULTS,
+  DISCOVER_VIDEO_DEFAULTS,
+  TRIAL_DESIGN_DEFAULTS,
+} from "../src/lib/blocks/default-content";
 
 // Seeds the page-builder tables (Page + PageBlock) with the content that was
 // previously hardcoded in each page's JSX. Running this reproduces the exact
@@ -17,7 +22,17 @@ const PAGE_SEEDS: PageSeed[] = [
     slug: "home",
     title: "Home",
     blocks: [
-      { type: "homepageHero", content: {} },
+      {
+        type: "homepageHero",
+        content: {
+          title: "Unlock the power of food with \n the Human Nutrition Unit",
+          buttonLabel: "JOIN A STUDY",
+          buttonHref: "/studies",
+          backgroundGradient:
+            "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
+          heroImageSrc: "/images/homepage-hero-bowl.webp",
+        },
+      },
       {
         type: "sectionHeading",
         content: { text: "Check out our current studies!", heightClass: "h-80" },
@@ -58,10 +73,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "right",
           cardBg: "standard",
           showButton: true,
-          paragraphs: [
-            "HNU is a nutrition research facility within The University of Auckland, New Zealand's most prestigious and largest University.",
-            "The Unit undertakes research to establish links between diet, health and disease prevention.",
-          ],
+          body:
+            "<p>HNU is a nutrition research facility within The University of Auckland, New Zealand's most prestigious and largest University.</p><p>The Unit undertakes research to establish links between diet, health and disease prevention.</p>",
           buttonLabel: "More Information",
           buttonHref: "/about",
           imageSrc: "/1630363804706 (1).jpg",
@@ -75,10 +88,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "left",
           cardBg: "light",
           showButton: true,
-          paragraphs: [
-            "We investigate the effects of whole foods, food components, bioactives and nutraceutical products on health and disease.",
-            "Our research focuses on key areas of human nutrition: obesity, appetite regulation, metabolic syndrome, cardiovascular risk, pre-diabetes and type 2 diabetes.",
-          ],
+          body:
+            "<p>We investigate the effects of whole foods, food components, bioactives and nutraceutical products on health and disease.</p><p>Our research focuses on key areas of human nutrition: obesity, appetite regulation, metabolic syndrome, cardiovascular risk, pre-diabetes and type 2 diabetes.</p>",
           buttonLabel: "Read More →",
           buttonHref: "/research",
           imageSrc: "/services-and-expertise.jpg",
@@ -96,8 +107,16 @@ const PAGE_SEEDS: PageSeed[] = [
     slug: "about",
     title: "Discover HNU (About)",
     blocks: [
-      { type: "discoverHero", content: {} },
-      { type: "discoverVideo", content: {} },
+      {
+        type: "discoverHero",
+        content: {
+          title: "Discover HNU",
+          subtitle:
+            "Focused on better health through nutrition.\nLearn more about our work and purpose",
+          subtitleMaxWidth: "697",
+        },
+      },
+      { type: "discoverVideo", content: { ...DISCOVER_VIDEO_DEFAULTS } },
       {
         type: "calloutBannerRight",
         content: {
@@ -119,9 +138,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "left",
           cardBg: "dark",
           showButton: false,
-          paragraphs: [
-            "The Human Nutrition Unit provides a comprehensive range of services across both academic and commercially funded research. These include consultancy on nutrition regulatory issues and health claims, trial design and protocol development, participant recruitment and screening, and full trial management and coordination. The team also delivers data collection, analysis, interpretation, and the publication of peer-reviewed scientific research.",
-          ],
+          body:
+            "<p>The Human Nutrition Unit provides a comprehensive range of services across both academic and commercially funded research. These include consultancy on nutrition regulatory issues and health claims, trial design and protocol development, participant recruitment and screening, and full trial management and coordination. The team also delivers data collection, analysis, interpretation, and the publication of peer-reviewed scientific research.</p>",
           buttonLabel: "Learn More",
           buttonHref: "/research",
           imageSrc: "/NZ Synergy Study.jpg",
@@ -136,10 +154,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "right",
           cardBg: "light",
           showButton: false,
-          paragraphs: [
-            "The Unit is equipped to deliver highly controlled and precise nutrition research. Capabilities include controlled diet provision, energy expenditure measurement, anthropometric assessments such as body composition analysis, and clinical procedures including phlebotomy and venous cannulation.",
-            "Additional services include urine and faecal sample collection, with external nursing support available for overnight studies when required.",
-          ],
+          body:
+            "<p>The Unit is equipped to deliver highly controlled and precise nutrition research. Capabilities include controlled diet provision, energy expenditure measurement, anthropometric assessments such as body composition analysis, and clinical procedures including phlebotomy and venous cannulation.</p><p>Additional services include urine and faecal sample collection, with external nursing support available for overnight studies when required.</p>",
           imageSrc: "/Our Research.jpg",
           imageAlt: "Modern research laboratory",
         },
@@ -162,11 +178,8 @@ const PAGE_SEEDS: PageSeed[] = [
           imagePosition: "left",
           cardBg: "dark",
           showButton: false,
-          paragraphs: [
-            "HNU offers a purpose-built research environment designed to support controlled human nutrition studies. ",
-            "Facilities include a clinical room for blood collection, an indirect calorimetry room for measuring energy expenditure, an interview lounge, and a biological sample handling laboratory. ",
-            "The Unit also features a metabolic kitchen and five fully furnished residential bedrooms, along with bathroom facilities, enabling both short- and long-term live-in studies.",
-          ],
+          body:
+            "<p>HNU offers a purpose-built research environment designed to support controlled human nutrition studies.</p><p>Facilities include a clinical room for blood collection, an indirect calorimetry room for measuring energy expenditure, an interview lounge, and a biological sample handling laboratory.</p><p>The Unit also features a metabolic kitchen and five fully furnished residential bedrooms, along with bathroom facilities, enabling both short- and long-term live-in studies.</p>",
           buttonLabel: "Explore Our Facilities",
           buttonHref: "/facilities",
           imageSrc: "/facilities.png",
@@ -193,7 +206,7 @@ const PAGE_SEEDS: PageSeed[] = [
     blocks: [
       { type: "studiesHero", content: {} },
       { type: "studiesOverview", content: {} },
-      { type: "trialDesign", content: {} },
+      { type: "trialDesign", content: { ...TRIAL_DESIGN_DEFAULTS } },
       { type: "studiesContactCard", content: {} },
     ],
   },
@@ -201,7 +214,15 @@ const PAGE_SEEDS: PageSeed[] = [
     slug: "research",
     title: "Our Research",
     blocks: [
-      { type: "researchHero", content: {} },
+      {
+        type: "researchHero",
+        content: {
+          title: "Our Research",
+          subtitle:
+            "Better health through nutrition science.\nExplore our research in diet, disease, and clinical trials",
+          subtitleMaxWidth: "626",
+        },
+      },
       { type: "publicationIndex", content: {} },
     ],
   },
@@ -209,7 +230,15 @@ const PAGE_SEEDS: PageSeed[] = [
     slug: "team",
     title: "Our Team",
     blocks: [
-      { type: "teamHero", content: {} },
+      {
+        type: "teamHero",
+        content: {
+          title: "Our Team",
+          subtitle:
+            "We're passionate about what we do.\nFind out more about the people behind\nthe Human Nutrition Unit",
+          subtitleMaxWidth: "",
+        },
+      },
       { type: "teamSections", content: {} },
     ],
   },
@@ -318,9 +347,22 @@ const PAGE_SEEDS: PageSeed[] = [
     slug: "contact",
     title: "Contact Us",
     blocks: [
-      { type: "contactHero", content: {} },
-      { type: "contactMap", content: {} },
-      { type: "contactDetails", content: {} },
+      {
+        type: "contactHero",
+        content: {
+          title: "Contact Us",
+          subtitle: "Have a question or enquiry?\nGet in touch with our team",
+          subtitleMaxWidth: "",
+        },
+      },
+      {
+        type: "contactMap",
+        content: {
+          mapUrl:
+            "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3191.62085243865!2d174.74999331301763!3d-36.87549318088687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d0d4771e23b727d%3A0x90ba816391e739dc!2sHuman%20Nutrition%20Unit!5e0!3m2!1sen!2snz!4v1777374580042!5m2!1sen!2snz",
+        },
+      },
+      { type: "contactDetails", content: { ...CONTACT_DETAILS_DEFAULTS } },
     ],
   },
 ];
