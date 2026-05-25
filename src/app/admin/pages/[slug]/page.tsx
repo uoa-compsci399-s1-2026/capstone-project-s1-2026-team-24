@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import PageEditorLoader from "@/components/admin/page-editor/PageEditorLoader";
+import { publicPath } from "@/lib/blocks/page-paths";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ export default async function AdminPageEditorRoute({
     <PageEditorLoader
       slug={page.slug}
       title={page.title}
+      previewHref={publicPath(page.slug)}
       initialBlocks={page.blocks.map((b) => ({
         id: b.id,
         type: b.type,

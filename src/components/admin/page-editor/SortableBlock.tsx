@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { getBlockDefinition } from "@/lib/blocks/registry";
+import type { BlockScope } from "@/lib/blocks/types";
 import { parseBlockContent } from "@/lib/blocks/validate";
 import BlockEditForm from "./BlockEditForm";
 
@@ -32,13 +33,17 @@ export default function SortableBlock({
   onSave,
   onToggleVisible,
   onDelete,
+  onDuplicate,
   saving,
+  scope = "page",
 }: {
   block: EditorBlock;
   onSave: (id: number, content: Record<string, unknown>) => Promise<void>;
   onToggleVisible: (id: number, isVisible: boolean) => void;
   onDelete: (id: number) => void;
+  onDuplicate: (id: number) => void;
   saving: boolean;
+  scope?: BlockScope;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: block.id });
@@ -106,6 +111,13 @@ export default function SortableBlock({
           </button>
           <button
             type="button"
+            onClick={() => onDuplicate(block.id)}
+            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+          >
+            Duplicate
+          </button>
+          <button
+            type="button"
             onClick={() => {
               if (
                 window.confirm(
@@ -127,6 +139,7 @@ export default function SortableBlock({
           def={def}
           initialContent={content}
           saving={saving}
+          scope={scope}
           onSave={async (c) => {
             await onSave(block.id, c);
             setEditing(false);

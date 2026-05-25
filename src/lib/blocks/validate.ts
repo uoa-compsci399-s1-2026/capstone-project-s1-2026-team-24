@@ -1,6 +1,7 @@
 // Helpers for reading/writing PageBlock.content, which is a JSON string column.
 
 import { getBlockDefinition } from "./registry";
+import { readRowContent } from "./row";
 import { ROW_MAX_CHILDREN_PER_COLUMN } from "./types";
 
 export type BlockContent = Record<string, unknown>;
@@ -14,18 +15,14 @@ function genId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-// Validates and normalizes a `row` block's nested content. Enforces: a known
-// variant, exactly two columns, each child has a registered non-row type and an
-// object content, and a per-column child cap (bounds payload size / nesting).
+// Validates and normalizes a `row` block's nested content. Reads the (possibly
+// legacy) shape into 1–3 columns with matching widths, then enforces: each child
+// has a registered non-row type and object content, and a per-column child cap
+// (bounds payload size / nesting). Rows cannot contain rows (one level only).
 function normalizeRowContent(
   content: Record<string, unknown>,
 ): { ok: true; value: Record<string, unknown> } | { ok: false; error: string } {
-  const variant = content.variant === "oneColumn" ? "oneColumn" : "twoColumn";
-  const rawColumns = Array.isArray(content.columns) ? content.columns : [[], []];
-  const columns: unknown[][] = [
-    Array.isArray(rawColumns[0]) ? rawColumns[0] : [],
-    Array.isArray(rawColumns[1]) ? rawColumns[1] : [],
-  ];
+  const { columns, widths } = readRowContent(content);
 
   const normalizedColumns = [];
   for (const column of columns) {
@@ -33,7 +30,9 @@ function normalizeRowContent(
       return { ok: false, error: "Too many blocks in a column" };
     }
     const children = [];
-    for (const child of column) {
+    // readRowContent types children as RowChild[] but doesn't verify their
+    // shape, so treat each as unknown until validated here.
+    for (const child of column as unknown[]) {
       if (!child || typeof child !== "object" || Array.isArray(child)) {
         return { ok: false, error: "Invalid row child" };
       }
@@ -59,7 +58,7 @@ function normalizeRowContent(
 
   return {
     ok: true,
-    value: { variant, columns: normalizedColumns },
+    value: { columns: normalizedColumns, widths },
   };
 }
 

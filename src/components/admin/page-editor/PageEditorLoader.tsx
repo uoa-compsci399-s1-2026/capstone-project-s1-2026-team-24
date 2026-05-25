@@ -17,6 +17,7 @@ export default function PageEditorLoader(props: {
   slug: string;
   title: string;
   initialBlocks: EditorBlock[];
+  previewHref?: string;
 }) {
   return <PageEditor {...props} />;
 }

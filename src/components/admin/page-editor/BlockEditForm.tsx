@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { BlockDefinition } from "@/lib/blocks/types";
+import type { BlockDefinition, BlockScope } from "@/lib/blocks/types";
 import { Field } from "./fields";
 import RowEditor from "./RowEditor";
 
@@ -11,12 +11,14 @@ export default function BlockEditForm({
   onSave,
   onCancel,
   saving,
+  scope = "page",
 }: {
   def: BlockDefinition;
   initialContent: Record<string, unknown>;
   onSave: (content: Record<string, unknown>) => void;
   onCancel: () => void;
   saving: boolean;
+  scope?: BlockScope;
 }) {
   const [draft, setDraft] = useState<Record<string, unknown>>(initialContent);
 
@@ -26,7 +28,7 @@ export default function BlockEditForm({
   return (
     <div className="space-y-4 border-t border-gray-200 bg-gray-50 px-5 py-4">
       {def.type === "row" ? (
-        <RowEditor content={draft} onChange={setDraft} />
+        <RowEditor content={draft} onChange={setDraft} scope={scope} />
       ) : (
         def.fields.map((field) => (
           <Field

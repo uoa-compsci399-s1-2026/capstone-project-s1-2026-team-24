@@ -22,6 +22,7 @@ import {
   PATCH as patchBlock,
   DELETE as deleteBlock,
 } from "@/app/api/admin/pages/[slug]/blocks/[id]/route";
+import { POST as duplicateBlock } from "@/app/api/admin/pages/[slug]/blocks/[id]/duplicate/route";
 import { PATCH as reorderBlocks } from "@/app/api/admin/pages/[slug]/blocks/reorder/route";
 
 function jsonReq(method: string, body: unknown) {
@@ -145,6 +146,70 @@ describe("PATCH/DELETE block scoping /api/admin/pages/[slug]/blocks/[id]", () =>
     );
     expect(res.status).toBe(200);
     expect(mockPrisma.pageBlock.delete).toHaveBeenCalledWith({ where: { id: 1 } });
+  });
+});
+
+describe("POST /api/admin/pages/[slug]/blocks/[id]/duplicate", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("400 for an invalid id", async () => {
+    const res = await duplicateBlock(
+      new Request("http://localhost/x", { method: "POST" }),
+      { params: Promise.resolve({ slug: "home", id: "abc" }) },
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("404 when the block doesn't belong to the page slug", async () => {
+    mockPrisma.pageBlock.findFirst.mockResolvedValueOnce(null);
+    const res = await duplicateBlock(
+      new Request("http://localhost/x", { method: "POST" }),
+      { params: Promise.resolve({ slug: "about", id: "5" }) },
+    );
+    expect(res.status).toBe(404);
+    expect(mockPrisma.pageBlock.findFirst).toHaveBeenCalledWith({
+      where: { id: 5, page: { slug: "about" } },
+    });
+  });
+
+  it("inserts a copy right after the original, shifting later blocks down", async () => {
+    mockPrisma.pageBlock.findFirst.mockResolvedValueOnce({
+      id: 5,
+      pageId: 3,
+      type: "sectionHeading",
+      content: '{"text":"Hi"}',
+      position: 1,
+      isVisible: true,
+    });
+    // Run the duplicate transaction against the same mock.
+    mockPrisma.$transaction.mockImplementationOnce(async (cb) => cb(mockPrisma));
+    mockPrisma.pageBlock.updateMany.mockResolvedValueOnce({ count: 2 });
+    mockPrisma.pageBlock.create.mockResolvedValueOnce({
+      id: 6,
+      type: "sectionHeading",
+      content: '{"text":"Hi"}',
+      position: 2,
+      isVisible: true,
+    });
+
+    const res = await duplicateBlock(
+      new Request("http://localhost/x", { method: "POST" }),
+      { params: Promise.resolve({ slug: "home", id: "5" }) },
+    );
+    expect(res.status).toBe(201);
+    expect(mockPrisma.pageBlock.updateMany).toHaveBeenCalledWith({
+      where: { pageId: 3, position: { gte: 2 } },
+      data: { position: { increment: 1 } },
+    });
+    expect(mockPrisma.pageBlock.create).toHaveBeenCalledWith({
+      data: {
+        pageId: 3,
+        type: "sectionHeading",
+        content: '{"text":"Hi"}',
+        position: 2,
+        isVisible: true,
+      },
+    });
   });
 });
 

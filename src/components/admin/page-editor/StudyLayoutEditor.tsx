@@ -145,6 +145,7 @@ export default function StudyLayoutEditor({
         backHref={`/admin/studies/${studyId}`}
         backLabel="← Back to study"
         viewHref={`/studies/${studySlug}`}
+        previewHref={`/studies/${studySlug}`}
         headerExtra={headerExtra}
       />
     </div>

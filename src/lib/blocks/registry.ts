@@ -615,10 +615,10 @@ const DEFINITIONS: BlockDefinition[] = [
     type: "row",
     label: "Row (columns)",
     category: "Layout",
-    scope: "study",
+    scope: "both",
     editable: true,
     fields: [],
-    defaultContent: { variant: "twoColumn", columns: [[], []] },
+    defaultContent: { columns: [[], []], widths: [1, 1] },
   },
 ];
 

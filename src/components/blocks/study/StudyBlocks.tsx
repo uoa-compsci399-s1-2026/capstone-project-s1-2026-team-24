@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import SectionHeading from "@/components/sections/SectionHeading";
-import type { RowChild, RowContent } from "@/lib/blocks/types";
+import { readRowContent } from "@/lib/blocks/row";
 import { useStudy, type StudyLang } from "./study-context";
 
 const STATUS_STYLES: Record<
@@ -253,18 +253,10 @@ function StudyProse({ content }: { content: Record<string, unknown> }) {
   );
 }
 
-function asRowContent(content: Record<string, unknown>): RowContent {
-  const variant = content.variant === "oneColumn" ? "oneColumn" : "twoColumn";
-  const cols = Array.isArray(content.columns) ? content.columns : [];
-  const left = Array.isArray(cols[0]) ? (cols[0] as RowChild[]) : [];
-  const right = Array.isArray(cols[1]) ? (cols[1] as RowChild[]) : [];
-  return { variant, columns: [left, right] };
-}
-
 function RowBlock({ content }: { content: Record<string, unknown> }) {
-  const { variant, columns } = asRowContent(content);
+  const { columns, widths } = readRowContent(content);
 
-  if (variant === "oneColumn") {
+  if (columns.length === 1) {
     return (
       <div className="flex flex-col gap-6">
         {columns[0].map((child) => (
@@ -275,17 +267,18 @@ function RowBlock({ content }: { content: Record<string, unknown> }) {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-start">
-      <div className="flex-1 min-w-0 flex flex-col gap-6">
-        {columns[0].map((child) => (
-          <StudyBlockRenderer key={child.id} type={child.type} content={child.content} />
-        ))}
-      </div>
-      <div className="w-full lg:w-[340px] flex-shrink-0 flex flex-col gap-6">
-        {columns[1].map((child) => (
-          <StudyBlockRenderer key={child.id} type={child.type} content={child.content} />
-        ))}
-      </div>
+    <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+      {columns.map((col, i) => (
+        <div
+          key={i}
+          className="flex min-w-0 w-full flex-col gap-6 lg:w-auto"
+          style={{ flexGrow: widths[i], flexBasis: 0 }}
+        >
+          {col.map((child) => (
+            <StudyBlockRenderer key={child.id} type={child.type} content={child.content} />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

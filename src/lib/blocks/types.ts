@@ -72,12 +72,18 @@ export interface RowChild {
   content: Record<string, unknown>;
 }
 
-/** Content of a `row` block: one or two columns, each an ordered list of children. */
+/**
+ * Content of a `row` block: 1–3 columns, each an ordered list of children, plus
+ * a relative width (flex weight) per column. `widths` always has the same length
+ * as `columns`. Legacy rows stored a `variant` flag and a fixed two-column
+ * tuple; those are read tolerantly into this shape (see `lib/blocks/row.ts`).
+ */
 export interface RowContent {
-  variant: "oneColumn" | "twoColumn";
-  /** [leftColumn, rightColumn]; rightColumn is empty for oneColumn rows. */
-  columns: [RowChild[], RowChild[]];
+  columns: RowChild[][];
+  widths: number[];
 }
 
 /** Hard limits for row content, enforced on write to bound payloads. */
 export const ROW_MAX_CHILDREN_PER_COLUMN = 20;
+export const ROW_MIN_COLUMNS = 1;
+export const ROW_MAX_COLUMNS = 3;
