@@ -24,11 +24,12 @@ import CalloutBannerRight from "@/components/ui/CalloutBannerRight";
 import SubpageHeroBlock from "@/components/blocks/SubpageHeroBlock";
 import TeamSectionsBlock from "@/components/blocks/TeamSectionsBlock";
 import HomepageStudiesBlock from "@/components/blocks/HomepageStudiesBlock";
+import Updates from "@/components/sections/Updates";
 
 import { parseBlockContent, serializeBlockContent } from "@/lib/blocks/validate";
 import { getBlockDefinition } from "@/lib/blocks/registry";
 import { readRowContent } from "@/lib/blocks/row";
-import type { RowChild, StudyCardContent } from "@/lib/blocks/types";
+import type { RowChild, StudyCardContent, UpdateItem } from "@/lib/blocks/types";
 
 type Content = Record<string, unknown>;
 
@@ -177,6 +178,17 @@ export default function BlockRenderer({
           cards={(Array.isArray(c.cards) ? c.cards : []) as StudyCardContent[]}
         />
       );
+    case "updates": {
+      const items = (Array.isArray(c.updates) ? c.updates : []) as UpdateItem[];
+      const normalized = items.map((it) => ({
+        title: str(it?.title),
+        date: str(it?.date) || undefined,
+        paragraphs: strArray(it?.paragraphs),
+      }));
+      // The carousel reads updates[current]; render nothing when empty.
+      if (normalized.length === 0) return null;
+      return <Updates updates={normalized} />;
+    }
     case "sectionHeading":
       return (
         <SectionHeading
