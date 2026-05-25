@@ -29,8 +29,10 @@ export default function AdminLayout({
   const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // The login page renders its own layout — don't wrap it in the shell.
-  if (pathname === "/admin/login") {
+  // The login page renders its own layout, and the page-preview route renders a
+  // bare public page (shown in the editor's preview iframe) — don't wrap either
+  // in the admin shell.
+  if (pathname === "/admin/login" || pathname.startsWith("/admin/preview")) {
     return <>{children}</>;
   }
 

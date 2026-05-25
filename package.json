@@ -15,6 +15,7 @@
     "migrate:richtext": "tsx prisma/migrate-blocks-richtext.ts",
     "catalog:media": "tsx prisma/catalog-public-media.ts",
     "backfill:media-dims": "tsx prisma/backfill-media-dimensions.ts",
+    "backfill:published": "tsx prisma/backfill-published.ts",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots"

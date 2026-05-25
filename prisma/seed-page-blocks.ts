@@ -6,6 +6,7 @@ import {
   DISCOVER_VIDEO_DEFAULTS,
   TRIAL_DESIGN_DEFAULTS,
 } from "../src/lib/blocks/default-content";
+import { snapshotBlocks } from "../src/lib/page-publish";
 
 // Seeds the page-builder tables (Page + PageBlock) with the content that was
 // previously hardcoded in each page's JSX. Running this reproduces the exact
@@ -424,6 +425,22 @@ export async function seedPageBlocks(prisma: PrismaClient, force = false) {
         },
       });
     }
+
+    // Publish the seeded content so the public site renders it immediately and
+    // the editor shows the page as published (not "unpublished changes").
+    await prisma.page.update({
+      where: { id: page.id },
+      data: {
+        publishedContent: snapshotBlocks(
+          pageSeed.blocks.map((b) => ({
+            type: b.type,
+            content: JSON.stringify(b.content),
+            isVisible: true,
+          })),
+        ),
+        publishedAt: new Date(),
+      },
+    });
 
     console.log(`✓ ${pageSeed.slug}: seeded ${pageSeed.blocks.length} blocks`);
   }
