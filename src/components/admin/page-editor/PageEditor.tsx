@@ -305,10 +305,20 @@ export default function PageEditor({
                 Refresh
               </button>
             </div>
+            {/*
+              The preview frames our own first-party page, which must hydrate
+              and read localStorage (LanguageProvider), so it needs
+              allow-same-origin + allow-scripts. The sandbox still withholds the
+              dangerous capabilities — top-navigation, forms, popups, modals,
+              downloads, pointer-lock — so a hypothetical XSS in public content
+              can't drive the admin shell or navigate it away.
+            */}
             <iframe
               key={previewVersion}
               src={previewHref}
               title="Live preview"
+              sandbox="allow-same-origin allow-scripts"
+              referrerPolicy="same-origin"
               className="h-[75vh] w-full rounded-lg border border-gray-200 bg-white"
             />
             <p className="mt-2 text-center text-[11px] text-gray-400">

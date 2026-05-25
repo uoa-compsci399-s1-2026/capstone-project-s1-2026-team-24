@@ -334,6 +334,10 @@ export default function RowEditor({
     if (fromCol === -1 || toCol === -1 || fromCol === toCol) return;
 
     setRow((prev) => {
+      // Block a cross-column move into a column that's already at the cap the
+      // validator enforces on write, so the editor can't reach an unsaveable
+      // state. The block stays in its source column until space frees up.
+      if (prev.columns[toCol].length >= ROW_MAX_CHILDREN_PER_COLUMN) return prev;
       const cols = prev.columns.map((c) => [...c]);
       const activeIndex = cols[fromCol].findIndex((c) => c.id === activeKey);
       if (activeIndex === -1) return prev;
