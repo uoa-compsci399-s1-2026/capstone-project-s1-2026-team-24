@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { unlink } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/prisma";
+import { clampOrder } from "@/lib/order";
 
 export const runtime = "nodejs";
 
@@ -46,7 +47,7 @@ export async function PATCH(
           { status: 400 },
         );
       }
-      updates.order = body.order;
+      updates.order = clampOrder(body.order);
     }
 
     if (Object.keys(updates).length === 0) {

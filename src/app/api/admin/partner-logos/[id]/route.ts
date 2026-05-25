@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clampOrder } from "@/lib/order";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import path from "path";
 
@@ -25,7 +26,7 @@ function parseOrder(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || !value.trim()) return undefined;
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 0) return null;
-  return parsed;
+  return clampOrder(parsed);
 }
 
 function parseGroup(value: FormDataEntryValue | null) {
@@ -136,7 +137,7 @@ export async function PATCH(
         if (typeof body.isPlaceholder === "boolean") {
           nextIsPlaceholder = body.isPlaceholder;
         }
-        if (typeof body.order === "number") nextOrder = body.order;
+        if (typeof body.order === "number") nextOrder = clampOrder(body.order);
         if (typeof body.group === "string" && ALLOWED_GROUPS.has(body.group)) {
           nextGroup = body.group;
         }

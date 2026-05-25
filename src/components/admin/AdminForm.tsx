@@ -93,6 +93,9 @@ interface FormFieldProps {
   rows?: number;
   options?: { value: string; label: string }[];
   helper?: string;
+  min?: number;
+  max?: number;
+  step?: number;
 }
 
 const inputClass =
@@ -110,6 +113,9 @@ export function FormField({
   rows,
   options,
   helper,
+  min,
+  max,
+  step,
 }: FormFieldProps) {
   const fieldName = name ?? id;
   return (
@@ -157,6 +163,9 @@ export function FormField({
           value={value}
           onChange={onChange}
           required={required}
+          min={min}
+          max={max}
+          step={step}
           className={inputClass}
         />
       )}

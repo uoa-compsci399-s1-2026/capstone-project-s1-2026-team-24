@@ -67,6 +67,64 @@ describe("admin team routes", () => {
     expect(response.status).toBe(404);
   });
 
+  it("POST /api/admin/team clamps an out-of-range order into the Int range", async () => {
+    mockPrisma.teamMember.create.mockResolvedValueOnce({ id: 1 });
+    const form = new FormData();
+    form.set("name", "Alice");
+    form.set("title", "Lead");
+    form.set("section", "ResearchTeam");
+    form.set("bio", "Bio");
+    form.set("order", "9999999999"); // > 2^31-1, would poison Prisma reads
+
+    const request = new Request("http://localhost/api/admin/team", {
+      method: "POST",
+      body: form,
+    });
+    const response = await postAdminTeam(request as never);
+    expect(response.status).toBe(201);
+    expect(mockPrisma.teamMember.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ order: 2147483647 }),
+      }),
+    );
+  });
+
+  it("PATCH /api/admin/team/[id] clamps order (huge -> max, negative -> 0)", async () => {
+    mockPrisma.teamMember.findUnique.mockResolvedValue({
+      id: 1,
+      photoPath: "/uploads/team/a.png",
+    });
+    mockPrisma.teamMember.update.mockResolvedValue({ id: 1 });
+
+    const huge = new Request("http://localhost/api/admin/team/1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order: 9999999999 }),
+    });
+    await patchAdminTeam(huge as never, {
+      params: Promise.resolve({ id: "1" }),
+    });
+    expect(mockPrisma.teamMember.update).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ order: 2147483647 }),
+      }),
+    );
+
+    const negative = new Request("http://localhost/api/admin/team/1", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ order: -5 }),
+    });
+    await patchAdminTeam(negative as never, {
+      params: Promise.resolve({ id: "1" }),
+    });
+    expect(mockPrisma.teamMember.update).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ order: 0 }),
+      }),
+    );
+  });
+
   it("DELETE /api/admin/team/[id] returns 204 on success", async () => {
     mockPrisma.teamMember.findUnique.mockResolvedValueOnce({
       id: 1,

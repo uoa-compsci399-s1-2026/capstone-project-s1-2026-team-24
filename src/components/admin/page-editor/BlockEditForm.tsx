@@ -26,7 +26,7 @@ export default function BlockEditForm({
     setDraft((prev) => ({ ...prev, [key]: value }));
 
   return (
-    <div className="space-y-4 border-t border-gray-200 bg-gray-50 px-5 py-4">
+    <div className="space-y-4 rounded-b-xl border-t border-gray-200 bg-gray-50 px-5 py-4">
       {def.type === "row" ? (
         <RowEditor content={draft} onChange={setDraft} scope={scope} />
       ) : (
