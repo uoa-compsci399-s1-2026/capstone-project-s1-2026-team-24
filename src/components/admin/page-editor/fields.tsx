@@ -289,7 +289,23 @@ function UpdatesField({
   value: UpdateItem[];
   onChange: (v: UpdateItem[]) => void;
 }) {
-  const items = Array.isArray(value) ? value : [];
+  // Persisted block JSON is untrusted, so normalize each entry to a clean
+  // UpdateItem. A malformed payload (e.g. [null] or a string) then can't crash
+  // the editor — it just shows empty fields the admin can fix or remove.
+  const raw: unknown[] = Array.isArray(value) ? value : [];
+  const items: UpdateItem[] = raw.map((entry) => {
+    const o =
+      entry && typeof entry === "object" && !Array.isArray(entry)
+        ? (entry as Record<string, unknown>)
+        : {};
+    return {
+      title: typeof o.title === "string" ? o.title : "",
+      date: typeof o.date === "string" ? o.date : "",
+      paragraphs: Array.isArray(o.paragraphs)
+        ? o.paragraphs.filter((p): p is string => typeof p === "string")
+        : [],
+    };
+  });
   const update = (i: number, patch: Partial<UpdateItem>) =>
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   return (
