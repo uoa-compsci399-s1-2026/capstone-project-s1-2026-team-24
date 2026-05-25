@@ -29,9 +29,7 @@ export default function AlumniSection({
 
 function AlumniCard({ member }: { member: TeamMemberRecord }) {
   const profileUrl = getSafeHttpUrl(member.profileUrl);
-  const photoWrapperClass = profileUrl
-    ? "w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] lg:w-[200px] lg:h-[200px] rounded-full overflow-hidden flex-shrink-0 ring-0 group-hover:ring-4 group-hover:ring-[#0c0c48]/15 transition-all duration-200 shadow-md group-hover:shadow-xl"
-    : "w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] lg:w-[200px] lg:h-[200px] rounded-full overflow-hidden flex-shrink-0";
+  const photoWrapperClass = "w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] lg:w-[200px] lg:h-[200px] rounded-full overflow-hidden flex-shrink-0";
 
   const content = (
     <>
@@ -64,7 +62,7 @@ function AlumniCard({ member }: { member: TeamMemberRecord }) {
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`${member.name} — open profile in a new tab`}
-        className="flex flex-col items-center text-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48] focus-visible:ring-offset-2 rounded-lg transition-transform duration-200 hover:-translate-y-1"
+        className="flex flex-col items-center text-center group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48] focus-visible:ring-offset-2 rounded-lg transition-all duration-200 hover:-translate-y-1 hover:outline hover:outline-2 hover:outline-[#0c0c48] hover:outline-offset-[6px]"
       >
         {content}
       </a>
