@@ -45,6 +45,7 @@ export default function AdminTeam() {
 
   async function toggleVisible(id: number, current: boolean) {
     const next = !current;
+    setError(null);
     // Optimistically flip just this member in place. Refetching would set
     // loading=true and swap the whole list for the spinner, collapsing the
     // page height and snapping the scroll back to the top.
@@ -69,15 +70,25 @@ export default function AdminTeam() {
 
   async function deleteMember(id: number, name: string) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
-    const previous = members;
-    // Optimistically drop the row so the list doesn't reload and jump.
+    setError(null);
+    // Optimistically drop the row so the list doesn't reload and jump. On
+    // failure, re-insert just this row at its original spot rather than
+    // restoring a whole-list snapshot, so any other in-flight edit is kept.
+    const index = members.findIndex((m) => m.id === id);
+    const removed = members[index];
     setMembers((cur) => cur.filter((m) => m.id !== id));
     try {
       const res = await fetch(`/api/admin/team/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete team member");
     } catch (err) {
       console.error(err);
-      setMembers(previous);
+      if (removed) {
+        setMembers((cur) => {
+          const next = [...cur];
+          next.splice(Math.min(index, next.length), 0, removed);
+          return next;
+        });
+      }
       setError("Failed to delete team member.");
     }
   }
