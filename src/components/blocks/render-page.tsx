@@ -36,9 +36,18 @@ export async function renderPageBlocks(
   }
 
   const useDraft = opts.draft || page.publishedContent == null;
+  // Draft blocks key on their stable PageBlock id (so client-component state in
+  // the live-editing preview survives reorders/inserts). The published snapshot
+  // has no ids — and can't carry them without breaking change-detection, since
+  // discard/restore recreate rows with new ids — but it's a static, append-only
+  // server render reloaded fresh on each publish, so a positional key is safe.
   const blocks = useDraft
-    ? page.blocks.map((b) => ({ type: b.type, content: b.content }))
-    : parsePublishedSnapshot(page.publishedContent);
+    ? page.blocks.map((b) => ({ key: `block-${b.id}`, type: b.type, content: b.content }))
+    : parsePublishedSnapshot(page.publishedContent).map((b, i) => ({
+        key: `published-${i}`,
+        type: b.type,
+        content: b.content,
+      }));
 
   // Resolve any "media:{id}" image references to their current file paths so
   // block components keep receiving plain path strings.
@@ -47,7 +56,7 @@ export async function renderPageBlocks(
   return (
     <main id="main-content">
       {blocks.map((block, i) => (
-        <BlockRenderer key={i} type={block.type} content={contents[i]} />
+        <BlockRenderer key={block.key} type={block.type} content={contents[i]} />
       ))}
     </main>
   );
