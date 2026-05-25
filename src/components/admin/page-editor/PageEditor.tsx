@@ -19,16 +19,10 @@ import {
 } from "@dnd-kit/sortable";
 import { getBlockDefinition } from "@/lib/blocks/registry";
 import { serializeBlockContent } from "@/lib/blocks/validate";
+import type { BlockScope } from "@/lib/blocks/types";
+import { publicPath } from "@/lib/blocks/page-paths";
 import SortableBlock, { type EditorBlock } from "./SortableBlock";
 import AddBlockButton from "./AddBlockButton";
-
-// Public path for a page slug ("home" → "/").
-function publicPath(slug: string): string {
-  if (slug === "home") return "/";
-  if (slug === "collaborations-academic") return "/collaborations/academic";
-  if (slug === "collaborations-industry") return "/collaborations/industry";
-  return `/${slug}`;
-}
 
 export default function PageEditor({
   slug,
@@ -38,6 +32,7 @@ export default function PageEditor({
   backHref = "/admin/pages",
   backLabel = "← All pages",
   viewHref,
+  previewHref,
   headerExtra,
 }: {
   slug: string;
@@ -47,11 +42,17 @@ export default function PageEditor({
   backHref?: string;
   backLabel?: string;
   viewHref?: string;
+  /** Public URL shown in the in-editor live-preview pane. Omit to hide preview. */
+  previewHref?: string;
   headerExtra?: ReactNode;
 }) {
   const [blocks, setBlocks] = useState<EditorBlock[]>(initialBlocks);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  // Bumped after each successful change to reload the preview iframe.
+  const [previewVersion, setPreviewVersion] = useState(0);
+  const bumpPreview = () => setPreviewVersion((v) => v + 1);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -61,6 +62,7 @@ export default function PageEditor({
   );
 
   const apiBase = `/api/admin/pages/${slug}/blocks`;
+  const childScope: BlockScope = scope;
 
   async function persistOrder(next: EditorBlock[]) {
     try {
@@ -70,6 +72,7 @@ export default function PageEditor({
         body: JSON.stringify({ order: next.map((b) => b.id) }),
       });
       if (!res.ok) throw new Error("reorder failed");
+      bumpPreview();
     } catch {
       setError("Failed to save the new order. Reload and try again.");
     }
@@ -100,6 +103,7 @@ export default function PageEditor({
       setBlocks((prev) =>
         prev.map((b) => (b.id === id ? { ...b, content: updated.content } : b)),
       );
+      bumpPreview();
     } catch {
       setError("Failed to save the section.");
     } finally {
@@ -118,6 +122,7 @@ export default function PageEditor({
         body: JSON.stringify({ isVisible }),
       });
       if (!res.ok) throw new Error("toggle failed");
+      bumpPreview();
     } catch {
       setError("Failed to change visibility.");
       setBlocks((prev) =>
@@ -132,6 +137,7 @@ export default function PageEditor({
     try {
       const res = await fetch(`${apiBase}/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("delete failed");
+      bumpPreview();
     } catch {
       setError("Failed to delete the section.");
       setBlocks(prev);
@@ -161,42 +167,40 @@ export default function PageEditor({
         next.splice(position, 0, newBlock);
         return next;
       });
+      bumpPreview();
     } catch {
       setError("Failed to add the section.");
     }
   }
 
-  return (
-    <div>
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <Link
-            href={backHref}
-            className="text-xs font-medium text-gray-500 hover:text-[#0c0c48]"
-          >
-            {backLabel}
-          </Link>
-          <h1 className="mt-1 text-2xl font-bold text-[#0c0c48]">{title}</h1>
-        </div>
-        <div className="flex flex-shrink-0 items-center gap-2">
-          {headerExtra}
-          <Link
-            href={viewHref ?? publicPath(slug)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
-          >
-            View live page ↗
-          </Link>
-        </div>
-      </div>
+  async function handleDuplicate(id: number) {
+    setError(null);
+    try {
+      const res = await fetch(`${apiBase}/${id}/duplicate`, { method: "POST" });
+      if (!res.ok) throw new Error("duplicate failed");
+      const created = await res.json();
+      const newBlock: EditorBlock = {
+        id: created.id,
+        type: created.type,
+        content: created.content,
+        isVisible: created.isVisible ?? true,
+      };
+      setBlocks((prev) => {
+        const at = prev.findIndex((b) => b.id === id);
+        const next = [...prev];
+        next.splice(at < 0 ? prev.length : at + 1, 0, newBlock);
+        return next;
+      });
+      bumpPreview();
+    } catch {
+      setError("Failed to duplicate the section.");
+    }
+  }
 
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+  const liveHref = viewHref ?? publicPath(slug);
 
+  const editorPane = (
+    <>
       <AddBlockButton scope={scope} onAdd={(type) => handleAdd(type, 0)} />
 
       <DndContext
@@ -214,10 +218,12 @@ export default function PageEditor({
               <div key={block.id}>
                 <SortableBlock
                   block={block}
+                  scope={childScope}
                   saving={savingId === block.id}
                   onSave={handleSave}
                   onToggleVisible={handleToggleVisible}
                   onDelete={handleDelete}
+                  onDuplicate={handleDuplicate}
                 />
                 <AddBlockButton
                   compact
@@ -234,6 +240,84 @@ export default function PageEditor({
         <p className="mt-6 text-center text-sm text-gray-400">
           This page has no blocks yet. Add one above.
         </p>
+      )}
+    </>
+  );
+
+  return (
+    <div>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <Link
+            href={backHref}
+            className="text-xs font-medium text-gray-500 hover:text-[#0c0c48]"
+          >
+            {backLabel}
+          </Link>
+          <h1 className="mt-1 text-2xl font-bold text-[#0c0c48]">{title}</h1>
+        </div>
+        <div className="flex flex-shrink-0 items-center gap-2">
+          {headerExtra}
+          {previewHref && (
+            <button
+              type="button"
+              onClick={() => setShowPreview((s) => !s)}
+              aria-pressed={showPreview}
+              className={`rounded-lg border px-4 py-2 text-sm font-medium ${
+                showPreview
+                  ? "border-[#0c0c48] bg-[#0c0c48] text-white"
+                  : "border-gray-300 text-[#0c0c48] hover:bg-gray-100"
+              }`}
+            >
+              {showPreview ? "Hide preview" : "Show preview"}
+            </button>
+          )}
+          <Link
+            href={liveHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
+          >
+            View live page ↗
+          </Link>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {showPreview && previewHref ? (
+        <div className="lg:flex lg:items-start lg:gap-6">
+          <div className="min-w-0 lg:w-[460px] lg:flex-shrink-0">{editorPane}</div>
+          <div className="mt-6 min-w-0 lg:mt-0 lg:flex-1 lg:sticky lg:top-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="truncate text-xs font-medium text-gray-500">
+                Live preview · {previewHref}
+              </p>
+              <button
+                type="button"
+                onClick={bumpPreview}
+                className="flex-shrink-0 rounded-lg border border-gray-300 px-3 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
+              >
+                Refresh
+              </button>
+            </div>
+            <iframe
+              key={previewVersion}
+              src={previewHref}
+              title="Live preview"
+              className="h-[75vh] w-full rounded-lg border border-gray-200 bg-white"
+            />
+            <p className="mt-2 text-center text-[11px] text-gray-400">
+              Changes save automatically and refresh the preview.
+            </p>
+          </div>
+        </div>
+      ) : (
+        editorPane
       )}
     </div>
   );

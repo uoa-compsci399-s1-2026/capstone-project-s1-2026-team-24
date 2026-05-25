@@ -25,9 +25,10 @@ import SubpageHeroBlock from "@/components/blocks/SubpageHeroBlock";
 import TeamSectionsBlock from "@/components/blocks/TeamSectionsBlock";
 import HomepageStudiesBlock from "@/components/blocks/HomepageStudiesBlock";
 
-import { parseBlockContent } from "@/lib/blocks/validate";
+import { parseBlockContent, serializeBlockContent } from "@/lib/blocks/validate";
 import { getBlockDefinition } from "@/lib/blocks/registry";
-import type { StudyCardContent } from "@/lib/blocks/types";
+import { readRowContent } from "@/lib/blocks/row";
+import type { RowChild, StudyCardContent } from "@/lib/blocks/types";
 
 type Content = Record<string, unknown>;
 
@@ -262,6 +263,38 @@ export default function BlockRenderer({
       return <IndustryCollaborators />;
     case "teamSections":
       return <TeamSectionsBlock defaultTab={teamTab(c.defaultTab)} />;
+
+    // Layout: a row of 1–3 columns whose children are themselves blocks. Rows
+    // can't nest (validated on write), so a row child is rendered directly.
+    case "row": {
+      const { columns, widths } = readRowContent(c);
+      const renderChild = (child: RowChild) =>
+        child.type === "row" ? null : (
+          <BlockRenderer
+            key={child.id}
+            type={child.type}
+            content={serializeBlockContent(child.content)}
+          />
+        );
+      if (columns.length === 1) {
+        return (
+          <div className="flex flex-col gap-8">{columns[0].map(renderChild)}</div>
+        );
+      }
+      return (
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+          {columns.map((col, i) => (
+            <div
+              key={i}
+              className="flex min-w-0 w-full flex-col gap-8 lg:w-auto"
+              style={{ flexGrow: widths[i], flexBasis: 0 }}
+            >
+              {col.map(renderChild)}
+            </div>
+          ))}
+        </div>
+      );
+    }
 
     default:
       if (process.env.NODE_ENV !== "production") {
