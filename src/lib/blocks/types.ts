@@ -24,6 +24,7 @@ export type FieldType =
   | "enum"
   | "boolean"
   | "studyCards"
+  | "updatesList"
   | "richText";
 
 export interface BlockField {
@@ -51,6 +52,13 @@ export interface BlockDefinition {
   fields: readonly BlockField[];
   /** Starting content used when an admin inserts a new instance of this block. */
   defaultContent: Record<string, unknown>;
+}
+
+/** A single item in an `updates` block's carousel. */
+export interface UpdateItem {
+  title: string;
+  date?: string;
+  paragraphs: string[];
 }
 
 /** Shape of a single card inside a `homepageStudies` block. */

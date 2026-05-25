@@ -1,6 +1,5 @@
 "use client";
 
-import { relative } from "path";
 import { useState, useEffect } from "react";
 
 interface Update {
@@ -35,6 +34,7 @@ export default function Updates({ updates }: UpdatesProps) {
 
   return (
     <section
+      data-testid="updates-carousel"
       style={{
         backgroundColor: "white",
         padding: "80px 45px",

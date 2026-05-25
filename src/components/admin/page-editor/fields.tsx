@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-import type { BlockField, StudyCardContent } from "@/lib/blocks/types";
+import type { BlockField, StudyCardContent, UpdateItem } from "@/lib/blocks/types";
 import MediaPicker from "@/components/admin/media/MediaPicker";
 import { useMediaResolver } from "@/components/admin/media/useMediaResolver";
 
@@ -282,6 +282,86 @@ function StudyCardsField({
   );
 }
 
+function UpdatesField({
+  value,
+  onChange,
+}: {
+  value: UpdateItem[];
+  onChange: (v: UpdateItem[]) => void;
+}) {
+  // Persisted block JSON is untrusted, so normalize each entry to a clean
+  // UpdateItem. A malformed payload (e.g. [null] or a string) then can't crash
+  // the editor — it just shows empty fields the admin can fix or remove.
+  const raw: unknown[] = Array.isArray(value) ? value : [];
+  const items: UpdateItem[] = raw.map((entry) => {
+    const o =
+      entry && typeof entry === "object" && !Array.isArray(entry)
+        ? (entry as Record<string, unknown>)
+        : {};
+    return {
+      title: typeof o.title === "string" ? o.title : "",
+      date: typeof o.date === "string" ? o.date : "",
+      paragraphs: Array.isArray(o.paragraphs)
+        ? o.paragraphs.filter((p): p is string => typeof p === "string")
+        : [],
+    };
+  });
+  const update = (i: number, patch: Partial<UpdateItem>) =>
+    onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  return (
+    <div>
+      <label className={labelClass}>Updates</label>
+      <div className="space-y-4">
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-gray-500">
+                Update {i + 1}
+              </span>
+              <button
+                type="button"
+                onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+                className="rounded border border-gray-300 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100"
+              >
+                Remove
+              </button>
+            </div>
+            <input
+              className={inputClass}
+              placeholder="Title"
+              value={asString(item.title)}
+              onChange={(e) => update(i, { title: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Date (e.g. May 2026)"
+              value={asString(item.date)}
+              onChange={(e) => update(i, { date: e.target.value })}
+            />
+            <ParagraphArrayField
+              label="Paragraphs"
+              value={Array.isArray(item.paragraphs) ? item.paragraphs : []}
+              onChange={(v) => update(i, { paragraphs: v })}
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() =>
+            onChange([...items, { title: "", date: "", paragraphs: [""] }])
+          }
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
+        >
+          + Add update
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function Field({
   field,
   value,
@@ -393,6 +473,13 @@ export function Field({
       return (
         <StudyCardsField
           value={(value as StudyCardContent[]) ?? []}
+          onChange={(v) => onChange(v)}
+        />
+      );
+    case "updatesList":
+      return (
+        <UpdatesField
+          value={(value as UpdateItem[]) ?? []}
           onChange={(v) => onChange(v)}
         />
       );
