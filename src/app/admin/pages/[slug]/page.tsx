@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import PageEditorLoader from "@/components/admin/page-editor/PageEditorLoader";
-import { publicPath } from "@/lib/blocks/page-paths";
+import { hasUnpublishedChanges } from "@/lib/page-publish";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,11 @@ export default async function AdminPageEditorRoute({
     <PageEditorLoader
       slug={page.slug}
       title={page.title}
-      previewHref={publicPath(page.slug)}
+      // Edits are a draft; the preview pane shows the draft, "Publish" makes it live.
+      publishable
+      publishedAt={page.publishedAt?.toISOString() ?? null}
+      initialDirty={hasUnpublishedChanges(page.publishedContent, page.blocks)}
+      previewHref={`/admin/preview/${page.slug}`}
       initialBlocks={page.blocks.map((b) => ({
         id: b.id,
         type: b.type,

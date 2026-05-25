@@ -18,6 +18,9 @@ export default function PageEditorLoader(props: {
   title: string;
   initialBlocks: EditorBlock[];
   previewHref?: string;
+  publishable?: boolean;
+  publishedAt?: string | null;
+  initialDirty?: boolean;
 }) {
   return <PageEditor {...props} />;
 }

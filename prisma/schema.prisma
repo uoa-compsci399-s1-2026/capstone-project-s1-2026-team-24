@@ -178,7 +178,28 @@ model Page {
   updatedAt DateTime    @updatedAt
   createdAt DateTime    @default(now())
 
+  // Published snapshot the public site renders. The live PageBlock rows are the
+  // editable draft; "publish" copies them here. Null = never published, in which
+  // case the public render falls back to the live blocks.
+  publishedContent String?
+  publishedAt      DateTime?
+
   blocks    PageBlock[]
+  revisions PageRevision[]
+}
+
+// A point-in-time snapshot of a page's published content, captured on each
+// publish so previous versions can be restored. Pruned to the most recent few.
+model PageRevision {
+  id        Int      @id @default(autoincrement())
+  pageId    Int
+  content   String // JSON: [{ type, content }] of the published (visible) blocks
+  label     String?
+  createdAt DateTime @default(now())
+
+  page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId, createdAt])
 }
 
 // A single content section on a page. `type` keys into the block registry in
