@@ -44,27 +44,52 @@ export default function AdminTeam() {
   }
 
   async function toggleVisible(id: number, current: boolean) {
+    const next = !current;
+    setError(null);
+    // Optimistically flip just this member in place. Refetching would set
+    // loading=true and swap the whole list for the spinner, collapsing the
+    // page height and snapping the scroll back to the top.
+    setMembers((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, isVisible: next } : m)),
+    );
     try {
       const res = await fetch(`/api/admin/team/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isVisible: !current }),
+        body: JSON.stringify({ isVisible: next }),
       });
       if (!res.ok) throw new Error("Failed to update team member");
-      await fetchMembers();
     } catch (err) {
       console.error(err);
+      setMembers((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, isVisible: current } : m)),
+      );
+      setError("Failed to update team member.");
     }
   }
 
   async function deleteMember(id: number, name: string) {
     if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    setError(null);
+    // Optimistically drop the row so the list doesn't reload and jump. On
+    // failure, re-insert just this row at its original spot rather than
+    // restoring a whole-list snapshot, so any other in-flight edit is kept.
+    const index = members.findIndex((m) => m.id === id);
+    const removed = members[index];
+    setMembers((cur) => cur.filter((m) => m.id !== id));
     try {
       const res = await fetch(`/api/admin/team/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete team member");
-      await fetchMembers();
     } catch (err) {
       console.error(err);
+      if (removed) {
+        setMembers((cur) => {
+          const next = [...cur];
+          next.splice(Math.min(index, next.length), 0, removed);
+          return next;
+        });
+      }
+      setError("Failed to delete team member.");
     }
   }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clampOrder } from "@/lib/order";
 
 function parseId(rawId: string) {
   const id = Number(rawId);
@@ -102,6 +103,8 @@ export async function PATCH(
           );
         }
         updates[key] = trimmed;
+      } else if (key === "order") {
+        updates.order = clampOrder(value);
       } else if (typeof value === "string") {
         updates[key] = value.trim();
       } else {

@@ -3,6 +3,7 @@ import path from "node:path";
 import { TeamSection } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clampOrder } from "@/lib/order";
 
 export const runtime = "nodejs";
 
@@ -37,12 +38,6 @@ function parseBoolean(value: FormDataEntryValue | null) {
   if (value === "true") return true;
   if (value === "false") return false;
   return undefined;
-}
-
-function parseOrder(value: FormDataEntryValue | null) {
-  if (typeof value !== "string") return undefined;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 function readOptionalString(formData: FormData, key: string) {
@@ -128,7 +123,7 @@ export async function PATCH(
       if (body && typeof body === "object") {
         if (typeof body.isVisible === "boolean")
           updates.isVisible = body.isVisible;
-        if (typeof body.order === "number") updates.order = body.order;
+        if (typeof body.order === "number") updates.order = clampOrder(body.order);
         if (typeof body.name === "string") updates.name = body.name.trim();
         if (typeof body.title === "string") updates.title = body.title.trim();
         if (typeof body.bio === "string") updates.bio = body.bio.trim();
@@ -151,8 +146,8 @@ export async function PATCH(
       const isVisible = parseBoolean(formData.get("isVisible"));
       if (typeof isVisible === "boolean") updates.isVisible = isVisible;
 
-      const order = parseOrder(formData.get("order"));
-      if (typeof order === "number") updates.order = order;
+      const orderRaw = formData.get("order");
+      if (typeof orderRaw === "string") updates.order = clampOrder(orderRaw);
 
       const orcidId = readOptionalString(formData, "orcidId");
       if (orcidId !== undefined) updates.orcidId = orcidId;

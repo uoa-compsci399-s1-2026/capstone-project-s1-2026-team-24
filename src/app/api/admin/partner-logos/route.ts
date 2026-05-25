@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clampOrder } from "@/lib/order";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import path from "path";
 
@@ -25,7 +26,7 @@ function parseOrder(value: FormDataEntryValue | null) {
   if (typeof value !== "string" || !value.trim()) return undefined;
   const parsed = Number(value);
   if (!Number.isInteger(parsed) || parsed < 0) return null;
-  return parsed;
+  return clampOrder(parsed);
 }
 
 function parseGroup(value: FormDataEntryValue | null) {

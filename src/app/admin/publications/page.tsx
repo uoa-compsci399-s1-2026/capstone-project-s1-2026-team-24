@@ -224,13 +224,13 @@ export default function AdminPublications() {
             <table className="w-full text-sm">
               <thead className="bg-[#f5f5f7] text-[#0a4479]/80">
                 <tr>
-                  <th className="px-6 py-3 text-left font-semibold">Title</th>
-                  <th className="px-6 py-3 text-left font-semibold">Year</th>
-                  <th className="px-6 py-3 text-left font-semibold">
+                  <th className="px-4 py-3 text-left font-semibold">Title</th>
+                  <th className="px-4 py-3 text-left font-semibold">Year</th>
+                  <th className="px-4 py-3 text-left font-semibold">
                     Category
                   </th>
-                  <th className="px-6 py-3 text-left font-semibold">Status</th>
-                  <th className="px-6 py-3 text-right font-semibold">
+                  <th className="px-4 py-3 text-left font-semibold">Status</th>
+                  <th className="px-4 py-3 text-right font-semibold">
                     Actions
                   </th>
                 </tr>
@@ -238,7 +238,7 @@ export default function AdminPublications() {
               <tbody className="divide-y divide-[#0a4479]/5">
                 {filtered.map((pub) => (
                   <tr key={pub.id} className="hover:bg-[#f5f5f7]">
-                    <td className="px-6 py-3 font-semibold text-[#0c0c48] max-w-xl">
+                    <td className="px-4 py-3 font-semibold text-[#0c0c48] max-w-[340px] break-words">
                       {pub.title}
                       <p className="text-xs font-normal text-[#0a4479]/70 mt-0.5 truncate">
                         {pub.authorsRaw ||
@@ -248,20 +248,20 @@ export default function AdminPublications() {
                         {pub.journal ? ` · ${pub.journal}` : ""}
                       </p>
                     </td>
-                    <td className="px-6 py-3 text-[#0a4479]/80">
+                    <td className="px-4 py-3 text-[#0a4479]/80">
                       {pub.year || "—"}
                     </td>
-                    <td className="px-6 py-3 text-[#0a4479]/80">
+                    <td className="px-4 py-3 text-[#0a4479]/80">
                       {pub.category?.name || "—"}
                     </td>
-                    <td className="px-6 py-3">
+                    <td className="px-4 py-3">
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${STATUS_COLOURS[pub.status] || STATUS_COLOURS.Rejected}`}
                       >
                         {pub.status}
                       </span>
                     </td>
-                    <td className="px-6 py-3 text-right whitespace-nowrap">
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
                       {pub.status !== "Approved" && (
                         <button
                           onClick={() => quickStatus(pub.id, "Approved")}

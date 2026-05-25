@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { mkdir, unlink, writeFile } from "fs/promises";
 import path from "path";
 import { prisma } from "@/lib/prisma";
+import { clampOrder } from "@/lib/order";
 
 export const runtime = "nodejs";
 
@@ -22,7 +23,7 @@ function parseOrder(orderRaw: FormDataEntryValue | null) {
   }
 
   const parsed = Number(orderRaw);
-  return Number.isInteger(parsed) ? parsed : null;
+  return Number.isInteger(parsed) ? clampOrder(parsed) : null;
 }
 
 export async function GET(

@@ -118,6 +118,8 @@ export function StudyFormFields({
           type="number"
           value={formData.order}
           onChange={onChange}
+          min={0}
+          step={1}
           helper="Lower values appear first."
         />
       </div>

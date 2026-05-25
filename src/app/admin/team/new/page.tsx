@@ -189,6 +189,8 @@ export default function NewTeamMember() {
           type="number"
           value={formData.order}
           onChange={handleChange}
+          min={0}
+          step={1}
         />
         <FormCheckbox
           label="Show on public site"

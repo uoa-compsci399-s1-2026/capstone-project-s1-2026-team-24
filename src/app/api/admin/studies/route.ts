@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clampOrder } from "@/lib/order";
 
 function asTrimmedString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -7,11 +8,6 @@ function asTrimmedString(value: unknown) {
 
 function asBoolean(value: unknown, fallback = false) {
   if (typeof value === "boolean") return value;
-  return fallback;
-}
-
-function asNumber(value: unknown, fallback = 0) {
-  if (typeof value === "number" && !Number.isNaN(value)) return value;
   return fallback;
 }
 
@@ -108,7 +104,7 @@ export async function POST(request: Request) {
         status,
         category,
         publishedAt: asNullableDate(body?.publishedAt),
-        order: asNumber(body?.order, 0),
+        order: clampOrder(body?.order, 0),
       },
     });
 
