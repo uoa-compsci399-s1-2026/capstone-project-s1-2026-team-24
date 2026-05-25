@@ -68,9 +68,13 @@ test.describe("public site visual parity", () => {
       await expect(page).toHaveScreenshot(`${route.name}.png`, {
         fullPage: true,
         animations: "disabled",
-        // Embeds (autoplaying YouTube on /about, Google Maps on /contact) paint
+        // Embeds (autoplaying YouTube on /about, Google Maps on /contact) and
+        // the auto-rotating Updates carousel on the homepage paint
         // non-deterministic pixels; mask them so only our markup is compared.
-        mask: [page.locator("iframe")],
+        mask: [
+          page.locator("iframe"),
+          page.locator('[data-testid="updates-carousel"]'),
+        ],
       });
     });
   }

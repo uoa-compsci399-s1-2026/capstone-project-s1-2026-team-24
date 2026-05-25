@@ -19,16 +19,17 @@ import {
 } from "@dnd-kit/sortable";
 import { getBlockDefinition } from "@/lib/blocks/registry";
 import { serializeBlockContent } from "@/lib/blocks/validate";
+import type { BlockScope } from "@/lib/blocks/types";
+import { publicPath } from "@/lib/blocks/page-paths";
 import SortableBlock, { type EditorBlock } from "./SortableBlock";
 import AddBlockButton from "./AddBlockButton";
 
-// Public path for a page slug ("home" → "/").
-function publicPath(slug: string): string {
-  if (slug === "home") return "/";
-  if (slug === "collaborations-academic") return "/collaborations/academic";
-  if (slug === "collaborations-industry") return "/collaborations/industry";
-  return `/${slug}`;
-}
+type RevisionMeta = {
+  id: number;
+  label: string | null;
+  createdAt: string;
+  blockCount: number;
+};
 
 export default function PageEditor({
   slug,
@@ -38,7 +39,11 @@ export default function PageEditor({
   backHref = "/admin/pages",
   backLabel = "← All pages",
   viewHref,
+  previewHref,
   headerExtra,
+  publishable = false,
+  publishedAt = null,
+  initialDirty = false,
 }: {
   slug: string;
   title: string;
@@ -47,11 +52,38 @@ export default function PageEditor({
   backHref?: string;
   backLabel?: string;
   viewHref?: string;
+  /** Public URL shown in the in-editor live-preview pane. Omit to hide preview. */
+  previewHref?: string;
   headerExtra?: ReactNode;
+  /** When true, edits are a draft until "Publish"; shows the publish/history bar. */
+  publishable?: boolean;
+  /** ISO timestamp of the last publish, or null if never published. */
+  publishedAt?: string | null;
+  /** Whether the draft already differs from the published version on load. */
+  initialDirty?: boolean;
 }) {
   const [blocks, setBlocks] = useState<EditorBlock[]>(initialBlocks);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  // Bumped after each successful change to reload the preview iframe.
+  const [previewVersion, setPreviewVersion] = useState(0);
+  const bumpPreview = () => setPreviewVersion((v) => v + 1);
+
+  // Draft/publish state (only meaningful when `publishable`).
+  const [dirty, setDirty] = useState(initialDirty);
+  const [publishedAtState, setPublishedAtState] = useState(publishedAt);
+  const [publishing, setPublishing] = useState(false);
+  const [showRevisions, setShowRevisions] = useState(false);
+  const [revisions, setRevisions] = useState<RevisionMeta[] | null>(null);
+  const [revisionsLoading, setRevisionsLoading] = useState(false);
+
+  // Call after any successful block mutation: refresh the preview and (for
+  // publishable pages) mark the draft as having unpublished changes.
+  const onChanged = () => {
+    bumpPreview();
+    if (publishable) setDirty(true);
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -61,6 +93,7 @@ export default function PageEditor({
   );
 
   const apiBase = `/api/admin/pages/${slug}/blocks`;
+  const childScope: BlockScope = scope;
 
   async function persistOrder(next: EditorBlock[]) {
     try {
@@ -70,6 +103,7 @@ export default function PageEditor({
         body: JSON.stringify({ order: next.map((b) => b.id) }),
       });
       if (!res.ok) throw new Error("reorder failed");
+      onChanged();
     } catch {
       setError("Failed to save the new order. Reload and try again.");
     }
@@ -100,6 +134,7 @@ export default function PageEditor({
       setBlocks((prev) =>
         prev.map((b) => (b.id === id ? { ...b, content: updated.content } : b)),
       );
+      onChanged();
     } catch {
       setError("Failed to save the section.");
     } finally {
@@ -118,6 +153,7 @@ export default function PageEditor({
         body: JSON.stringify({ isVisible }),
       });
       if (!res.ok) throw new Error("toggle failed");
+      onChanged();
     } catch {
       setError("Failed to change visibility.");
       setBlocks((prev) =>
@@ -132,6 +168,7 @@ export default function PageEditor({
     try {
       const res = await fetch(`${apiBase}/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("delete failed");
+      onChanged();
     } catch {
       setError("Failed to delete the section.");
       setBlocks(prev);
@@ -161,42 +198,123 @@ export default function PageEditor({
         next.splice(position, 0, newBlock);
         return next;
       });
+      onChanged();
     } catch {
       setError("Failed to add the section.");
     }
   }
 
-  return (
-    <div>
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <Link
-            href={backHref}
-            className="text-xs font-medium text-gray-500 hover:text-[#0c0c48]"
-          >
-            {backLabel}
-          </Link>
-          <h1 className="mt-1 text-2xl font-bold text-[#0c0c48]">{title}</h1>
-        </div>
-        <div className="flex flex-shrink-0 items-center gap-2">
-          {headerExtra}
-          <Link
-            href={viewHref ?? publicPath(slug)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
-          >
-            View live page ↗
-          </Link>
-        </div>
-      </div>
+  async function handleDuplicate(id: number) {
+    setError(null);
+    try {
+      const res = await fetch(`${apiBase}/${id}/duplicate`, { method: "POST" });
+      if (!res.ok) throw new Error("duplicate failed");
+      const created = await res.json();
+      const newBlock: EditorBlock = {
+        id: created.id,
+        type: created.type,
+        content: created.content,
+        isVisible: created.isVisible ?? true,
+      };
+      setBlocks((prev) => {
+        const at = prev.findIndex((b) => b.id === id);
+        const next = [...prev];
+        next.splice(at < 0 ? prev.length : at + 1, 0, newBlock);
+        return next;
+      });
+      onChanged();
+    } catch {
+      setError("Failed to duplicate the section.");
+    }
+  }
 
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+  async function handlePublish() {
+    setPublishing(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/pages/${slug}/publish`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("publish failed");
+      const data = await res.json();
+      setDirty(false);
+      setPublishedAtState(data.publishedAt ?? new Date().toISOString());
+      if (revisions !== null) setRevisions(null); // force reload next time
+      bumpPreview();
+    } catch {
+      setError("Failed to publish the page.");
+    } finally {
+      setPublishing(false);
+    }
+  }
 
+  async function handleDiscard() {
+    if (
+      !window.confirm(
+        "Discard all unpublished changes and revert this page to the published version?",
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/pages/${slug}/discard`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("discard failed");
+      // Reload so the editor reflects the reverted draft blocks.
+      window.location.reload();
+    } catch {
+      setError("Failed to discard changes.");
+    }
+  }
+
+  async function loadRevisions() {
+    setRevisionsLoading(true);
+    try {
+      const res = await fetch(`/api/admin/pages/${slug}/revisions`);
+      if (!res.ok) throw new Error("load failed");
+      setRevisions(await res.json());
+    } catch {
+      setError("Failed to load version history.");
+    } finally {
+      setRevisionsLoading(false);
+    }
+  }
+
+  function toggleRevisions() {
+    setShowRevisions((open) => {
+      const next = !open;
+      if (next && revisions === null && !revisionsLoading) void loadRevisions();
+      return next;
+    });
+  }
+
+  async function handleRestore(id: number) {
+    if (
+      !window.confirm(
+        "Restore this version into the editor? It replaces the current draft — review it, then Publish to make it live.",
+      )
+    ) {
+      return;
+    }
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/admin/pages/${slug}/revisions/${id}/restore`,
+        { method: "POST" },
+      );
+      if (!res.ok) throw new Error("restore failed");
+      window.location.reload();
+    } catch {
+      setError("Failed to restore that version.");
+    }
+  }
+
+  const liveHref = viewHref ?? publicPath(slug);
+
+  const editorPane = (
+    <>
       <AddBlockButton scope={scope} onAdd={(type) => handleAdd(type, 0)} />
 
       <DndContext
@@ -214,10 +332,12 @@ export default function PageEditor({
               <div key={block.id}>
                 <SortableBlock
                   block={block}
+                  scope={childScope}
                   saving={savingId === block.id}
                   onSave={handleSave}
                   onToggleVisible={handleToggleVisible}
                   onDelete={handleDelete}
+                  onDuplicate={handleDuplicate}
                 />
                 <AddBlockButton
                   compact
@@ -234,6 +354,187 @@ export default function PageEditor({
         <p className="mt-6 text-center text-sm text-gray-400">
           This page has no blocks yet. Add one above.
         </p>
+      )}
+    </>
+  );
+
+  return (
+    <div>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <Link
+            href={backHref}
+            className="text-xs font-medium text-gray-500 hover:text-[#0c0c48]"
+          >
+            {backLabel}
+          </Link>
+          <h1 className="mt-1 text-2xl font-bold text-[#0c0c48]">{title}</h1>
+        </div>
+        <div className="flex flex-shrink-0 items-center gap-2">
+          {headerExtra}
+          {previewHref && (
+            <button
+              type="button"
+              onClick={() => setShowPreview((s) => !s)}
+              aria-pressed={showPreview}
+              className={`rounded-lg border px-4 py-2 text-sm font-medium ${
+                showPreview
+                  ? "border-[#0c0c48] bg-[#0c0c48] text-white"
+                  : "border-gray-300 text-[#0c0c48] hover:bg-gray-100"
+              }`}
+            >
+              {showPreview ? "Hide preview" : "Show preview"}
+            </button>
+          )}
+          <Link
+            href={liveHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
+          >
+            View live page ↗
+          </Link>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {publishable && (
+        <div className="mb-4 rounded-lg border border-gray-200 bg-white px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm">
+              {dirty ? (
+                <span className="font-medium text-amber-700">
+                  ● Unpublished changes
+                </span>
+              ) : (
+                <span className="font-medium text-green-700">✓ Published</span>
+              )}
+              {publishedAtState && (
+                <span className="text-gray-400">
+                  {" · last published "}
+                  {new Date(publishedAtState).toLocaleString("en-NZ", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </span>
+              )}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleRevisions}
+                aria-pressed={showRevisions}
+                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
+              >
+                History
+              </button>
+              {dirty && publishedAtState && (
+                <button
+                  type="button"
+                  onClick={handleDiscard}
+                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
+                >
+                  Discard changes
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handlePublish}
+                disabled={!dirty || publishing}
+                className="rounded-lg bg-[#0c0c48] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#16166a] disabled:opacity-50"
+              >
+                {publishing ? "Publishing…" : "Publish"}
+              </button>
+            </div>
+          </div>
+          {showRevisions && (
+            <div className="mt-3 border-t border-gray-100 pt-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Version history
+              </p>
+              {revisionsLoading ? (
+                <p className="text-sm text-gray-400">Loading…</p>
+              ) : revisions && revisions.length > 0 ? (
+                <ul className="space-y-1">
+                  {revisions.map((r) => (
+                    <li
+                      key={r.id}
+                      className="flex items-center justify-between gap-2 text-sm"
+                    >
+                      <span className="text-[#0c0c48]">
+                        {new Date(r.createdAt).toLocaleString("en-NZ", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })}
+                        <span className="text-gray-400">
+                          {" · "}
+                          {r.blockCount} section{r.blockCount === 1 ? "" : "s"}
+                        </span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRestore(r.id)}
+                        className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
+                      >
+                        Restore
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-400">
+                  No published versions yet. Publish to start the history.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {showPreview && previewHref ? (
+        <div className="lg:flex lg:items-start lg:gap-6">
+          <div className="min-w-0 lg:w-[460px] lg:flex-shrink-0">{editorPane}</div>
+          <div className="mt-6 min-w-0 lg:mt-0 lg:flex-1 lg:sticky lg:top-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <p className="truncate text-xs font-medium text-gray-500">
+                Live preview · {previewHref}
+              </p>
+              <button
+                type="button"
+                onClick={bumpPreview}
+                className="flex-shrink-0 rounded-lg border border-gray-300 px-3 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
+              >
+                Refresh
+              </button>
+            </div>
+            {/*
+              The preview frames our own first-party page, which must hydrate
+              and read localStorage (LanguageProvider), so it needs
+              allow-same-origin + allow-scripts. The sandbox still withholds the
+              dangerous capabilities — top-navigation, forms, popups, modals,
+              downloads, pointer-lock — so a hypothetical XSS in public content
+              can't drive the admin shell or navigate it away.
+            */}
+            <iframe
+              key={previewVersion}
+              src={previewHref}
+              title="Live preview"
+              sandbox="allow-same-origin allow-scripts"
+              referrerPolicy="same-origin"
+              className="h-[75vh] w-full rounded-lg border border-gray-200 bg-white"
+            />
+            <p className="mt-2 text-center text-[11px] text-gray-400">
+              Changes save automatically and refresh the preview.
+            </p>
+          </div>
+        </div>
+      ) : (
+        editorPane
       )}
     </div>
   );

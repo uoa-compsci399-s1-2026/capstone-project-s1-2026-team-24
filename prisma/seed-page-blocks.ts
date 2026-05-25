@@ -6,6 +6,7 @@ import {
   DISCOVER_VIDEO_DEFAULTS,
   TRIAL_DESIGN_DEFAULTS,
 } from "../src/lib/blocks/default-content";
+import { snapshotBlocks } from "../src/lib/page-publish";
 
 // Seeds the page-builder tables (Page + PageBlock) with the content that was
 // previously hardcoded in each page's JSX. Running this reproduces the exact
@@ -31,6 +32,28 @@ const PAGE_SEEDS: PageSeed[] = [
           backgroundGradient:
             "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
           heroImageSrc: "/images/homepage-hero-bowl.webp",
+        },
+      },
+      {
+        type: "updates",
+        content: {
+          updates: [
+            {
+              title: "NZ Synergy Study Now Recruiting",
+              date: "May 2026",
+              paragraphs: [
+                "We are now actively recruiting participants for our NZ Synergy residential nutrition study.",
+                "If you are aged 18–60 with elevated fasting blood sugar and a BMI of 24–40, you may be eligible.",
+              ],
+            },
+            {
+              title: "New Publication Released",
+              date: "April 2026",
+              paragraphs: [
+                "Our team has published new findings on feijoa whole fruit powder and type 2 diabetes risk markers.",
+              ],
+            },
+          ],
         },
       },
       {
@@ -402,6 +425,22 @@ export async function seedPageBlocks(prisma: PrismaClient, force = false) {
         },
       });
     }
+
+    // Publish the seeded content so the public site renders it immediately and
+    // the editor shows the page as published (not "unpublished changes").
+    await prisma.page.update({
+      where: { id: page.id },
+      data: {
+        publishedContent: snapshotBlocks(
+          pageSeed.blocks.map((b) => ({
+            type: b.type,
+            content: JSON.stringify(b.content),
+            isVisible: true,
+          })),
+        ),
+        publishedAt: new Date(),
+      },
+    });
 
     console.log(`✓ ${pageSeed.slug}: seeded ${pageSeed.blocks.length} blocks`);
   }

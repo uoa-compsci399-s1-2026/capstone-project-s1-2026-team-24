@@ -279,6 +279,32 @@ const DEFINITIONS: BlockDefinition[] = [
     },
   },
   {
+    type: "updates",
+    label: "Updates carousel",
+    category: "Content",
+    editable: true,
+    fields: [{ key: "updates", label: "Updates", type: "updatesList" }],
+    defaultContent: {
+      updates: [
+        {
+          title: "NZ Synergy Study Now Recruiting",
+          date: "May 2026",
+          paragraphs: [
+            "We are now actively recruiting participants for our NZ Synergy residential nutrition study.",
+            "If you are aged 18–60 with elevated fasting blood sugar and a BMI of 24–40, you may be eligible.",
+          ],
+        },
+        {
+          title: "New Publication Released",
+          date: "April 2026",
+          paragraphs: [
+            "Our team has published new findings on feijoa whole fruit powder and type 2 diabetes risk markers.",
+          ],
+        },
+      ],
+    },
+  },
+  {
     type: "sectionHeading",
     label: "Section heading",
     category: "Heading",
@@ -615,10 +641,10 @@ const DEFINITIONS: BlockDefinition[] = [
     type: "row",
     label: "Row (columns)",
     category: "Layout",
-    scope: "study",
+    scope: "both",
     editable: true,
     fields: [],
-    defaultContent: { variant: "twoColumn", columns: [[], []] },
+    defaultContent: { columns: [[], []], widths: [1, 1] },
   },
 ];
 
