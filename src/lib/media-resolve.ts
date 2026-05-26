@@ -40,6 +40,25 @@ function contentHasPath(value: unknown, target: string): boolean {
   return false;
 }
 
+// Deep-replace an exact raw-path string with a new one (used when an asset is
+// repointed). Only exact matches are swapped, so a path that's merely a substring
+// of another value is left alone.
+function replaceRawPath(value: unknown, oldPath: string, newPath: string): unknown {
+  if (typeof value === "string") return value === oldPath ? newPath : value;
+  if (Array.isArray(value)) {
+    return value.map((v) => replaceRawPath(v, oldPath, newPath));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [
+        k,
+        replaceRawPath(v, oldPath, newPath),
+      ]),
+    );
+  }
+  return value;
+}
+
 /**
  * Resolves "media:{id}" references in a list of block content JSON strings to
  * the referenced MediaAsset file paths, in one batched query. Raw-path values
@@ -67,6 +86,10 @@ export async function resolveBlockContents(
 }
 
 export interface MediaUsage {
+  /** Where the reference lives: page-builder content, or a DB-field consumer. */
+  kind: "block" | "team" | "partner" | "study";
+  /** Human-readable summary for the "where is this used" list. */
+  label: string;
   pageSlug: string;
   pageTitle: string;
   blockId: number;
@@ -74,40 +97,128 @@ export interface MediaUsage {
 }
 
 /**
- * Finds every page block that references an asset — by id ("media:{id}") or by
- * its raw file path (legacy references). Used for the "where is this used"
+ * Finds everywhere an asset is referenced — page-builder blocks (by id
+ * "media:{id}" or raw path) AND the DB-field consumers that store a raw path
+ * (team photos, partner logos, study images). Used for the "where is this used"
  * view and to block deletion of an in-use asset.
+ *
+ * Note: images referenced only by a hardcoded path in component source (.tsx)
+ * can't be detected here — that knowledge lives in code, not the database.
  */
 export async function findAssetUsage(asset: {
   id: number;
   filePath: string;
 }): Promise<MediaUsage[]> {
   const ref = toMediaRef(asset.id);
-  const candidates = await prisma.pageBlock.findMany({
-    where: {
-      OR: [{ content: { contains: ref } }, { content: { contains: asset.filePath } }],
-    },
-    select: {
-      id: true,
-      type: true,
-      content: true,
-      page: { select: { slug: true, title: true } },
-    },
-  });
+  const [candidates, teamMembers, partners, studies] = await Promise.all([
+    prisma.pageBlock.findMany({
+      where: {
+        OR: [
+          { content: { contains: ref } },
+          { content: { contains: asset.filePath } },
+        ],
+      },
+      select: {
+        id: true,
+        type: true,
+        content: true,
+        page: { select: { slug: true, title: true } },
+      },
+    }),
+    // DB-field consumers reference images by exact raw path (never "media:{id}").
+    prisma.teamMember.findMany({
+      where: { photoPath: asset.filePath },
+      select: { id: true, name: true },
+    }),
+    prisma.partnerLogo.findMany({
+      where: { logoPath: asset.filePath },
+      select: { id: true, name: true },
+    }),
+    prisma.study.findMany({
+      where: { imagePath: asset.filePath },
+      select: { id: true, title: true },
+    }),
+  ]);
 
-  // `contains` can over-match (e.g. media:42 inside media:420), so confirm a
-  // real id match or an exact raw-path value before reporting usage.
-  return candidates
-    .filter((b) => {
-      const content = parseBlockContent(b.content);
-      const ids = new Set<number>();
-      collectIds(content, ids);
-      return ids.has(asset.id) || contentHasPath(content, asset.filePath);
-    })
-    .map((b) => ({
-      pageSlug: b.page.slug,
-      pageTitle: b.page.title,
-      blockId: b.id,
-      blockType: b.type,
-    }));
+  const usage: MediaUsage[] = [];
+
+  // Page-builder blocks. `contains` can over-match (e.g. media:42 inside
+  // media:420), so confirm a real id match or an exact raw-path value.
+  for (const b of candidates) {
+    const content = parseBlockContent(b.content);
+    const ids = new Set<number>();
+    collectIds(content, ids);
+    if (ids.has(asset.id) || contentHasPath(content, asset.filePath)) {
+      usage.push({
+        kind: "block",
+        label: `${b.page.title} — ${b.type}`,
+        pageSlug: b.page.slug,
+        pageTitle: b.page.title,
+        blockId: b.id,
+        blockType: b.type,
+      });
+    }
+  }
+
+  for (const m of teamMembers) {
+    usage.push({
+      kind: "team",
+      label: `Team — ${m.name}`,
+      pageSlug: "team",
+      pageTitle: "Team",
+      blockId: m.id,
+      blockType: m.name,
+    });
+  }
+  for (const p of partners) {
+    usage.push({
+      kind: "partner",
+      label: `Partner logo — ${p.name}`,
+      pageSlug: "partners",
+      pageTitle: "Partners",
+      blockId: p.id,
+      blockType: p.name,
+    });
+  }
+  for (const s of studies) {
+    usage.push({
+      kind: "study",
+      label: `Study — ${s.title}`,
+      pageSlug: "studies",
+      pageTitle: "Studies",
+      blockId: s.id,
+      blockType: s.title,
+    });
+  }
+
+  return usage;
+}
+
+/**
+ * Repoints raw-path references in page-block content from oldPath to newPath.
+ * The MediaPicker stores "media:{id}" references (which resolve to the asset's
+ * current filePath automatically, so they need no migration); this only matters
+ * for a path typed/pasted directly into a block. Called by the replace route so
+ * such blocks keep working — and stay discoverable — after an asset is repointed.
+ */
+export async function migrateRawPathInBlocks(
+  oldPath: string,
+  newPath: string,
+): Promise<void> {
+  if (oldPath === newPath) return;
+  const blocks = await prisma.pageBlock.findMany({
+    where: { content: { contains: oldPath } },
+    select: { id: true, content: true },
+  });
+  for (const b of blocks) {
+    const next = serializeBlockContent(
+      replaceRawPath(parseBlockContent(b.content), oldPath, newPath),
+    );
+    if (next !== b.content) {
+      await prisma.pageBlock.update({
+        where: { id: b.id },
+        data: { content: next },
+      });
+    }
+  }
 }

@@ -135,8 +135,8 @@ export default function EditStudy({ params }: Props) {
         description="Update any of the fields below. Changes are visible on the public study page immediately after saving."
         onSubmit={handleSubmit}
         isLoading={isLoading}
-        submitButtonLabel="Save changes"
-        cancelHref="/admin/studies"
+        formId="study-edit-form"
+        hideFooter
       >
         {error && <FormErrorBanner message={error} />}
         <StudyFormFields formData={formData} onChange={handleChange} />
@@ -161,6 +161,22 @@ export default function EditStudy({ params }: Props) {
           </Link>
         </div>
       )}
+      <div className="mt-8 flex max-w-3xl flex-wrap items-center gap-3 rounded-2xl border border-[#0a4479]/15 bg-white p-6 shadow-[0_8px_24px_rgba(0,0,0,0.06)]">
+        <button
+          type="submit"
+          form="study-edit-form"
+          disabled={isLoading}
+          className="inline-flex items-center justify-center rounded-full bg-[#0a4479] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#083559] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isLoading ? "Saving..." : "Save changes"}
+        </button>
+        <Link
+          href="/admin/studies"
+          className="inline-flex items-center justify-center rounded-full border-2 border-[#0a4479]/20 bg-white px-6 py-2.5 text-sm font-semibold text-[#0a4479] transition-colors hover:bg-[#0a4479]/5"
+        >
+          Cancel
+        </Link>
+      </div>
     </>
   );
 }

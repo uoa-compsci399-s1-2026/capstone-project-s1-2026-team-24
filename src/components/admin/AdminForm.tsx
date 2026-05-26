@@ -11,6 +11,10 @@ interface AdminFormProps {
   submitButtonLabel?: string;
   cancelHref?: string;
   secondaryAction?: ReactNode;
+  /** When set, applied as the <form> id so an external submit button can target it via the `form` attribute. */
+  formId?: string;
+  /** Hide the built-in submit/cancel footer (e.g. when the submit button is lifted below sibling sections). */
+  hideFooter?: boolean;
 }
 
 export function AdminForm({
@@ -23,6 +27,8 @@ export function AdminForm({
   submitButtonLabel = "Save",
   cancelHref,
   secondaryAction,
+  formId,
+  hideFooter = false,
 }: AdminFormProps) {
   return (
     <div>
@@ -41,11 +47,13 @@ export function AdminForm({
       </header>
 
       <form
+        id={formId}
         onSubmit={onSubmit}
         className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-8 max-w-3xl"
       >
         <div className="space-y-6">{children}</div>
 
+        {!hideFooter && (
         <div className="mt-8 flex flex-wrap gap-3">
           <button
             type="submit"
@@ -72,6 +80,7 @@ export function AdminForm({
           )}
           {secondaryAction}
         </div>
+        )}
       </form>
     </div>
   );
