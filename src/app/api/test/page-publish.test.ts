@@ -8,6 +8,7 @@ const mockPrisma = vi.hoisted(() => ({
     findMany: vi.fn(),
     deleteMany: vi.fn(),
     findFirst: vi.fn(),
+    count: vi.fn(),
   },
   $transaction: vi.fn(),
 }));
@@ -94,6 +95,58 @@ describe("POST /api/admin/pages/[slug]/publish", () => {
         label: "Published",
       },
     });
+  });
+
+  it("preserves the original published version on the first publish", async () => {
+    mockPrisma.page.findUnique.mockResolvedValueOnce({
+      id: 4,
+      publishedContent: '[{"type":"old","content":"{}"}]',
+      publishedAt: new Date("2026-01-01T00:00:00Z"),
+      blocks: [{ type: "new", content: "{}", isVisible: true }],
+    });
+    mockPrisma.$transaction.mockImplementationOnce(async (cb) => cb(mockPrisma));
+    mockPrisma.pageRevision.count.mockResolvedValueOnce(0);
+    mockPrisma.pageRevision.findMany.mockResolvedValueOnce([]);
+
+    const res = await publish(post(), {
+      params: Promise.resolve({ slug: "home" }),
+    });
+    expect(res.status).toBe(200);
+    // The pre-edit published content is captured as the recoverable "Original".
+    expect(mockPrisma.pageRevision.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        pageId: 4,
+        content: '[{"type":"old","content":"{}"}]',
+        label: "Original",
+      }),
+    });
+    // ...and the newly published version is recorded as usual.
+    expect(mockPrisma.pageRevision.create).toHaveBeenCalledWith({
+      data: {
+        pageId: 4,
+        content: '[{"type":"new","content":"{}"}]',
+        label: "Published",
+      },
+    });
+  });
+
+  it("does not add another Original revision on later publishes", async () => {
+    mockPrisma.page.findUnique.mockResolvedValueOnce({
+      id: 4,
+      publishedContent: '[{"type":"old","content":"{}"}]',
+      publishedAt: new Date("2026-01-01T00:00:00Z"),
+      blocks: [{ type: "new", content: "{}", isVisible: true }],
+    });
+    mockPrisma.$transaction.mockImplementationOnce(async (cb) => cb(mockPrisma));
+    mockPrisma.pageRevision.count.mockResolvedValueOnce(2);
+    mockPrisma.pageRevision.findMany.mockResolvedValueOnce([]);
+
+    await publish(post(), { params: Promise.resolve({ slug: "home" }) });
+    const labels = mockPrisma.pageRevision.create.mock.calls.map(
+      (c) => c[0].data.label,
+    );
+    expect(labels).not.toContain("Original");
+    expect(labels).toContain("Published");
   });
 });
 

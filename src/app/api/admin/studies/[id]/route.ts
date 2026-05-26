@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
+import { rm } from "fs/promises";
+import path from "path";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";
+import { warmStrings } from "@/lib/translate/blocks";
+
+export const runtime = "nodejs";
 
 function parseId(rawId: string) {
   const id = Number(rawId);
@@ -124,6 +129,14 @@ export async function PATCH(
       data: updates,
     });
 
+    // Keep the listing's auto-translation current when title/short description
+    // change (best-effort; re-warming unchanged text is a cheap cache hit).
+    try {
+      await warmStrings([updated.title, updated.shortDescription], "ZH");
+    } catch (err) {
+      console.error("Study translation warm failed (non-fatal):", err);
+    }
+
     return NextResponse.json(updated, { status: 200 });
   } catch (error) {
     console.error("PATCH /api/admin/studies/[id] failed:", error);
@@ -151,6 +164,20 @@ export async function DELETE(
     }
 
     await prisma.study.delete({ where: { id } });
+
+    // The DB cascade removes the StudyPdf rows, but not the files on disk —
+    // leaving them orphaned and still publicly downloadable. Every PDF for a
+    // study lives under one directory, so remove it wholesale. Best-effort: a
+    // successful delete must not fail over file cleanup.
+    try {
+      await rm(
+        path.join(process.cwd(), "public", "uploads", "studies", String(id)),
+        { recursive: true, force: true },
+      );
+    } catch (fileError) {
+      console.warn("Study upload dir could not be removed:", fileError);
+    }
+
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("DELETE /api/admin/studies/[id] failed:", error);

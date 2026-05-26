@@ -36,13 +36,16 @@ function jsonReq(method: string, body: unknown) {
 describe("GET /api/admin/pages", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("excludes study-layout pages from the list", async () => {
+  it("excludes study-layout pages and the reworked studies page from the list", async () => {
     mockPrisma.page.findMany.mockResolvedValueOnce([]);
     const res = await listPages();
     expect(res.status).toBe(200);
     expect(mockPrisma.page.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { NOT: { slug: { startsWith: "studylayout-" } } },
+        where: {
+          slug: { not: "studies" },
+          NOT: { slug: { startsWith: "studylayout-" } },
+        },
       }),
     );
   });
