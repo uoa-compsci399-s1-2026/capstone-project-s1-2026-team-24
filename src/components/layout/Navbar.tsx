@@ -9,8 +9,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
 
-
-
 export default function Navbar() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -69,8 +67,9 @@ export default function Navbar() {
   ] as const;
 
   const POPULAR_SEARCHES = [
-    { label: t.navbar.donations, href: "/collaborations/funding" },
-    { label: t.navbar.contact, href: "/contact" },
+    { label: t.navbar.discoverHnu, href: "/about" },
+    { label: t.navbar.nzSynergy, href: "/studies/nz-synergy" },
+    { label: t.navbar.collaborations, href: "/collaborations" },
   ] as const;
 
   useEffect(() => {
@@ -807,51 +806,6 @@ export default function Navbar() {
                   {t.navbar.popularSearches}
                 </p>
                 <ul>
-                  <li>
-                    <button
-                      className="flex items-center gap-2 text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
-                      onClick={() => setSearchStudiesOpen(!searchStudiesOpen)}
-                      aria-expanded={searchStudiesOpen}
-                      aria-haspopup="true"
-                      aria-controls="search-studies-dropdown"
-                    >
-                      {t.navbar.studies}
-                      <svg
-                        className={`w-4 h-4 transition-transform ${searchStudiesOpen ? "rotate-180" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </button>
-                    {searchStudiesOpen && (
-                      <ul
-                        id="search-studies-dropdown"
-                        role="menu"
-                        className="ml-4 mb-1 border-l border-white/20 pl-4"
-                      >
-                        {STUDIES_ITEMS.map((item) => (
-                          <li key={item.href} role="none">
-                            <Link
-                              href={item.href}
-                              role="menuitem"
-                              className="block text-[16px] text-white/80 leading-[40px] hover:text-white hover:opacity-80 transition-colors"
-                              onClick={() => setSearchOpen(false)}
-                            >
-                              {item.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
                   {POPULAR_SEARCHES.map((item) => (
                     <li key={item.href}>
                       <Link
