@@ -5,11 +5,28 @@ import type { MediaAsset } from "./MediaPicker";
 import { primeMediaCache } from "./useMediaResolver";
 
 type MediaUsage = {
+  kind: "block" | "team" | "partner" | "study";
+  label: string;
   pageSlug: string;
   pageTitle: string;
   blockType: string;
   blockId: number;
 };
+
+// In-place replace keeps the same filePath, so the browser would show the cached
+// old bytes (and React would skip the re-render for an unchanged src). Append a
+// short-lived version token, set per asset when it's replaced, to force a reload.
+function withBust(path: string, version?: number): string {
+  if (!version) return path;
+  return `${path}${path.includes("?") ? "&" : "?"}v=${version}`;
+}
+
+// "Managed" = a file this library owns on disk (under /uploads/media), so deleting
+// it removes the file. Everything else (cataloged /public images) is a "site
+// image": replaceable in place, but delete only clears the catalog entry.
+function isManagedPath(filePath: string): boolean {
+  return filePath.replace(/^\/+/, "").startsWith("uploads/media");
+}
 
 export default function MediaLibrary() {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
@@ -21,8 +38,11 @@ export default function MediaLibrary() {
   const [replacing, setReplacing] = useState(false);
   const [usage, setUsage] = useState<MediaUsage[]>([]);
   const [error, setError] = useState<string | null>(null);
+  // Per-asset cache-bust tokens, set when an asset is replaced in place.
+  const [bust, setBust] = useState<Record<number, number>>({});
   const fileInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
+  const detailsRef = useRef<HTMLElement>(null);
 
   // Load "where is this used" whenever the selected asset changes.
   useEffect(() => {
@@ -43,6 +63,13 @@ export default function MediaLibrary() {
     return () => {
       cancelled = true;
     };
+  }, [selected?.id]);
+
+  // Bring the details panel into view when a different asset is selected, so the
+  // editor appears near where the admin is looking rather than only at the top.
+  useEffect(() => {
+    if (selected?.id == null) return;
+    detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [selected?.id]);
 
   const load = useCallback(async () => {
@@ -113,7 +140,8 @@ export default function MediaLibrary() {
           primeMediaCache(next);
           return next;
         });
-        setSelected(updated);
+        // Close the panel on a successful save so it's clear the change took effect.
+        setSelected(null);
       } else {
         setError("Could not save changes.");
       }
@@ -123,7 +151,14 @@ export default function MediaLibrary() {
   }
 
   async function deleteAsset(id: number, force = false) {
-    if (!force && !window.confirm("Delete this image permanently?")) return;
+    if (!force) {
+      const asset = assets.find((a) => a.id === id);
+      const managed = asset ? isManagedPath(asset.filePath) : true;
+      const message = managed
+        ? "Delete this image permanently? This removes the file."
+        : "Remove this site image from the library? The file in /public stays on the site (it may be referenced in code) — this only clears its catalog entry.";
+      if (!window.confirm(message)) return;
+    }
     const res = await fetch(`/api/admin/media/${id}${force ? "?force=1" : ""}`, {
       method: "DELETE",
     });
@@ -173,6 +208,8 @@ export default function MediaLibrary() {
           return next;
         });
         setSelected(updated);
+        // Force the preview/thumbnail to reload the new bytes (same path).
+        setBust((b) => ({ ...b, [updated.id]: Date.now() }));
       } else {
         const body = await res.json().catch(() => ({}));
         setError(body.error ?? "Replace failed.");
@@ -191,6 +228,8 @@ export default function MediaLibrary() {
       a.altText.toLowerCase().includes(q)
     );
   });
+
+  const selectedManaged = selected ? isManagedPath(selected.filePath) : false;
 
   return (
     <div>
@@ -262,7 +301,7 @@ export default function MediaLibrary() {
                   <div className="flex h-28 items-center justify-center bg-gray-50">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={asset.filePath}
+                      src={withBust(asset.filePath, bust[asset.id])}
                       alt={asset.altText}
                       className="max-h-28 max-w-full object-contain"
                     />
@@ -277,7 +316,10 @@ export default function MediaLibrary() {
         </div>
 
         {selected && (
-          <aside className="w-72 flex-shrink-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <aside
+            ref={detailsRef}
+            className="sticky top-4 w-72 flex-shrink-0 self-start rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+          >
             <div className="mb-3 flex items-center justify-between">
               <p className="truncate text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Image details
@@ -308,7 +350,7 @@ export default function MediaLibrary() {
             <div className="mb-3 flex h-40 items-center justify-center rounded-lg bg-gray-50">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={selected.filePath}
+                src={withBust(selected.filePath, bust[selected.id])}
                 alt={selected.altText}
                 className="max-h-40 max-w-full object-contain"
               />
@@ -321,6 +363,14 @@ export default function MediaLibrary() {
                 {selected.width} × {selected.height} px
               </p>
             ) : null}
+            {!selectedManaged && (
+              <p
+                className="mb-3 inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700"
+                title="A pre-existing file in /public. Replacing it updates everywhere it's used; deleting only removes this library entry — the file stays on the site."
+              >
+                Site image
+              </p>
+            )}
             <div className="mb-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Used in {usage.length} place{usage.length === 1 ? "" : "s"}
@@ -329,11 +379,11 @@ export default function MediaLibrary() {
                 <ul className="mt-1 max-h-24 list-disc overflow-y-auto pl-4 text-xs text-gray-500">
                   {usage.map((u) => (
                     <li
-                      key={u.blockId}
+                      key={`${u.kind}-${u.blockId}`}
                       className="truncate"
-                      title={`${u.pageTitle} · ${u.blockType}`}
+                      title={u.label}
                     >
-                      {u.pageTitle} — {u.blockType}
+                      {u.label}
                     </li>
                   ))}
                 </ul>
@@ -381,9 +431,14 @@ export default function MediaLibrary() {
               <button
                 type="button"
                 onClick={() => deleteAsset(selected.id)}
+                title={
+                  selectedManaged
+                    ? "Delete image and file"
+                    : "Remove from library (the file stays on the site)"
+                }
                 className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
               >
-                Delete
+                {selectedManaged ? "Delete" : "Remove"}
               </button>
             </div>
             <input

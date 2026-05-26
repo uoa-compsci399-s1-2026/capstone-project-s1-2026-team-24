@@ -67,6 +67,10 @@ export async function resolveBlockContents(
 }
 
 export interface MediaUsage {
+  /** Where the reference lives: page-builder content, or a DB-field consumer. */
+  kind: "block" | "team" | "partner" | "study";
+  /** Human-readable summary for the "where is this used" list. */
+  label: string;
   pageSlug: string;
   pageTitle: string;
   blockId: number;
@@ -74,40 +78,99 @@ export interface MediaUsage {
 }
 
 /**
- * Finds every page block that references an asset — by id ("media:{id}") or by
- * its raw file path (legacy references). Used for the "where is this used"
+ * Finds everywhere an asset is referenced — page-builder blocks (by id
+ * "media:{id}" or raw path) AND the DB-field consumers that store a raw path
+ * (team photos, partner logos, study images). Used for the "where is this used"
  * view and to block deletion of an in-use asset.
+ *
+ * Note: images referenced only by a hardcoded path in component source (.tsx)
+ * can't be detected here — that knowledge lives in code, not the database.
  */
 export async function findAssetUsage(asset: {
   id: number;
   filePath: string;
 }): Promise<MediaUsage[]> {
   const ref = toMediaRef(asset.id);
-  const candidates = await prisma.pageBlock.findMany({
-    where: {
-      OR: [{ content: { contains: ref } }, { content: { contains: asset.filePath } }],
-    },
-    select: {
-      id: true,
-      type: true,
-      content: true,
-      page: { select: { slug: true, title: true } },
-    },
-  });
+  const [candidates, teamMembers, partners, studies] = await Promise.all([
+    prisma.pageBlock.findMany({
+      where: {
+        OR: [
+          { content: { contains: ref } },
+          { content: { contains: asset.filePath } },
+        ],
+      },
+      select: {
+        id: true,
+        type: true,
+        content: true,
+        page: { select: { slug: true, title: true } },
+      },
+    }),
+    // DB-field consumers reference images by exact raw path (never "media:{id}").
+    prisma.teamMember.findMany({
+      where: { photoPath: asset.filePath },
+      select: { id: true, name: true },
+    }),
+    prisma.partnerLogo.findMany({
+      where: { logoPath: asset.filePath },
+      select: { id: true, name: true },
+    }),
+    prisma.study.findMany({
+      where: { imagePath: asset.filePath },
+      select: { id: true, title: true },
+    }),
+  ]);
 
-  // `contains` can over-match (e.g. media:42 inside media:420), so confirm a
-  // real id match or an exact raw-path value before reporting usage.
-  return candidates
-    .filter((b) => {
-      const content = parseBlockContent(b.content);
-      const ids = new Set<number>();
-      collectIds(content, ids);
-      return ids.has(asset.id) || contentHasPath(content, asset.filePath);
-    })
-    .map((b) => ({
-      pageSlug: b.page.slug,
-      pageTitle: b.page.title,
-      blockId: b.id,
-      blockType: b.type,
-    }));
+  const usage: MediaUsage[] = [];
+
+  // Page-builder blocks. `contains` can over-match (e.g. media:42 inside
+  // media:420), so confirm a real id match or an exact raw-path value.
+  for (const b of candidates) {
+    const content = parseBlockContent(b.content);
+    const ids = new Set<number>();
+    collectIds(content, ids);
+    if (ids.has(asset.id) || contentHasPath(content, asset.filePath)) {
+      usage.push({
+        kind: "block",
+        label: `${b.page.title} — ${b.type}`,
+        pageSlug: b.page.slug,
+        pageTitle: b.page.title,
+        blockId: b.id,
+        blockType: b.type,
+      });
+    }
+  }
+
+  for (const m of teamMembers) {
+    usage.push({
+      kind: "team",
+      label: `Team — ${m.name}`,
+      pageSlug: "team",
+      pageTitle: "Team",
+      blockId: m.id,
+      blockType: m.name,
+    });
+  }
+  for (const p of partners) {
+    usage.push({
+      kind: "partner",
+      label: `Partner logo — ${p.name}`,
+      pageSlug: "partners",
+      pageTitle: "Partners",
+      blockId: p.id,
+      blockType: p.name,
+    });
+  }
+  for (const s of studies) {
+    usage.push({
+      kind: "study",
+      label: `Study — ${s.title}`,
+      pageSlug: "studies",
+      pageTitle: "Studies",
+      blockId: s.id,
+      blockType: s.title,
+    });
+  }
+
+  return usage;
 }

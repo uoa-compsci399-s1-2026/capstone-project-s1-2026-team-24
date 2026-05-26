@@ -10,6 +10,21 @@ const mockPrisma = vi.hoisted(() => ({
   pageBlock: {
     findMany: vi.fn(),
   },
+  // DB-field consumers scanned by findAssetUsage. Default to "no usage" (kept
+  // across vi.clearAllMocks, which clears call history but not implementations)
+  // so each test opts into a match explicitly.
+  teamMember: {
+    findMany: vi.fn().mockResolvedValue([]),
+    updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+  },
+  partnerLogo: {
+    findMany: vi.fn().mockResolvedValue([]),
+    updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+  },
+  study: {
+    findMany: vi.fn().mockResolvedValue([]),
+    updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+  },
 }));
 
 vi.mock("@/lib/prisma", () => ({ prisma: mockPrisma }));
@@ -188,6 +203,24 @@ describe("GET /api/admin/media/[id]/usage", () => {
       blockType: "infoCardLeft",
     });
   });
+
+  it("detects DB-field references (e.g. a team photo) by exact path", async () => {
+    mockPrisma.mediaAsset.findUnique.mockResolvedValueOnce({
+      id: 5,
+      filePath: "/images/team/jane.jpg",
+    });
+    mockPrisma.pageBlock.findMany.mockResolvedValueOnce([]);
+    mockPrisma.teamMember.findMany.mockResolvedValueOnce([
+      { id: 9, name: "Jane Doe" },
+    ]);
+    const res = await getUsage(new Request("http://localhost/x"), {
+      params: Promise.resolve({ id: "5" }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.usage).toHaveLength(1);
+    expect(body.usage[0]).toMatchObject({ kind: "team", blockType: "Jane Doe" });
+  });
 });
 
 describe("POST /api/admin/media/[id]/replace", () => {
@@ -217,5 +250,34 @@ describe("POST /api/admin/media/[id]/replace", () => {
     expect(mockPrisma.mediaAsset.update).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: 1 } }),
     );
+  });
+
+  it("repoints a cataloged /public image to a managed file and migrates DB consumers", async () => {
+    mockPrisma.mediaAsset.findUnique.mockResolvedValueOnce({
+      id: 2,
+      filePath: "/images/hero.jpg",
+    });
+    mockPrisma.mediaAsset.update.mockResolvedValueOnce({
+      id: 2,
+      filePath: "/uploads/media/new.jpg",
+    });
+    const res = await replaceMedia(fileFormReq("http://localhost/x"), {
+      params: Promise.resolve({ id: "2" }),
+    });
+    expect(res.status).toBe(200);
+    // Repointed into managed storage (the original /public file is left intact),
+    // so the fresh URL bypasses the Next <Image> optimizer cache.
+    const updateArg = mockPrisma.mediaAsset.update.mock.calls[0][0];
+    expect(updateArg.where).toEqual({ id: 2 });
+    expect(updateArg.data.filePath).toMatch(/^\/uploads\/media\//);
+    // DB-field consumers that pointed at the old path are migrated to the new one.
+    expect(mockPrisma.teamMember.updateMany).toHaveBeenCalledWith({
+      where: { photoPath: "/images/hero.jpg" },
+      data: { photoPath: updateArg.data.filePath },
+    });
+    expect(mockPrisma.study.updateMany).toHaveBeenCalledWith({
+      where: { imagePath: "/images/hero.jpg" },
+      data: { imagePath: updateArg.data.filePath },
+    });
   });
 });
