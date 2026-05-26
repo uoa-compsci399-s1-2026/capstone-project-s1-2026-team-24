@@ -14,6 +14,9 @@ vi.mock("@/lib/prisma", () => ({
   prisma: mockPrisma,
 }));
 
+const mockRm = vi.hoisted(() => vi.fn());
+vi.mock("fs/promises", () => ({ rm: mockRm }));
+
 import {
   GET as getAdminStudies,
   POST as postAdminStudy,
@@ -64,5 +67,19 @@ describe("admin studies routes", () => {
       params: Promise.resolve({ id: "1" }),
     });
     expect(response.status).toBe(204);
+  });
+
+  it("DELETE also removes the study's uploaded files from disk", async () => {
+    mockPrisma.study.findUnique.mockResolvedValueOnce({ id: 42 });
+    mockPrisma.study.delete.mockResolvedValueOnce({});
+    await deleteAdminStudy(new Request("http://localhost"), {
+      params: Promise.resolve({ id: "42" }),
+    });
+    expect(mockRm).toHaveBeenCalledTimes(1);
+    const [target, opts] = mockRm.mock.calls[0];
+    expect(String(target).replace(/\\/g, "/")).toContain(
+      "public/uploads/studies/42",
+    );
+    expect(opts).toMatchObject({ recursive: true, force: true });
   });
 });

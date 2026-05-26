@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { snapshotBlocks } from "@/lib/page-publish";
+import { snapshotBlocks, parsePublishedSnapshot } from "@/lib/page-publish";
+import { parseBlockContent } from "@/lib/blocks/validate";
+import { warmBlockTranslations } from "@/lib/translate/blocks";
 
 export const runtime = "nodejs";
 
@@ -29,6 +31,27 @@ export async function POST(
     const publishedAt = new Date();
 
     await prisma.$transaction(async (tx) => {
+      // First publish only: preserve the existing (pre-edit) published version as
+      // an "Original" revision so the page's original layout/order stays
+      // recoverable from History. Without this, the earliest revision would be the
+      // first *edited* version and the original would be lost forever.
+      if (page.publishedContent) {
+        const priorRevisions = await tx.pageRevision.count({
+          where: { pageId: page.id },
+        });
+        if (priorRevisions === 0) {
+          await tx.pageRevision.create({
+            data: {
+              pageId: page.id,
+              content: page.publishedContent,
+              label: "Original",
+              // Keep its original publish time so it sorts oldest in History.
+              ...(page.publishedAt ? { createdAt: page.publishedAt } : {}),
+            },
+          });
+        }
+      }
+
       await tx.page.update({
         where: { id: page.id },
         data: { publishedContent: snapshot, publishedAt },
@@ -36,9 +59,10 @@ export async function POST(
       await tx.pageRevision.create({
         data: { pageId: page.id, content: snapshot, label: "Published" },
       });
-      // Prune anything beyond the most recent MAX_REVISIONS.
+      // Prune anything beyond the most recent MAX_REVISIONS — but never the
+      // "Original" baseline, so the starting point is always recoverable.
       const stale = await tx.pageRevision.findMany({
-        where: { pageId: page.id },
+        where: { pageId: page.id, label: { not: "Original" } },
         orderBy: { createdAt: "desc" },
         skip: MAX_REVISIONS,
         select: { id: true },
@@ -49,6 +73,20 @@ export async function POST(
         });
       }
     });
+
+    // Pre-warm 中文 translations for the freshly published copy so public ZH
+    // renders are pure cache hits (and keep working even with no live API key).
+    // Best-effort: a translation failure must not fail an otherwise successful
+    // publish, which has already committed above.
+    try {
+      const publishedBlocks = parsePublishedSnapshot(snapshot).map((b) => ({
+        type: b.type,
+        content: parseBlockContent(b.content),
+      }));
+      await warmBlockTranslations(publishedBlocks, "ZH");
+    } catch (err) {
+      console.error("Translation warm after publish failed (non-fatal):", err);
+    }
 
     return NextResponse.json({ ok: true, publishedAt: publishedAt.toISOString() });
   } catch (error) {

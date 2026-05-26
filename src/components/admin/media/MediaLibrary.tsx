@@ -249,7 +249,9 @@ export default function MediaLibrary() {
                 <button
                   key={asset.id}
                   type="button"
-                  onClick={() => setSelected(asset)}
+                  onClick={() =>
+                    setSelected((cur) => (cur?.id === asset.id ? null : asset))
+                  }
                   className={`overflow-hidden rounded-lg border text-left ${
                     selected?.id === asset.id
                       ? "border-[#0c0c48] ring-2 ring-[#0c0c48]/30"
@@ -276,6 +278,33 @@ export default function MediaLibrary() {
 
         {selected && (
           <aside className="w-72 flex-shrink-0 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="truncate text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Image details
+              </p>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                aria-label="Close image details"
+                title="Close"
+                className="-mr-1 rounded-md p-1 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
             <div className="mb-3 flex h-40 items-center justify-center rounded-lg bg-gray-50">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
