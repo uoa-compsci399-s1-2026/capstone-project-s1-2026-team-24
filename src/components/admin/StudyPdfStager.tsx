@@ -27,9 +27,9 @@ export default function StudyPdfStager({
 
   return (
     <div>
-      <label className="mb-2 block text-sm font-semibold text-[#0c0c48]">
+      <p className="mb-2 text-sm font-semibold text-[#0c0c48]">
         Downloadable PDFs
-      </label>
+      </p>
       <p className="mb-3 text-xs text-[#0a4479]/70">
         Optional. Attach participant info sheets or consent forms — they upload
         when you create the study.

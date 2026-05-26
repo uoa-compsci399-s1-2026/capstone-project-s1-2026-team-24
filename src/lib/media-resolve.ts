@@ -40,6 +40,25 @@ function contentHasPath(value: unknown, target: string): boolean {
   return false;
 }
 
+// Deep-replace an exact raw-path string with a new one (used when an asset is
+// repointed). Only exact matches are swapped, so a path that's merely a substring
+// of another value is left alone.
+function replaceRawPath(value: unknown, oldPath: string, newPath: string): unknown {
+  if (typeof value === "string") return value === oldPath ? newPath : value;
+  if (Array.isArray(value)) {
+    return value.map((v) => replaceRawPath(v, oldPath, newPath));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [
+        k,
+        replaceRawPath(v, oldPath, newPath),
+      ]),
+    );
+  }
+  return value;
+}
+
 /**
  * Resolves "media:{id}" references in a list of block content JSON strings to
  * the referenced MediaAsset file paths, in one batched query. Raw-path values
@@ -173,4 +192,33 @@ export async function findAssetUsage(asset: {
   }
 
   return usage;
+}
+
+/**
+ * Repoints raw-path references in page-block content from oldPath to newPath.
+ * The MediaPicker stores "media:{id}" references (which resolve to the asset's
+ * current filePath automatically, so they need no migration); this only matters
+ * for a path typed/pasted directly into a block. Called by the replace route so
+ * such blocks keep working — and stay discoverable — after an asset is repointed.
+ */
+export async function migrateRawPathInBlocks(
+  oldPath: string,
+  newPath: string,
+): Promise<void> {
+  if (oldPath === newPath) return;
+  const blocks = await prisma.pageBlock.findMany({
+    where: { content: { contains: oldPath } },
+    select: { id: true, content: true },
+  });
+  for (const b of blocks) {
+    const next = serializeBlockContent(
+      replaceRawPath(parseBlockContent(b.content), oldPath, newPath),
+    );
+    if (next !== b.content) {
+      await prisma.pageBlock.update({
+        where: { id: b.id },
+        data: { content: next },
+      });
+    }
+  }
 }

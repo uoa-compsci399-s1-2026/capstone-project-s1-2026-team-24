@@ -8,7 +8,8 @@ const mockPrisma = vi.hoisted(() => ({
     delete: vi.fn(),
   },
   pageBlock: {
-    findMany: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    update: vi.fn(),
   },
   // DB-field consumers scanned by findAssetUsage. Default to "no usage" (kept
   // across vi.clearAllMocks, which clears call history but not implementations)
@@ -25,6 +26,10 @@ const mockPrisma = vi.hoisted(() => ({
     findMany: vi.fn().mockResolvedValue([]),
     updateMany: vi.fn().mockResolvedValue({ count: 0 }),
   },
+  // Array-form $transaction: run the batched operations and return their results.
+  $transaction: vi.fn((ops: unknown[]) =>
+    Promise.all(ops as Promise<unknown>[]),
+  ),
 }));
 
 vi.mock("@/lib/prisma", () => ({ prisma: mockPrisma }));
@@ -221,6 +226,30 @@ describe("GET /api/admin/media/[id]/usage", () => {
     expect(body.usage).toHaveLength(1);
     expect(body.usage[0]).toMatchObject({ kind: "team", blockType: "Jane Doe" });
   });
+
+  it("detects partner-logo and study-image references by exact path", async () => {
+    mockPrisma.mediaAsset.findUnique.mockResolvedValueOnce({
+      id: 7,
+      filePath: "/images/x.png",
+    });
+    mockPrisma.pageBlock.findMany.mockResolvedValueOnce([]);
+    mockPrisma.partnerLogo.findMany.mockResolvedValueOnce([
+      { id: 3, name: "Acme" },
+    ]);
+    mockPrisma.study.findMany.mockResolvedValueOnce([
+      { id: 4, title: "NZ Synergy" },
+    ]);
+    const res = await getUsage(new Request("http://localhost/x"), {
+      params: Promise.resolve({ id: "7" }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.usage).toHaveLength(2);
+    const kinds = body.usage
+      .map((u: { kind: string }) => u.kind)
+      .sort();
+    expect(kinds).toEqual(["partner", "study"]);
+  });
 });
 
 describe("POST /api/admin/media/[id]/replace", () => {
@@ -274,6 +303,10 @@ describe("POST /api/admin/media/[id]/replace", () => {
     expect(mockPrisma.teamMember.updateMany).toHaveBeenCalledWith({
       where: { photoPath: "/images/hero.jpg" },
       data: { photoPath: updateArg.data.filePath },
+    });
+    expect(mockPrisma.partnerLogo.updateMany).toHaveBeenCalledWith({
+      where: { logoPath: "/images/hero.jpg" },
+      data: { logoPath: updateArg.data.filePath },
     });
     expect(mockPrisma.study.updateMany).toHaveBeenCalledWith({
       where: { imagePath: "/images/hero.jpg" },

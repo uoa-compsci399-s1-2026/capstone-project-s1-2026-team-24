@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { mkdir, writeFile, unlink } from "fs/promises";
 import path from "path";
 import { getImageDimensions } from "@/lib/image-dimensions";
+import { migrateRawPathInBlocks } from "@/lib/media-resolve";
 import {
   MAX_FILE_SIZE,
   MEDIA_UPLOAD_PREFIX,
@@ -72,42 +73,47 @@ export async function POST(
 
     let updated;
     try {
-      updated = await prisma.mediaAsset.update({
-        where: { id },
-        data: {
-          filePath: newPath,
-          originalName: file.name,
-          mimeType: file.type || "application/octet-stream",
-          size: file.size,
-          width: dimensions?.width ?? null,
-          height: dimensions?.height ?? null,
-        },
-      });
+      // Repoint the asset and migrate the DB-field consumers (team photos, partner
+      // logos, study images) in one transaction, so a failure can't leave the asset
+      // on the new path while a consumer still points at the old one. Page blocks
+      // using a "media:{id}" reference resolve to the new filePath automatically.
+      const [asset] = await prisma.$transaction([
+        prisma.mediaAsset.update({
+          where: { id },
+          data: {
+            filePath: newPath,
+            originalName: file.name,
+            mimeType: file.type || "application/octet-stream",
+            size: file.size,
+            width: dimensions?.width ?? null,
+            height: dimensions?.height ?? null,
+          },
+        }),
+        prisma.teamMember.updateMany({
+          where: { photoPath: oldPath },
+          data: { photoPath: newPath },
+        }),
+        prisma.partnerLogo.updateMany({
+          where: { logoPath: oldPath },
+          data: { logoPath: newPath },
+        }),
+        prisma.study.updateMany({
+          where: { imagePath: oldPath },
+          data: { imagePath: newPath },
+        }),
+      ]);
+      updated = asset;
     } catch (err) {
-      // The record wasn't repointed — remove the orphaned new file.
+      // The asset wasn't repointed — remove the orphaned new file.
       await unlink(newFsPath).catch(() => {});
       throw err;
     }
 
-    // Cascade the new path to the DB-field consumers that referenced the old one
-    // (team photos, partner logos, study images). Page blocks that use a
-    // "media:{id}" reference need no update — they resolve to the new filePath
-    // automatically. Raw paths typed into a block, and paths hardcoded in component
-    // source (e.g. the collaborations sections), aren't reachable from here.
-    await Promise.all([
-      prisma.teamMember.updateMany({
-        where: { photoPath: oldPath },
-        data: { photoPath: newPath },
-      }),
-      prisma.partnerLogo.updateMany({
-        where: { logoPath: oldPath },
-        data: { logoPath: newPath },
-      }),
-      prisma.study.updateMany({
-        where: { imagePath: oldPath },
-        data: { imagePath: newPath },
-      }),
-    ]);
+    // Also migrate any raw oldPath typed directly into a page block (rare — the
+    // picker stores "media:{id}"). Done before removing the old file so no
+    // reference is left dangling. Paths hardcoded in component source (e.g. the
+    // collaborations sections) aren't reachable from here.
+    await migrateRawPathInBlocks(oldPath, newPath);
 
     // Remove the old file only if it was a managed upload; tryRemoveFile leaves
     // cataloged /public originals untouched.

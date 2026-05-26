@@ -13,14 +13,6 @@ type MediaUsage = {
   blockId: number;
 };
 
-// In-place replace keeps the same filePath, so the browser would show the cached
-// old bytes (and React would skip the re-render for an unchanged src). Append a
-// short-lived version token, set per asset when it's replaced, to force a reload.
-function withBust(path: string, version?: number): string {
-  if (!version) return path;
-  return `${path}${path.includes("?") ? "&" : "?"}v=${version}`;
-}
-
 // "Managed" = a file this library owns on disk (under /uploads/media), so deleting
 // it removes the file. Everything else (cataloged /public images) is a "site
 // image": replaceable in place, but delete only clears the catalog entry.
@@ -38,8 +30,6 @@ export default function MediaLibrary() {
   const [replacing, setReplacing] = useState(false);
   const [usage, setUsage] = useState<MediaUsage[]>([]);
   const [error, setError] = useState<string | null>(null);
-  // Per-asset cache-bust tokens, set when an asset is replaced in place.
-  const [bust, setBust] = useState<Record<number, number>>({});
   const fileInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
   const detailsRef = useRef<HTMLElement>(null);
@@ -208,8 +198,6 @@ export default function MediaLibrary() {
           return next;
         });
         setSelected(updated);
-        // Force the preview/thumbnail to reload the new bytes (same path).
-        setBust((b) => ({ ...b, [updated.id]: Date.now() }));
       } else {
         const body = await res.json().catch(() => ({}));
         setError(body.error ?? "Replace failed.");
@@ -301,7 +289,7 @@ export default function MediaLibrary() {
                   <div className="flex h-28 items-center justify-center bg-gray-50">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={withBust(asset.filePath, bust[asset.id])}
+                      src={asset.filePath}
                       alt={asset.altText}
                       className="max-h-28 max-w-full object-contain"
                     />
@@ -350,7 +338,7 @@ export default function MediaLibrary() {
             <div className="mb-3 flex h-40 items-center justify-center rounded-lg bg-gray-50">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={withBust(selected.filePath, bust[selected.id])}
+                src={selected.filePath}
                 alt={selected.altText}
                 className="max-h-40 max-w-full object-contain"
               />
