@@ -14,7 +14,7 @@ The public website and content-management system (CMS) for the University of Auc
 | Email | Resend (contact form) |
 | Tests | Vitest + Playwright; Storybook for components |
 
-> **This is not the Next.js you know.** These are bleeding-edge versions whose APIs and conventions differ from older releases. Read `AGENTS.md` and the bundled guides in `node_modules/next/dist/docs/` before writing code, and see [`docs/`](./docs) for project-specific guidance.
+> **This is not the Next.js you know.** These are bleeding-edge versions whose APIs and conventions differ from older releases. Before writing code, read the bundled guides in `node_modules/next/dist/docs/` (installed with the project), and see [`docs/`](./docs) for project-specific guidance.
 
 ## Prerequisites
 

@@ -2,7 +2,7 @@
 
 Conventions for working on the HNU Auckland site + CMS: branches, commits, pull requests, the pre-PR checks, and keeping the docs honest.
 
-> **Read [`../AGENTS.md`](../AGENTS.md) before writing code.** This repo runs bleeding-edge Next.js 16 / React 19 / Prisma 7 / Tailwind v4 whose APIs differ from older versions. The relevant App Router guides are bundled at `node_modules/next/dist/docs/`.
+> **This repo runs bleeding-edge Next.js 16 / React 19 / Prisma 7 / Tailwind v4** whose APIs differ from older versions — don't assume older conventions. Read the relevant App Router guides bundled at `node_modules/next/dist/docs/` before writing code.
 
 ## Branch & PR workflow
 
@@ -65,7 +65,7 @@ If you add/seed content, keep `prisma/seed.ts` / `prisma/seed-page-blocks.ts` wo
 
 Treat docs as part of the change, not an afterthought:
 
-- When you change behaviour, update the affected doc(s) in `docs/` (and [`../AGENTS.md`](../AGENTS.md) / [`../README.md`](../README.md) if the change touches setup, env, or conventions). The docs index is [docs/README.md](./README.md).
+- When you change behaviour, update the affected doc(s) in `docs/` (and [`../README.md`](../README.md) if the change touches setup, env, or conventions). The docs index is [docs/README.md](./README.md).
 - **Verify before you write.** These docs deliberately cite real files/paths. Don't document an API from memory — open the file and confirm. Versions here are ahead of most training data.
 - Match the house style: skimmable, task-oriented, H2/H3 headings, relative cross-links (e.g. `./setup.md`), and verified code snippets only.
 - Don't reference the gitignored `keep-local-claude-made-for-personal-planning-and-context/` directory.
