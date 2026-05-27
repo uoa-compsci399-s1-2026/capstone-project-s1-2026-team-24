@@ -398,6 +398,35 @@ export async function seedPageBlocks(prisma: PrismaClient, force = false) {
       create: { slug: pageSeed.slug, title: pageSeed.title },
     });
 
+    // Canonical snapshot of this page's as-designed default layout.
+    const seedSnapshot = snapshotBlocks(
+      pageSeed.blocks.map((b) => ({
+        type: b.type,
+        content: JSON.stringify(b.content),
+        isVisible: true,
+      })),
+    );
+
+    // Preserve the default as an "Original" revision so a page can always be
+    // reverted to its original layout from History — even after it's been edited
+    // and republished. Idempotent, and created for existing pages too (it runs
+    // before the block-seeding skip below), so re-running the seed backfills
+    // pages that were seeded before this baseline existed.
+    const hasOriginal = await prisma.pageRevision.count({
+      where: { pageId: page.id, label: "Original" },
+    });
+    if (hasOriginal === 0) {
+      await prisma.pageRevision.create({
+        data: {
+          pageId: page.id,
+          content: seedSnapshot,
+          label: "Original",
+          // Backdate to the page's creation so it always sorts oldest in History.
+          createdAt: page.createdAt,
+        },
+      });
+    }
+
     const existing = await prisma.pageBlock.count({
       where: { pageId: page.id },
     });
@@ -430,16 +459,7 @@ export async function seedPageBlocks(prisma: PrismaClient, force = false) {
     // the editor shows the page as published (not "unpublished changes").
     await prisma.page.update({
       where: { id: page.id },
-      data: {
-        publishedContent: snapshotBlocks(
-          pageSeed.blocks.map((b) => ({
-            type: b.type,
-            content: JSON.stringify(b.content),
-            isVisible: true,
-          })),
-        ),
-        publishedAt: new Date(),
-      },
+      data: { publishedContent: seedSnapshot, publishedAt: new Date() },
     });
 
     console.log(`✓ ${pageSeed.slug}: seeded ${pageSeed.blocks.length} blocks`);

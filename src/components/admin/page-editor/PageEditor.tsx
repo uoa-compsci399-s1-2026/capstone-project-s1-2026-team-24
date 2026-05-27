@@ -23,6 +23,7 @@ import type { BlockScope } from "@/lib/blocks/types";
 import { publicPath } from "@/lib/blocks/page-paths";
 import SortableBlock, { type EditorBlock } from "./SortableBlock";
 import AddBlockButton from "./AddBlockButton";
+import PreviewPane from "./PreviewPane";
 
 type RevisionMeta = {
   id: number;
@@ -44,6 +45,7 @@ export default function PageEditor({
   publishable = false,
   publishedAt = null,
   initialDirty = false,
+  fillViewport = true,
 }: {
   slug: string;
   title: string;
@@ -61,6 +63,13 @@ export default function PageEditor({
   publishedAt?: string | null;
   /** Whether the draft already differs from the published version on load. */
   initialDirty?: boolean;
+  /**
+   * When true (the default), the editor fills the viewport as a fixed-height
+   * "canvas": the toolbar stays in view while the block list scrolls and the
+   * preview stays pinned beside it. Set false when the editor is rendered below
+   * other content (e.g. the study builders), so it falls back to natural flow.
+   */
+  fillViewport?: boolean;
 }) {
   const [blocks, setBlocks] = useState<EditorBlock[]>(initialBlocks);
   const [savingId, setSavingId] = useState<number | null>(null);
@@ -358,115 +367,146 @@ export default function PageEditor({
     </>
   );
 
+  const previewing = Boolean(showPreview && previewHref);
+
   return (
-    <div>
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <Link
-            href={backHref}
-            className="text-xs font-medium text-gray-500 hover:text-[#0c0c48]"
-          >
-            {backLabel}
-          </Link>
-          <h1 className="mt-1 text-2xl font-bold text-[#0c0c48]">{title}</h1>
-        </div>
-        <div className="flex flex-shrink-0 items-center gap-2">
-          {headerExtra}
-          {previewHref && (
-            <button
-              type="button"
-              onClick={() => setShowPreview((s) => !s)}
-              aria-pressed={showPreview}
-              className={`rounded-lg border px-4 py-2 text-sm font-medium ${
-                showPreview
-                  ? "border-[#0c0c48] bg-[#0c0c48] text-white"
-                  : "border-gray-300 text-[#0c0c48] hover:bg-gray-100"
-              }`}
-            >
-              {showPreview ? "Hide preview" : "Show preview"}
-            </button>
-          )}
-          <Link
-            href={liveHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
-          >
-            View live page ↗
-          </Link>
-        </div>
-      </div>
-
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
-      {publishable && (
-        <div className="mb-4 rounded-lg border border-gray-200 bg-white px-4 py-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm">
-              {dirty ? (
-                <span className="font-medium text-amber-700">
-                  ● Unpublished changes
-                </span>
-              ) : (
-                <span className="font-medium text-green-700">✓ Published</span>
-              )}
-              {publishedAtState && (
-                <span className="text-gray-400">
-                  {" · last published "}
-                  {new Date(publishedAtState).toLocaleString("en-NZ", {
-                    dateStyle: "medium",
-                    timeStyle: "short",
-                  })}
-                </span>
-              )}
-            </p>
-            <div className="flex items-center gap-2">
+    // At lg+ the editor is a fixed-height app canvas: the toolbar stays in view
+    // while the block list scrolls on its own and the preview sits beside it.
+    // (5rem = the admin shell's vertical padding around this content.) When not
+    // filling the viewport it falls back to natural flow.
+    <div
+      className={
+        fillViewport
+          ? "flex flex-col gap-4 lg:h-[calc(100dvh_-_5rem)]"
+          : "flex flex-col gap-4"
+      }
+    >
+      {/* Toolbar */}
+      <div className="flex-shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="min-w-0">
+              <Link
+                href={backHref}
+                className="text-xs font-medium text-gray-500 hover:text-[#0c0c48]"
+              >
+                {backLabel}
+              </Link>
+              <h1 className="truncate text-2xl font-bold text-[#0c0c48]">
+                {title}
+              </h1>
+            </div>
+            {publishable && (
+              <span
+                className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
+                  dirty
+                    ? "bg-amber-100 text-amber-800"
+                    : "bg-green-100 text-green-800"
+                }`}
+              >
+                {dirty ? "● Unpublished changes" : "✓ Published"}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-shrink-0 flex-wrap items-center justify-end gap-2">
+            {headerExtra}
+            {publishable && (
               <button
                 type="button"
                 onClick={toggleRevisions}
                 aria-pressed={showRevisions}
-                className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
               >
                 History
               </button>
-              {dirty && publishedAtState && (
-                <button
-                  type="button"
-                  onClick={handleDiscard}
-                  className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
-                >
-                  Discard changes
-                </button>
-              )}
+            )}
+            {previewHref && (
+              <button
+                type="button"
+                onClick={() => setShowPreview((s) => !s)}
+                aria-pressed={showPreview}
+                className={`rounded-lg border px-4 py-2 text-sm font-medium ${
+                  showPreview
+                    ? "border-[#0c0c48] bg-[#0c0c48] text-white"
+                    : "border-gray-300 text-[#0c0c48] hover:bg-gray-100"
+                }`}
+              >
+                {showPreview ? "Hide preview" : "Show preview"}
+              </button>
+            )}
+            <Link
+              href={liveHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
+            >
+              View live ↗
+            </Link>
+            {publishable && dirty && publishedAtState && (
+              <button
+                type="button"
+                onClick={handleDiscard}
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"
+              >
+                Discard
+              </button>
+            )}
+            {publishable && (
               <button
                 type="button"
                 onClick={handlePublish}
                 disabled={!dirty || publishing}
-                className="rounded-lg bg-[#0c0c48] px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#16166a] disabled:opacity-50"
+                className="rounded-lg bg-[#0c0c48] px-4 py-2 text-sm font-semibold text-white hover:bg-[#16166a] disabled:opacity-50"
               >
                 {publishing ? "Publishing…" : "Publish"}
               </button>
-            </div>
+            )}
           </div>
-          {showRevisions && (
-            <div className="mt-3 border-t border-gray-100 pt-3">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-                Version history
-              </p>
-              {revisionsLoading ? (
-                <p className="text-sm text-gray-400">Loading…</p>
-              ) : revisions && revisions.length > 0 ? (
-                <ul className="space-y-1">
-                  {revisions.map((r) => (
-                    <li
-                      key={r.id}
-                      className="flex items-center justify-between gap-2 text-sm"
-                    >
-                      <span className="text-[#0c0c48]">
+        </div>
+
+        {publishable && publishedAtState && (
+          <p className="mt-1 text-xs text-gray-400">
+            Last published{" "}
+            {new Date(publishedAtState).toLocaleString("en-NZ", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </p>
+        )}
+
+        {error && (
+          <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {publishable && showRevisions && (
+          <div className="mt-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Version history
+            </p>
+            {revisionsLoading ? (
+              <p className="text-sm text-gray-400">Loading…</p>
+            ) : revisions && revisions.length > 0 ? (
+              <ul className="max-h-60 space-y-1 overflow-y-auto">
+                {revisions.map((r) => (
+                  <li
+                    key={r.id}
+                    className="flex items-center justify-between gap-2 text-sm"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      {r.label && (
+                        <span
+                          className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                            r.label === "Original"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-500"
+                          }`}
+                        >
+                          {r.label}
+                        </span>
+                      )}
+                      <span className="truncate text-[#0c0c48]">
                         {new Date(r.createdAt).toLocaleString("en-NZ", {
                           dateStyle: "medium",
                           timeStyle: "short",
@@ -476,66 +516,54 @@ export default function PageEditor({
                           {r.blockCount} section{r.blockCount === 1 ? "" : "s"}
                         </span>
                       </span>
-                      <button
-                        type="button"
-                        onClick={() => handleRestore(r.id)}
-                        className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
-                      >
-                        Restore
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-gray-400">
-                  No published versions yet. Publish to start the history.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {showPreview && previewHref ? (
-        <div className="lg:flex lg:items-start lg:gap-6">
-          <div className="min-w-0 lg:w-[460px] lg:flex-shrink-0">{editorPane}</div>
-          <div className="mt-6 min-w-0 lg:mt-0 lg:flex-1 lg:sticky lg:top-4">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="truncate text-xs font-medium text-gray-500">
-                Live preview · {previewHref}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRestore(r.id)}
+                      className="flex-shrink-0 rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
+                    >
+                      Restore
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-400">
+                No published versions yet. Publish to start the history.
               </p>
-              <button
-                type="button"
-                onClick={bumpPreview}
-                className="flex-shrink-0 rounded-lg border border-gray-300 px-3 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
-              >
-                Refresh
-              </button>
-            </div>
-            {/*
-              The preview frames our own first-party page, which must hydrate
-              and read localStorage (LanguageProvider), so it needs
-              allow-same-origin + allow-scripts. The sandbox still withholds the
-              dangerous capabilities — top-navigation, forms, popups, modals,
-              downloads, pointer-lock — so a hypothetical XSS in public content
-              can't drive the admin shell or navigate it away.
-            */}
-            <iframe
-              key={previewVersion}
-              src={previewHref}
-              title="Live preview"
-              sandbox="allow-same-origin allow-scripts"
-              referrerPolicy="same-origin"
-              className="h-[75vh] w-full rounded-lg border border-gray-200 bg-white"
-            />
-            <p className="mt-2 text-center text-[11px] text-gray-400">
-              Changes save automatically and refresh the preview.
-            </p>
+            )}
           </div>
+        )}
+      </div>
+
+      {/*
+        Body. The editor column is always the same element in the same position
+        (only its classes change, and the preview is a conditional sibling), so
+        toggling the preview never remounts the editor — open block editors,
+        in-progress edits, and scroll position are all preserved.
+      */}
+      <div
+        className={
+          fillViewport
+            ? "flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:items-stretch"
+            : "flex flex-col gap-6 lg:flex-row lg:items-start"
+        }
+      >
+        <div
+          className={`min-w-0 ${fillViewport ? "lg:overflow-y-auto lg:pr-1 " : ""}${
+            previewing ? "lg:w-[460px] lg:flex-shrink-0" : "lg:flex-1"
+          }`}
+        >
+          {editorPane}
         </div>
-      ) : (
-        editorPane
-      )}
+        {previewing && previewHref && (
+          <div className={fillViewport ? "min-h-0 lg:flex-1" : "min-w-0 lg:flex-1"}>
+            <div className={fillViewport ? "h-[70vh] lg:h-full" : "h-[75vh]"}>
+              <PreviewPane src={previewHref} version={previewVersion} />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

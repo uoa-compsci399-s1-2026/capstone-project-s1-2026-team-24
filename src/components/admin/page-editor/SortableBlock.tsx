@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { getBlockDefinition } from "@/lib/blocks/registry";
 import type { BlockScope } from "@/lib/blocks/types";
 import { parseBlockContent } from "@/lib/blocks/validate";
 import BlockEditForm from "./BlockEditForm";
+import PopoverMenu from "./PopoverMenu";
 
 export type EditorBlock = {
   id: number;
@@ -48,6 +49,8 @@ export default function SortableBlock({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: block.id });
   const [editing, setEditing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
 
   const def = getBlockDefinition(block.type);
   const content = parseBlockContent(block.content);
@@ -103,34 +106,65 @@ export default function SortableBlock({
             </button>
           )}
           <button
+            ref={menuBtnRef}
             type="button"
-            onClick={() => onToggleVisible(block.id, !block.isVisible)}
-            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="More actions"
+            aria-haspopup="true"
+            aria-expanded={menuOpen}
+            className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-[#0c0c48]"
           >
-            {block.isVisible ? "Hide" : "Show"}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="12" cy="5" r="1.8" />
+              <circle cx="12" cy="12" r="1.8" />
+              <circle cx="12" cy="19" r="1.8" />
+            </svg>
           </button>
-          <button
-            type="button"
-            onClick={() => onDuplicate(block.id)}
-            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100"
+
+          <PopoverMenu
+            anchorRef={menuBtnRef}
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            align="end"
+            width={184}
           >
-            Duplicate
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              if (
-                window.confirm(
-                  "Delete this section? This removes it from the live page.",
-                )
-              ) {
-                onDelete(block.id);
-              }
-            }}
-            className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
-          >
-            Delete
-          </button>
+            <button
+              type="button"
+              onClick={() => {
+                onDuplicate(block.id);
+                setMenuOpen(false);
+              }}
+              className="block w-full rounded-lg px-2.5 py-2 text-left text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
+            >
+              Duplicate
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onToggleVisible(block.id, !block.isVisible);
+                setMenuOpen(false);
+              }}
+              className="block w-full rounded-lg px-2.5 py-2 text-left text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
+            >
+              {block.isVisible ? "Hide from page" : "Show on page"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
+                if (
+                  window.confirm(
+                    "Delete this section? This removes it from the live page.",
+                  )
+                ) {
+                  onDelete(block.id);
+                }
+              }}
+              className="block w-full rounded-lg px-2.5 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+            >
+              Delete
+            </button>
+          </PopoverMenu>
         </div>
       </div>
 
