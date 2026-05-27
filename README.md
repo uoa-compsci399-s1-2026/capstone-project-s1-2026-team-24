@@ -1,127 +1,93 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HNU Auckland
 
-## Setup (do this once after cloning)
+The public website and content-management system (CMS) for the University of Auckland's **Human Nutrition Unit** — a marketing site for the unit and its research, plus an admin console for staff to edit page content, manage studies/team/partners, and sync publications.
 
-### 1. Install dependencies
+## Tech stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | Next.js **16.2.2** (App Router) |
+| UI | React **19.2.4** |
+| Styling | Tailwind CSS **v4** — config lives in `@theme` in `src/app/globals.css` (**no `tailwind.config.js`**) |
+| Database | SQLite via Prisma **7.7.0** (`better-sqlite3` adapter) |
+| Rich text | Tiptap 3 |
+| Email | Resend (contact form) |
+| Tests | Vitest + Playwright; Storybook for components |
+
+> **This is not the Next.js you know.** These are bleeding-edge versions whose APIs and conventions differ from older releases. Read `AGENTS.md` and the bundled guides in `node_modules/next/dist/docs/` before writing code, and see [`docs/`](./docs) for project-specific guidance.
+
+## Prerequisites
+
+- **Node.js ≥ 20** (the toolchain targets `@types/node` v20)
+- npm (ships with Node)
+
+## Quickstart
+
+A fresh clone has **no `.env*` file** (they are gitignored; only `.env.example` ships), so the first step is to create one.
 
 ```bash
 npm install
+cp .env.example .env          # DATABASE_URL is already correct in the example
+npx prisma db push            # create/sync the SQLite schema at prisma/dev.db
+npx prisma generate           # generate the Prisma client
+npm run seed                  # seed studies/team/partners/publications + page blocks
+npm run catalog:media         # index /public images into the media library
+npm run dev                   # http://localhost:3000
 ```
 
-### 2. Set up your environment variables
+> **Use `npx prisma db push`, not `prisma migrate dev`.** The committed migration history has drifted from the live schema, so `migrate dev` prints a scary destructive-reset prompt. `db push` syncs the schema safely. See [`docs/database.md`](./docs/database.md).
 
-Copy the example env file and fill it in:
+> **Keep `DATABASE_URL` as `file:./prisma/dev.db`.** The old default `file:./dev.db` creates a *second*, empty database at the repo root, making the site and media library look empty even after seeding. This is the #1 onboarding bug — see [`docs/troubleshooting.md`](./docs/troubleshooting.md).
 
-```bash
-# macOS / Linux
-cp .env.example .env
+The admin console lives at [http://localhost:3000/admin](http://localhost:3000/admin) (log in with the `ADMIN_PASSWORD` you set in `.env`).
 
-# Windows PowerShell
-copy .env.example .env
-```
+## npm scripts
 
-Open `.env` (or `.env.local`) and set the values:
-
-- `DATABASE_URL` — leave as `file:./dev.db` unless you have a reason to change it
-- `ADMIN_PASSWORD` — any password you want to use to log in to the admin panel locally
-- `ADMIN_SESSION_SECRET` — any long random string (used to sign cookies)
-- `NEXT_PUBLIC_SITE_URL` — leave blank for local development
-
-### 3. Create and seed the database
-
-This creates your local `dev.db` file and populates it with the study and team data:
-
-```bash
-npx prisma migrate dev
-npx prisma generate
-npm run seed
-```
-
-> **If the site loads but study pages show a 404**, it almost always means this step was skipped. Run the commands above and restart the dev server.
-
-### 4. Run the dev server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to see the site.
-
----
+| Script | What it does |
+|--------|--------------|
+| `npm run dev` | Start the Next.js dev server (http://localhost:3000) |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build |
+| `npm run clean` | Remove the `.next` build cache |
+| `npm run lint` | Run ESLint |
+| `npm run seed` | Wipe + reseed studies/team/partners/publications **and** page blocks |
+| `npm run seed:pages` | Re-seed page blocks (preserves existing pages unless `RESEED_PAGES=1`) |
+| `npm run catalog:media` | Index raster images under `/public` into the media library |
+| `npm run warm:translations` | Generate + cache 中文 translations (needs `TRANSLATE_API_KEY`) |
+| `npm run migrate:richtext` | One-off migration of block content to rich text |
+| `npm run backfill:media-dims` | Backfill width/height on media assets |
+| `npm run backfill:published` | Backfill the published flag on pages |
+| `npm run test` | Unit tests (`vitest run`) |
+| `npm run test:e2e` | End-to-end tests (`playwright test`) |
+| `npm run test:e2e:update` | Update Playwright snapshots |
+| `npm run storybook` | Run Storybook (port 6006) |
+| `npm run build-storybook` | Build the static Storybook |
 
 ## Languages & translation (English / 中文)
 
-The navbar has a language toggle (top-right) that switches between English and
-Simplified Chinese. There are **three kinds of text**, handled differently:
+The navbar has a language toggle that switches between English and Simplified Chinese. There are **three kinds of text**, handled differently:
 
 | Text | Examples | How it translates |
 |------|----------|--------------------|
-| **Fixed interface text** | nav, footer, buttons, form labels, the Collaborations / Studies / Contact / Team section copy | Built-in dictionary (`src/messages/en.ts` & `zh.ts`). **Always works — no setup needed.** |
-| **Admin-authored page copy** | hero titles, info-card & callout text, the body of Home / About / Research / etc., study-card titles | **Machine-translated and cached.** Needs translation turned on (below). Until then it **falls back to English.** |
-| **Individual study pages** | a study's description, eligibility, compensation on `/studies/<name>` | **Manual, board-approved translations** entered in the admin console. **Never machine-translated** (ethics requirement). |
+| **Fixed interface text** | nav, footer, buttons, form labels, Collaborations / Studies / Contact / Team section copy | Built-in dictionary (`src/messages/en.ts` & `zh.ts`). **Always works — no setup.** |
+| **Admin-authored page copy** | hero titles, info-card & callout text, page bodies | **Machine-translated and cached** at publish/warm time. Needs `TRANSLATE_API_KEY`; otherwise **falls back to English.** |
+| **Individual study pages** | a study's description, eligibility, compensation | **Manual, board-approved translations** entered in the admin console. **Never machine-translated** (ethics requirement). |
 
-### "Why is most of the page (e.g. the heroes) still English when I switch to 中文?"
+By default no translation key is set, so switching to 中文 shows Chinese for the fixed UI and English for admin-authored page copy until you add a key and warm the cache. To enable it, set `TRANSLATE_API_KEY` (and for Azure, `TRANSLATE_REGION`) then run `npm run warm:translations`. Full details, providers, and the caching model: [`docs/environment.md`](./docs/environment.md) and [`docs/content-editing.md`](./docs/content-editing.md).
 
-Because **machine translation isn't turned on yet.** Hero titles and most page-body
-text are *admin-authored content* (middle row above). They're translated by a
-service and cached in the database — but only once you add an API key and warm the
-cache. With no key they correctly fall back to English, while the fixed nav / footer
-/ forms still switch to Chinese.
+## Documentation
 
-### Turning on machine translation
+Project docs live in [`docs/`](./docs) — start with the [docs index](./docs/README.md).
 
-1. **Get a free API key.** The default provider is **Microsoft Azure AI Translator**
-   (free tier: ~2,000,000 characters/month — far more than this site needs, because
-   translations are cached). Google Cloud Translation and DeepL are also supported.
-
-2. **Add to `.env.local`:**
-
-   ```bash
-   TRANSLATE_PROVIDER="azure"        # azure (default) | google | deepl
-   TRANSLATE_API_KEY="your-key-here"
-   TRANSLATE_REGION="australiaeast"  # Azure only — your resource's region (omit for a "Global" resource)
-   ```
-
-3. **Warm the cache** (translates the whole site in one command):
-
-   ```bash
-   npm run warm:translations
-   ```
-
-   Now switching to 中文 shows Chinese everywhere. You only need to re-run this when
-   you **change** English text — and publishing a page in the admin already warms its
-   translations automatically, so in normal use you rarely run it by hand.
-
-### How the cache works (and why it's safe for markers / production)
-
-- Translation happens at **publish / warm time**, never on a normal page view. The
-  public site only **reads** cached translations, so it renders Chinese instantly and
-  **works even with no API key present at runtime** (e.g. when someone else runs it).
-- A translation is reused until its English source changes — the API is called once
-  per unique string, not per visit, so usage stays tiny.
-- Switching providers is a one-line change to `TRANSLATE_PROVIDER`.
-
-> The three legacy study pages `/studies/nz-synergy`, `/studies/food-beverage` and
-> `/studies/ferdinand` are hand-built pages of study content, so — like all study
-> content — they are **not** machine-translated.
-
----
-
-## Getting Started
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-## Deploy on Vercel
-
-The easiest way to deploy this app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Doc | Covers |
+|-----|--------|
+| [Architecture](./docs/architecture.md) | How the app is structured (App Router, blocks, data flow) |
+| [Setup](./docs/setup.md) | Local onboarding, step by step |
+| [Database](./docs/database.md) | Prisma/SQLite workflow, seeds, `db push` vs `migrate dev` |
+| [Environment](./docs/environment.md) | Every env var, what reads it, and `.env` vs `.env.local` |
+| [Content editing](./docs/content-editing.md) | Which file renders which section; page-block model |
+| [Styling](./docs/styling.md) | Tailwind v4 `@theme`, brand colours |
+| [Admin CMS](./docs/admin-cms.md) | Admin console: pages, studies, team, partners, publications |
+| [Troubleshooting](./docs/troubleshooting.md) | FAQ for common onboarding issues |
+| [Deployment](./docs/deployment.md) | Building and hosting (file-SQLite considerations) |
+| [Contributing](./docs/contributing.md) | Conventions, tests, PR workflow |
