@@ -211,6 +211,60 @@ describe("GET /api/search", () => {
     expect(researchHrefs[0].type).toBe("page");
   });
 
+  it("includes never-published pages by searching their visible draft blocks", async () => {
+    mockPrisma.study.findMany.mockResolvedValue([]);
+    mockPrisma.teamMember.findMany.mockResolvedValue([]);
+    mockPrisma.publication.findMany.mockResolvedValue([]);
+    // publishedContent is null (never published), but the public renderer falls
+    // back to the live blocks, so a draft-only page must still be searchable.
+    mockPrisma.page.findMany.mockResolvedValue([
+      {
+        slug: "about",
+        title: "About",
+        publishedContent: null,
+        blocks: [
+          {
+            content: JSON.stringify({
+              heading: "Our facilities support metabolic research.",
+            }),
+          },
+        ],
+      },
+    ]);
+
+    const res = await search(req("metabolic"));
+    const { results } = (await res.json()) as { results: SearchResult[] };
+    const content = results.find((r) => r.type === "page-content");
+    expect(content).toBeTruthy();
+    expect(content?.href).toBe("/about");
+    expect(content?.snippet).toContain("metabolic");
+  });
+
+  it("does not surface an unpublished draft edit on an already-published page", async () => {
+    mockPrisma.study.findMany.mockResolvedValue([]);
+    mockPrisma.teamMember.findMany.mockResolvedValue([]);
+    mockPrisma.publication.findMany.mockResolvedValue([]);
+    // The published snapshot does NOT contain the query; only an unpublished draft
+    // block does. Public visitors see the published snapshot, so search must not
+    // leak the draft text.
+    mockPrisma.page.findMany.mockResolvedValue([
+      {
+        slug: "team",
+        title: "Our Team",
+        publishedContent: JSON.stringify([
+          { type: "x", content: JSON.stringify({ body: "Meet the team." }) },
+        ]),
+        blocks: [
+          { content: JSON.stringify({ body: "draft keyword zzztopsecret" }) },
+        ],
+      },
+    ]);
+
+    const res = await search(req("zzztopsecret"));
+    const { results } = (await res.json()) as { results: SearchResult[] };
+    expect(results.find((r) => r.type === "page-content")).toBeUndefined();
+  });
+
   it("caps the overall result set at 20", async () => {
     const many = Array.from({ length: 8 }, (_, i) => ({
       slug: `s${i}`,

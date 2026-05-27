@@ -969,7 +969,7 @@ export default function Navbar() {
                   aria-label={t.navbar.search}
                   role="combobox"
                   aria-expanded={showResults}
-                  aria-controls="search-results"
+                  aria-controls={showResults ? "search-results" : undefined}
                   aria-activedescendant={
                     activeIndex >= 0 ? `search-result-${activeIndex}` : undefined
                   }
@@ -1041,40 +1041,46 @@ export default function Navbar() {
                 {showResults && (
                   <ul id="search-results" role="listbox" aria-label={t.navbar.search}>
                     {groupedResults.map((group) => (
-                      <li key={group.type} className="mb-3">
-                        <p className="text-white/50 text-[13px] uppercase tracking-[1.5px] mb-1">
+                      <li
+                        key={group.type}
+                        role="group"
+                        aria-label={SEARCH_GROUP_LABELS[group.type]}
+                        className="mb-3"
+                      >
+                        <p
+                          className="text-white/50 text-[13px] uppercase tracking-[1.5px] mb-1"
+                          aria-hidden="true"
+                        >
                           {SEARCH_GROUP_LABELS[group.type]}
                         </p>
-                        <ul>
-                          {group.items.map(({ result, index }) => (
-                            <li
-                              key={`${result.type}-${result.href}-${index}`}
-                              id={`search-result-${index}`}
-                              role="option"
-                              aria-selected={activeIndex === index}
+                        {group.items.map(({ result, index }) => (
+                          <div
+                            key={`${result.type}-${result.href}-${index}`}
+                            id={`search-result-${index}`}
+                            role="option"
+                            aria-selected={activeIndex === index}
+                          >
+                            <Link
+                              href={result.href}
+                              onClick={() => setSearchOpen(false)}
+                              onMouseEnter={() => setActiveIndex(index)}
+                              className={`block rounded-lg px-3 py-2 transition-colors ${
+                                activeIndex === index
+                                  ? "bg-white/15"
+                                  : "hover:bg-white/10"
+                              }`}
                             >
-                              <Link
-                                href={result.href}
-                                onClick={() => setSearchOpen(false)}
-                                onMouseEnter={() => setActiveIndex(index)}
-                                className={`block rounded-lg px-3 py-2 transition-colors ${
-                                  activeIndex === index
-                                    ? "bg-white/15"
-                                    : "hover:bg-white/10"
-                                }`}
-                              >
-                                <span className="block text-[20px] font-bold text-white leading-snug">
-                                  {result.title}
+                              <span className="block text-[20px] font-bold text-white leading-snug">
+                                {result.title}
+                              </span>
+                              {result.snippet && (
+                                <span className="block text-[15px] text-white/60 leading-snug mt-0.5 line-clamp-2">
+                                  {result.snippet}
                                 </span>
-                                {result.snippet && (
-                                  <span className="block text-[15px] text-white/60 leading-snug mt-0.5 line-clamp-2">
-                                    {result.snippet}
-                                  </span>
-                                )}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
+                              )}
+                            </Link>
+                          </div>
+                        ))}
                       </li>
                     ))}
                   </ul>

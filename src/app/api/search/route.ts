@@ -86,15 +86,8 @@ function stripHtml(input: string): string {
     .trim();
 }
 
-/**
- * Returns the full searchable text of a page's published blocks, or "" when the
- * page has never been published / has no usable content. Newlines in copy
- * (stored as "\n") are flattened to spaces so they don't break the snippet.
- */
-function pageSearchText(publishedContent: string | null): string {
-  const blocks = parsePublishedSnapshot(publishedContent);
-  if (blocks.length === 0) return "";
-
+/** Collapses an array of blocks (each a `{ content }` JSON string) to searchable text. */
+function blocksToText(blocks: { content: string }[]): string {
   const parts: string[] = [];
   for (const block of blocks) {
     let parsed: unknown;
@@ -106,6 +99,17 @@ function pageSearchText(publishedContent: string | null): string {
     collectText(parsed, parts);
   }
   return stripHtml(parts.join(" ").replace(/\\n|\n/g, " "));
+}
+
+/**
+ * Returns the full searchable text of a page's PUBLISHED snapshot, or "" when the
+ * page has never been published / has no usable content. Newlines in copy
+ * (stored as "\n") are flattened to spaces so they don't break the snippet.
+ */
+function pageSearchText(publishedContent: string | null): string {
+  const blocks = parsePublishedSnapshot(publishedContent);
+  if (blocks.length === 0) return "";
+  return blocksToText(blocks);
 }
 
 /** Builds a readable snippet centred on the first match of `query` in `text`. */
@@ -214,15 +218,27 @@ export async function GET(request: NextRequest) {
         orderBy: { year: "desc" },
         take: PUBLICATION_TAKE,
       }),
-      // Page-content search: SQLite `contains` is case-insensitive for ASCII, so
-      // this prefilters pages whose published snapshot mentions the query. We
-      // then extract a readable snippet from the parsed blocks in JS.
+      // Page-content search. SQLite `contains` is case-insensitive for ASCII, so
+      // this prefilters pages whose published snapshot — or, for never-published
+      // pages, whose visible draft blocks — mention the query. The public renderer
+      // shows the published snapshot when present and otherwise falls back to the
+      // live blocks, so we mirror that when choosing the text to match + snippet.
       prisma.page.findMany({
-        where: { publishedContent: { contains: q } },
+        where: {
+          OR: [
+            { publishedContent: { contains: q } },
+            { blocks: { some: { isVisible: true, content: { contains: q } } } },
+          ],
+        },
         select: {
           slug: true,
           title: true,
           publishedContent: true,
+          blocks: {
+            where: { isVisible: true },
+            orderBy: { position: "asc" },
+            select: { content: true },
+          },
         },
         take: PAGE_CONTENT_TAKE,
       }),
@@ -282,7 +298,11 @@ export async function GET(request: NextRequest) {
       // A static PAGES entry already linked this destination for this query —
       // don't add a near-duplicate page-content row for it.
       if (seenHrefs.has(href)) continue;
-      const text = pageSearchText(page.publishedContent);
+      // Mirror the public renderer: use the published snapshot when present, else
+      // fall back to the page's visible draft blocks (never-published pages).
+      const text = page.publishedContent
+        ? pageSearchText(page.publishedContent)
+        : blocksToText(page.blocks);
       if (!text || !text.toLowerCase().includes(q.toLowerCase())) continue;
       results.push({
         type: "page-content",
