@@ -102,8 +102,12 @@ export async function PATCH(
       updates.affiliation = body.affiliation
         ? body.affiliation.trim()
         : null;
-    if (typeof body.status === "string" && ALLOWED_STATUSES.has(body.status))
+    if (typeof body.status === "string" && ALLOWED_STATUSES.has(body.status)) {
       updates.status = body.status;
+      // A status change here is an explicit human decision (approve/reject).
+      // Mark it so the ORCID sync won't clobber it on the next run.
+      updates.reviewedManually = true;
+    }
     if (typeof body.isVisible === "boolean") updates.isVisible = body.isVisible;
     if (typeof body.hiddenManually === "boolean")
       updates.hiddenManually = body.hiddenManually;

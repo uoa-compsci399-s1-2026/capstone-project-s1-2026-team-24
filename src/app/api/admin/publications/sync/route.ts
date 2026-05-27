@@ -1,22 +1,48 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchNormalizedOrcidWorks } from "@/lib/orcid";
+import { fetchOrcidAffiliations, lookupAffiliation } from "@/lib/openalex";
 import {
   buildPublicationDedupKey,
   classifyPublicationRelevance,
-  normalizePublicationTitle,
 } from "@/lib/publication-filter";
+import { loadFilterConfig } from "@/lib/publication-filter-settings";
+
+// Cap on how many off-topic (Rejected) works we persist PER MEMBER so the
+// "Rejected" tab is meaningful and false-negatives are recoverable, without
+// letting a prolific unrelated author explode the table. Pre-year and clearly
+// off-field works beyond this cap are summarised in the response only.
+const MAX_STORED_REJECTED_PER_MEMBER = 40;
 
 type SyncMemberResult = {
   teamMember: string;
   orcidId: string;
   worksFound: number;
+  created: number;
+  updated: number;
+  // Works skipped because they predate the configured minimum year.
+  skippedBeforeYear: number;
+  // Works skipped because they were neither HNU-affiliated nor keyword-relevant.
+  skippedNotAffiliated: number;
+  // Works skipped because we already saw the same paper for this member.
+  skippedDuplicates: number;
   syncedTitles: string[];
   skippedTitles: string[];
   error?: string;
 };
 
+type StoredPublication = {
+  id: number;
+  title: string;
+  year: number | null;
+  doi: string | null;
+  authorsRaw: string;
+  reviewedManually: boolean;
+};
+
 async function syncPublicationsFromOrcid() {
+  const config = await loadFilterConfig();
+
   const members = await prisma.teamMember.findMany({
     where: {
       isVisible: true,
@@ -39,10 +65,12 @@ async function syncPublicationsFromOrcid() {
       syncedMembers: 0,
       failedMembers: 0,
       worksFound: 0,
-      publicationsUpserted: 0,
-      authorLinksUpserted: 0,
-      skippedRejected: 0,
+      created: 0,
+      updated: 0,
+      skippedBeforeYear: 0,
+      skippedNotAffiliated: 0,
       skippedDuplicates: 0,
+      libraryTotal: await prisma.publication.count(),
       results: [] as SyncMemberResult[],
       message:
         "No visible team members with an ORCID iD were found. Add an orcidId to a team member first.",
@@ -56,20 +84,17 @@ async function syncPublicationsFromOrcid() {
       year: true,
       doi: true,
       authorsRaw: true,
+      reviewedManually: true,
     },
   });
 
-  const publicationByDoi = new Map<string, (typeof existingPublications)[number]>();
-  const publicationByTitleYear = new Map<
-    string,
-    (typeof existingPublications)[number]
-  >();
+  const publicationByDoi = new Map<string, StoredPublication>();
+  const publicationByTitleYear = new Map<string, StoredPublication>();
 
   for (const publication of existingPublications) {
     if (publication.doi?.trim()) {
       publicationByDoi.set(publication.doi.trim().toLowerCase(), publication);
     }
-
     publicationByTitleYear.set(
       buildPublicationDedupKey({
         title: publication.title,
@@ -80,74 +105,129 @@ async function syncPublicationsFromOrcid() {
   }
 
   let totalWorksFound = 0;
-  let totalPublicationsUpserted = 0;
-  let totalAuthorLinksUpserted = 0;
+  let totalCreated = 0;
+  let totalUpdated = 0;
   let failedMembers = 0;
-  let skippedRejected = 0;
-  let skippedDuplicates = 0;
+  let totalSkippedBeforeYear = 0;
+  let totalSkippedNotAffiliated = 0;
+  let totalSkippedDuplicates = 0;
 
   const results: SyncMemberResult[] = [];
 
   for (const member of members) {
     const orcidId = member.orcidId?.trim();
-
     if (!orcidId) continue;
 
     try {
-      const works = await fetchNormalizedOrcidWorks(orcidId);
+      // ORCID works (titles/journals/DOIs) + OpenAlex affiliations (RORs + raw
+      // affiliation strings). OpenAlex is best-effort: an empty map just means we
+      // fall back to keyword-only classification for this member.
+      const [works, affiliations] = await Promise.all([
+        fetchNormalizedOrcidWorks(orcidId),
+        fetchOrcidAffiliations(orcidId),
+      ]);
       totalWorksFound += works.length;
 
-      const syncedTitles: string[] = [];
-      const skippedTitles: string[] = [];
+      const result: SyncMemberResult = {
+        teamMember: member.name,
+        orcidId,
+        worksFound: works.length,
+        created: 0,
+        updated: 0,
+        skippedBeforeYear: 0,
+        skippedNotAffiliated: 0,
+        skippedDuplicates: 0,
+        syncedTitles: [],
+        skippedTitles: [],
+      };
+
       const seenThisMember = new Set<string>();
+      let storedRejectedThisMember = 0;
 
       for (const work of works) {
-        const relevance = classifyPublicationRelevance({
+        const affiliation = lookupAffiliation(affiliations, {
+          doi: work.doi,
           title: work.title,
-          journal: work.journal,
-          abstract: work.abstract,
-          pubType: work.pubType,
+          year: work.year,
         });
 
-        if (relevance.status === "Rejected") {
-          skippedRejected += 1;
-          skippedTitles.push(work.title);
-          continue;
-        }
+        const relevance = classifyPublicationRelevance(
+          {
+            title: work.title,
+            journal: work.journal,
+            abstract: work.abstract,
+            pubType: work.pubType,
+            year: work.year,
+            affiliationStrings: affiliation.rawAffiliationStrings,
+            rors: affiliation.rors,
+          },
+          config,
+        );
+
+        const isBeforeYear = relevance.reasonCode === "BEFORE_MIN_YEAR";
 
         const doiKey = work.doi?.trim().toLowerCase() || null;
         const titleYearKey = buildPublicationDedupKey({
           title: work.title,
           year: work.year,
         });
+        const dedupKey = doiKey || titleYearKey;
 
-        if (seenThisMember.has(doiKey || titleYearKey)) {
-          skippedDuplicates += 1;
-          skippedTitles.push(work.title);
+        if (seenThisMember.has(dedupKey)) {
+          result.skippedDuplicates += 1;
+          totalSkippedDuplicates += 1;
           continue;
         }
+        seenThisMember.add(dedupKey);
 
-        seenThisMember.add(doiKey || titleYearKey);
-
-        let publication =
+        let existing =
           doiKey && publicationByDoi.has(doiKey)
             ? publicationByDoi.get(doiKey) ?? null
             : publicationByTitleYear.get(titleYearKey) ?? null;
 
-        if (publication) {
-          const existingAuthors = publication.authorsRaw
+        // For Rejected works that are NOT already in the library, only persist up
+        // to the cap; the rest are summarised but not written, so the table stays
+        // bounded. (Updates to existing rows always proceed so we keep them fresh.)
+        if (relevance.status === "Rejected" && !existing) {
+          result.skippedTitles.push(work.title);
+          if (isBeforeYear) {
+            result.skippedBeforeYear += 1;
+            totalSkippedBeforeYear += 1;
+          } else {
+            result.skippedNotAffiliated += 1;
+            totalSkippedNotAffiliated += 1;
+          }
+
+          if (storedRejectedThisMember >= MAX_STORED_REJECTED_PER_MEMBER) {
+            continue;
+          }
+          storedRejectedThisMember += 1;
+        }
+
+        const matchedAffiliation = relevance.matchedAffiliation.join(", ");
+        // Affiliation to persist: the matched unit/ROR phrasing when we matched,
+        // else the actual affiliation OpenAlex reported, else empty. Never assert
+        // HNU authorship on a work that didn't match — that would contradict the
+        // relevanceReason stored alongside it (e.g. "not HNU-affiliated").
+        const resolvedAffiliation =
+          matchedAffiliation ||
+          affiliation.rawAffiliationStrings.find((s) => s.trim())?.trim() ||
+          "";
+
+        if (existing) {
+          const existingAuthors = existing.authorsRaw
             .split(",")
             .map((name) => name.trim())
             .filter(Boolean);
-
           const mergedAuthors = existingAuthors.includes(member.name)
             ? existingAuthors
             : [...existingAuthors, member.name];
 
+          // Preserve human review: never overwrite `status` once an admin has
+          // approved/rejected this row (reviewedManually = true). We always
+          // refresh the metadata fields (matched reason etc.) regardless.
           const updated = await prisma.publication.update({
-            where: {
-              id: publication.id,
-            },
+            where: { id: existing.id },
             data: {
               title: work.title,
               journal: work.journal,
@@ -158,19 +238,29 @@ async function syncPublicationsFromOrcid() {
               abstract: work.abstract,
               authorsRaw: mergedAuthors.join(", "),
               orcidSource: orcidId,
-              status: relevance.status,
               matchedKeywords: relevance.matchedKeywords.join(", "),
+              matchedAffiliation,
+              relevanceReason: relevance.reason,
               lastSyncedAt: new Date(),
+              ...(existing.reviewedManually
+                ? {}
+                : { status: relevance.status }),
             },
           });
 
-          publication = {
+          existing = {
             id: updated.id,
             title: updated.title,
             year: updated.year,
             doi: updated.doi,
             authorsRaw: updated.authorsRaw,
+            reviewedManually: updated.reviewedManually,
           };
+          result.updated += 1;
+          totalUpdated += 1;
+          if (relevance.status !== "Rejected") {
+            result.syncedTitles.push(work.title);
+          }
         } else {
           const created = await prisma.publication.create({
             data: {
@@ -182,7 +272,7 @@ async function syncPublicationsFromOrcid() {
               pubType: work.pubType,
               url: work.url,
               abstract: work.abstract,
-              affiliation: "Human Nutrition Unit, University of Auckland",
+              affiliation: resolvedAffiliation,
               sourceType: work.sourceType,
               sourceId: `${orcidId}:${work.sourceId}`,
               orcidSource: orcidId,
@@ -190,68 +280,77 @@ async function syncPublicationsFromOrcid() {
               isVisible: true,
               hiddenManually: false,
               matchedKeywords: relevance.matchedKeywords.join(", "),
+              matchedAffiliation,
+              relevanceReason: relevance.reason,
+              reviewedManually: false,
               lastSyncedAt: new Date(),
             },
           });
 
-          publication = {
+          existing = {
             id: created.id,
             title: created.title,
             year: created.year,
             doi: created.doi,
             authorsRaw: created.authorsRaw,
+            reviewedManually: created.reviewedManually,
           };
+          // A newly-stored Rejected work (persisted for the Rejected tab, up to
+          // the cap) is already counted in skippedBeforeYear/skippedNotAffiliated
+          // above — only count genuinely-kept (Approved/Pending) works as "new",
+          // so created + updated + skipped reconciles with worksFound.
+          if (relevance.status !== "Rejected") {
+            result.created += 1;
+            totalCreated += 1;
+            result.syncedTitles.push(work.title);
+          }
         }
 
-        if (publication.doi?.trim()) {
-          publicationByDoi.set(publication.doi.trim().toLowerCase(), publication);
+        if (existing.doi?.trim()) {
+          publicationByDoi.set(existing.doi.trim().toLowerCase(), existing);
         }
-
         publicationByTitleYear.set(
           buildPublicationDedupKey({
-            title: publication.title,
-            year: publication.year,
+            title: existing.title,
+            year: existing.year,
           }),
-          publication,
+          existing,
         );
 
+        // Link the author regardless of status so a later approval already has
+        // the team-member association.
         await prisma.publicationAuthor.upsert({
           where: {
             publicationId_teamMemberId: {
-              publicationId: publication.id,
+              publicationId: existing.id,
               teamMemberId: member.id,
             },
           },
-          update: {
-            order: 1,
-          },
+          update: { order: 1 },
           create: {
-            publicationId: publication.id,
+            publicationId: existing.id,
             teamMemberId: member.id,
             order: 1,
           },
         });
-
-        totalPublicationsUpserted += 1;
-        totalAuthorLinksUpserted += 1;
-        syncedTitles.push(work.title);
       }
 
-      results.push({
-        teamMember: member.name,
-        orcidId,
-        worksFound: works.length,
-        syncedTitles,
-        skippedTitles,
-      });
+      results.push(result);
     } catch (error) {
-      console.error(`Failed to sync ORCID works for ${member.name} (${orcidId}):`, error);
-
+      console.error(
+        `Failed to sync ORCID works for ${member.name} (${orcidId}):`,
+        error,
+      );
       failedMembers += 1;
       results.push({
         teamMember: member.name,
         orcidId,
         worksFound: 0,
+        created: 0,
+        updated: 0,
+        skippedBeforeYear: 0,
+        skippedNotAffiliated: 0,
+        skippedDuplicates: 0,
         syncedTitles: [],
         skippedTitles: [],
         error: error instanceof Error ? error.message : "Unknown error",
@@ -263,10 +362,12 @@ async function syncPublicationsFromOrcid() {
     syncedMembers: results.length - failedMembers,
     failedMembers,
     worksFound: totalWorksFound,
-    publicationsUpserted: totalPublicationsUpserted,
-    authorLinksUpserted: totalAuthorLinksUpserted,
-    skippedRejected,
-    skippedDuplicates,
+    created: totalCreated,
+    updated: totalUpdated,
+    skippedBeforeYear: totalSkippedBeforeYear,
+    skippedNotAffiliated: totalSkippedNotAffiliated,
+    skippedDuplicates: totalSkippedDuplicates,
+    libraryTotal: await prisma.publication.count(),
     results,
   };
 }

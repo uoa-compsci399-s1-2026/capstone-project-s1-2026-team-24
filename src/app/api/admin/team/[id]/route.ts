@@ -4,6 +4,7 @@ import { TeamSection } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";
+import { isValidOrcidId } from "@/lib/orcid";
 
 export const runtime = "nodejs";
 
@@ -150,7 +151,18 @@ export async function PATCH(
       if (typeof orderRaw === "string") updates.order = clampOrder(orderRaw);
 
       const orcidId = readOptionalString(formData, "orcidId");
-      if (orcidId !== undefined) updates.orcidId = orcidId;
+      if (orcidId !== undefined) {
+        if (orcidId && !isValidOrcidId(orcidId)) {
+          return NextResponse.json(
+            {
+              error:
+                "orcidId must look like 0000-0000-0000-0000 (16 digits, last may be X).",
+            },
+            { status: 400 },
+          );
+        }
+        updates.orcidId = orcidId;
+      }
 
       const profileUrl = readOptionalString(formData, "profileUrl");
       if (profileUrl !== undefined) updates.profileUrl = profileUrl;
