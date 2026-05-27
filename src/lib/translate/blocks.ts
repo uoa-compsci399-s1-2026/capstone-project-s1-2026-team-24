@@ -22,6 +22,7 @@ import {
   type TargetLang,
   type TranslateFormat,
 } from "./provider";
+import { getLocalZhFallback } from "./local-fallbacks";
 
 type Content = Record<string, unknown>;
 type Visit = (text: string, format: TranslateFormat) => string;
@@ -298,7 +299,10 @@ export async function localizeBlockContents(
     mapBlockText(
       b.type,
       b.content,
-      (text, format) => cached.get(keyOf(format, sha256(text))) ?? text,
+      (text, format) =>
+        cached.get(keyOf(format, sha256(text))) ??
+        (targetLang === "ZH" ? getLocalZhFallback(text, format) : undefined) ??
+        text,
     ),
   );
 }
@@ -321,5 +325,10 @@ export async function localizeStrings(
 ): Promise<string[]> {
   const items: Item[] = texts.map((text) => ({ text, format: "text" as const }));
   const cached = await loadCached(items, targetLang);
-  return texts.map((t) => cached.get(keyOf("text", sha256(t))) ?? t);
+  return texts.map(
+    (t) =>
+      cached.get(keyOf("text", sha256(t))) ??
+      (targetLang === "ZH" ? getLocalZhFallback(t, "text") : undefined) ??
+      t,
+  );
 }
