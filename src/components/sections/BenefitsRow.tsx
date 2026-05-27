@@ -125,7 +125,7 @@ function BenefitGrid({ benefits }: { benefits: Benefit[] }) {
 export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
   return (
     <section style={{ backgroundColor: "#f0f0f0", padding: "60px 45px" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
 
         {title && (
           <h2 style={{
