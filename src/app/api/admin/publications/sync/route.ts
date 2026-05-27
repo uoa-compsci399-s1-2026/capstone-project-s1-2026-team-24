@@ -164,7 +164,7 @@ async function syncPublicationsFromOrcid() {
           config,
         );
 
-        const isBeforeYear = relevance.reason.startsWith("before ");
+        const isBeforeYear = relevance.reasonCode === "BEFORE_MIN_YEAR";
 
         const doiKey = work.doi?.trim().toLowerCase() || null;
         const titleYearKey = buildPublicationDedupKey({
@@ -205,6 +205,14 @@ async function syncPublicationsFromOrcid() {
         }
 
         const matchedAffiliation = relevance.matchedAffiliation.join(", ");
+        // Affiliation to persist: the matched unit/ROR phrasing when we matched,
+        // else the actual affiliation OpenAlex reported, else empty. Never assert
+        // HNU authorship on a work that didn't match — that would contradict the
+        // relevanceReason stored alongside it (e.g. "not HNU-affiliated").
+        const resolvedAffiliation =
+          matchedAffiliation ||
+          affiliation.rawAffiliationStrings.find((s) => s.trim())?.trim() ||
+          "";
 
         if (existing) {
           const existingAuthors = existing.authorsRaw
@@ -264,9 +272,7 @@ async function syncPublicationsFromOrcid() {
               pubType: work.pubType,
               url: work.url,
               abstract: work.abstract,
-              affiliation: matchedAffiliation
-                ? matchedAffiliation
-                : "Human Nutrition Unit, University of Auckland",
+              affiliation: resolvedAffiliation,
               sourceType: work.sourceType,
               sourceId: `${orcidId}:${work.sourceId}`,
               orcidSource: orcidId,
@@ -289,9 +295,13 @@ async function syncPublicationsFromOrcid() {
             authorsRaw: created.authorsRaw,
             reviewedManually: created.reviewedManually,
           };
-          result.created += 1;
-          totalCreated += 1;
+          // A newly-stored Rejected work (persisted for the Rejected tab, up to
+          // the cap) is already counted in skippedBeforeYear/skippedNotAffiliated
+          // above — only count genuinely-kept (Approved/Pending) works as "new",
+          // so created + updated + skipped reconciles with worksFound.
           if (relevance.status !== "Rejected") {
+            result.created += 1;
+            totalCreated += 1;
             result.syncedTitles.push(work.title);
           }
         }

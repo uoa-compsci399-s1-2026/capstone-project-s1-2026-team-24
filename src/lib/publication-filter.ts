@@ -1,8 +1,23 @@
+// Stable, structured decision code so callers can branch on the reason without
+// string-matching the human-readable `reason` text (which is free to change).
+export type RelevanceReasonCode =
+  | "BEFORE_MIN_YEAR"
+  | "EXCLUDED"
+  | "UNIT_AFFILIATION"
+  | "INSTITUTION_AND_KEYWORD"
+  | "STRONG_KEYWORDS"
+  | "INSTITUTION_ONLY"
+  | "SINGLE_STRONG_KEYWORD"
+  | "WEAK_KEYWORDS"
+  | "NO_SIGNAL";
+
 export type PublicationRelevanceResult = {
   status: "Approved" | "Pending" | "Rejected";
   matchedKeywords: string[];
   // Affiliation snippet(s) (e.g. ROR id or unit phrasing) that matched.
   matchedAffiliation: string[];
+  // Structured decision code (stable; safe for callers to switch on).
+  reasonCode: RelevanceReasonCode;
   // Human-readable explanation of the decision, surfaced in the admin UI.
   reason: string;
 };
@@ -231,6 +246,7 @@ export function classifyPublicationRelevance(
       status: "Rejected",
       matchedKeywords: [],
       matchedAffiliation: [],
+      reasonCode: "BEFORE_MIN_YEAR",
       reason: `before ${config.minYear}`,
     };
   }
@@ -288,6 +304,7 @@ export function classifyPublicationRelevance(
       status: "Rejected",
       matchedKeywords,
       matchedAffiliation,
+      reasonCode: "EXCLUDED",
       reason: `excluded term${matchedExcluded.length > 1 ? "s" : ""}: ${matchedExcluded.join(", ")}`,
     };
   }
@@ -298,6 +315,7 @@ export function classifyPublicationRelevance(
       status: "Approved",
       matchedKeywords,
       matchedAffiliation,
+      reasonCode: "UNIT_AFFILIATION",
       reason: `unit affiliation: ${matchedUnitPhrases.join(", ")}`,
     };
   }
@@ -306,6 +324,7 @@ export function classifyPublicationRelevance(
       status: "Approved",
       matchedKeywords,
       matchedAffiliation,
+      reasonCode: "INSTITUTION_AND_KEYWORD",
       reason: `institution affiliation + keyword: ${matchedStrong.join(", ")}`,
     };
   }
@@ -314,6 +333,7 @@ export function classifyPublicationRelevance(
       status: "Approved",
       matchedKeywords,
       matchedAffiliation,
+      reasonCode: "STRONG_KEYWORDS",
       reason: `strong keywords: ${matchedStrong.join(", ")}`,
     };
   }
@@ -326,6 +346,7 @@ export function classifyPublicationRelevance(
       status: "Pending",
       matchedKeywords,
       matchedAffiliation,
+      reasonCode: "INSTITUTION_ONLY",
       reason: `institution affiliation only (no unit phrasing) — needs review`,
     };
   }
@@ -334,6 +355,7 @@ export function classifyPublicationRelevance(
       status: "Pending",
       matchedKeywords,
       matchedAffiliation,
+      reasonCode: "SINGLE_STRONG_KEYWORD",
       reason: `single strong keyword: ${matchedStrong.join(", ")} — needs review`,
     };
   }
@@ -342,6 +364,7 @@ export function classifyPublicationRelevance(
       status: "Pending",
       matchedKeywords,
       matchedAffiliation,
+      reasonCode: "WEAK_KEYWORDS",
       reason: `weak keywords: ${matchedWeak.join(", ")} — needs review`,
     };
   }
@@ -352,6 +375,7 @@ export function classifyPublicationRelevance(
       status: "Pending",
       matchedKeywords,
       matchedAffiliation,
+      reasonCode: "WEAK_KEYWORDS",
       reason: `weak keyword: ${matchedWeak.join(", ")} — needs review`,
     };
   }
@@ -361,6 +385,7 @@ export function classifyPublicationRelevance(
     status: "Rejected",
     matchedKeywords,
     matchedAffiliation,
+    reasonCode: "NO_SIGNAL",
     reason: normalizedAffiliations.length
       ? "not HNU-affiliated and no relevant keywords"
       : "no relevant keywords",

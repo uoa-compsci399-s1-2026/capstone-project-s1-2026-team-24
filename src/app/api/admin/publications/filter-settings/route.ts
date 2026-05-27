@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_MIN_YEAR } from "@/lib/publication-filter";
+import { DEFAULT_MIN_YEAR, parseLines } from "@/lib/publication-filter";
 import { getOrCreateFilterSetting } from "@/lib/publication-filter-settings";
 
 // Reads/writes the singleton PublicationFilterSetting that drives the ORCID
@@ -19,23 +19,19 @@ export async function GET() {
   }
 }
 
-// Coerce/normalise a list field: accept either an array of strings or a raw
-// multiline string, and persist as newline-separated text.
+// Coerce/normalise a list field to newline-separated text. Accepts an array of
+// strings or a raw string, and splits on BOTH newlines and commas via the shared
+// `parseLines` — matching the read path so a comma-pasted value round-trips
+// consistently (what's stored == what's displayed == what the classifier parses).
 function normalizeListField(value: unknown): string {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => (typeof item === "string" ? item.trim() : ""))
-      .filter(Boolean)
-      .join("\n");
-  }
-  if (typeof value === "string") {
-    return value
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .join("\n");
-  }
-  return "";
+  const items = Array.isArray(value)
+    ? value.flatMap((item) =>
+        typeof item === "string" ? parseLines(item) : [],
+      )
+    : typeof value === "string"
+      ? parseLines(value)
+      : [];
+  return items.join("\n");
 }
 
 export async function PUT(request: Request) {
