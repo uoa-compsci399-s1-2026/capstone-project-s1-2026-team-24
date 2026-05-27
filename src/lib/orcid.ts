@@ -1,6 +1,8 @@
+// Default to the PRODUCTION public ORCID API (no auth required for public
+// records). Override with ORCID_API_BASE_URL (e.g. the sandbox) for testing.
 const ORCID_API_BASE_URL =
   process.env.ORCID_API_BASE_URL?.replace(/\/$/, "") ??
-  "https://pub.sandbox.orcid.org/v3.0";
+  "https://pub.orcid.org/v3.0";
 
 type OrcidWorksResponse = {
   group?: Array<{
@@ -102,6 +104,14 @@ export type NormalizedOrcidWork = {
   url: string | null;
   abstract: string | null;
 };
+
+// Canonical ORCID iD format: four groups of four digits, the final character
+// may be 'X' (checksum). Used to reject malformed IDs before they reach the API.
+export const ORCID_ID_PATTERN = /^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$/;
+
+export function isValidOrcidId(value: string): boolean {
+  return ORCID_ID_PATTERN.test(value.trim().toUpperCase());
+}
 
 function asNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;

@@ -2,6 +2,14 @@ import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient, TeamSection } from "@prisma/client";
 import { seedPageBlocks } from "./seed-page-blocks";
+import {
+  DEFAULT_AFFILIATION_PHRASES,
+  DEFAULT_EXCLUSION_KEYWORDS,
+  DEFAULT_INSTITUTION_RORS,
+  DEFAULT_MIN_YEAR,
+  DEFAULT_STRONG_KEYWORDS,
+  DEFAULT_WEAK_KEYWORDS,
+} from "../src/lib/publication-filter";
 
 const adapter = new PrismaBetterSqlite3({
   url: process.env.DATABASE_URL || "file:./dev.db",
@@ -45,6 +53,7 @@ async function main() {
   await prisma.teamMember.deleteMany();
   await prisma.partnerLogo.deleteMany();
   await prisma.contactRecipient.deleteMany();
+  await prisma.publicationFilterSetting.deleteMany();
 
   await prisma.study.createMany({
     data: [
@@ -402,6 +411,20 @@ async function main() {
       group: partner.group,
       order: index + 1,
     })),
+  });
+
+  // Seed the singleton relevance-filter config the ORCID sync reads. Lists are
+  // stored as newline-separated text (SQLite has no array type) and share their
+  // defaults with src/lib/publication-filter.ts so there's one source of truth.
+  await prisma.publicationFilterSetting.create({
+    data: {
+      minYear: DEFAULT_MIN_YEAR,
+      affiliationPhrases: DEFAULT_AFFILIATION_PHRASES.join("\n"),
+      institutionRors: DEFAULT_INSTITUTION_RORS.join("\n"),
+      strongKeywords: DEFAULT_STRONG_KEYWORDS.join("\n"),
+      weakKeywords: DEFAULT_WEAK_KEYWORDS.join("\n"),
+      exclusionKeywords: DEFAULT_EXCLUSION_KEYWORDS.join("\n"),
+    },
   });
 
   // Populate the page-builder blocks (preserves any existing blocks).

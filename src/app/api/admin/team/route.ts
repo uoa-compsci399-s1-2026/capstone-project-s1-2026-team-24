@@ -4,6 +4,7 @@ import { TeamSection } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";
+import { isValidOrcidId } from "@/lib/orcid";
 
 export const runtime = "nodejs";
 
@@ -93,6 +94,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const orcidId = asOptionalString(formData.get("orcidId"));
+    if (orcidId && !isValidOrcidId(orcidId)) {
+      return NextResponse.json(
+        {
+          error:
+            "orcidId must look like 0000-0000-0000-0000 (16 digits, last may be X).",
+        },
+        { status: 400 },
+      );
+    }
+
     let photoPath = "";
     if (photo instanceof File && photo.size > 0) {
       try {
@@ -117,7 +129,7 @@ export async function POST(request: NextRequest) {
         section,
         bio: typeof bio === "string" ? bio.trim() : "",
         photoPath,
-        orcidId: asOptionalString(formData.get("orcidId")),
+        orcidId,
         profileUrl: asOptionalString(formData.get("profileUrl")),
         yearsActive: asOptionalString(formData.get("yearsActive")),
         order: clampOrder(formData.get("order"), 0),

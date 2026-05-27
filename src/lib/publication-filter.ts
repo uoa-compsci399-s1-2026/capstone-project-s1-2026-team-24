@@ -1,138 +1,368 @@
 export type PublicationRelevanceResult = {
-    status: "Approved" | "Pending" | "Rejected";
-    matchedKeywords: string[];
+  status: "Approved" | "Pending" | "Rejected";
+  matchedKeywords: string[];
+  // Affiliation snippet(s) (e.g. ROR id or unit phrasing) that matched.
+  matchedAffiliation: string[];
+  // Human-readable explanation of the decision, surfaced in the admin UI.
+  reason: string;
+};
+
+// Default relevance config. These seed the singleton `PublicationFilterSetting`
+// row (see prisma/seed.ts); at sync time the DB row is authoritative and admins
+// can edit it via /admin/publications. The constants are kept exported so the
+// seed and tests share one source of truth.
+export const DEFAULT_MIN_YEAR = 1998;
+
+// University of Auckland ROR. Present in OpenAlex `institutions[].ror`.
+export const DEFAULT_INSTITUTION_RORS = ["03b94tp07"];
+
+// Phrasings that, when found in a paper's raw affiliation string, are a STRONG
+// signal the work belongs to the unit. Matched as a normalised substring.
+export const DEFAULT_AFFILIATION_PHRASES = [
+  "Human Nutrition Unit",
+  "HNU",
+  "Health Nutrition Unit",
+  "Nutrition",
+];
+
+export const DEFAULT_STRONG_KEYWORDS = [
+  "nutrition",
+  "nutritional",
+  "diet",
+  "dietary",
+  "metabolism",
+  "metabolic",
+  "glycaemic",
+  "glycemic",
+  "prediabetes",
+  "pre-diabetes",
+  "diabetes",
+  "obesity",
+  "appetite",
+  "satiety",
+  "body composition",
+  "energy expenditure",
+  "cardiometabolic",
+  "pancreatic fat",
+  "intra-pancreatic fat",
+  "clinical trial",
+  "randomized",
+  "randomised",
+  "whey protein",
+  "microbiota",
+  "gut microbiota",
+  "food",
+  "rice",
+  "protein diet",
+  "low-energy diet",
+  "preview",
+  "tofi",
+  "tofi_asia",
+  "tū ora",
+  "tu ora",
+  "synergy study",
+];
+
+export const DEFAULT_WEAK_KEYWORDS = [
+  "health",
+  "weight loss",
+  "overweight",
+  "insulin",
+  "glucose",
+  "cholesterol",
+  "fat",
+  "bariatric",
+];
+
+export const DEFAULT_EXCLUSION_KEYWORDS = [
+  "dog",
+  "dogs",
+  "canine",
+  "veterinary",
+  "parkinson",
+  "alzheimer",
+  "huntington",
+  "schizophrenia",
+  "stroke",
+  "amyotrophic lateral sclerosis",
+  "frontotemporal dementia",
+];
+
+function normalizeText(input: string) {
+  return input
+    .toLowerCase()
+    .replace(/&ldquo;|&rdquo;|&mdash;|&ndash;|&beta;|ß/g, " ")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function normalizePublicationTitle(title: string) {
+  return normalizeText(title);
+}
+
+export function buildPublicationDedupKey(input: {
+  title: string;
+  year: number | null;
+}) {
+  return `${normalizePublicationTitle(input.title)}::${input.year ?? "unknown"}`;
+}
+
+// Parse an admin-editable list stored as newline- (or comma-) separated text.
+// Tolerant of blank lines and surrounding whitespace.
+export function parseLines(value: string | null | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+// A ROR id can be stored bare ("03b94tp07") or as a URL
+// ("https://ror.org/03b94tp07"); normalise to the bare lowercase id for compare.
+function normalizeRor(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\/ror\.org\//, "")
+    .replace(/\/$/, "");
+}
+
+export type PublicationFilterConfig = {
+  minYear: number;
+  affiliationPhrases: string[];
+  institutionRors: string[];
+  strongKeywords: string[];
+  weakKeywords: string[];
+  exclusionKeywords: string[];
+};
+
+// The config used when no DB row exists yet (first run, before seeding).
+export const DEFAULT_FILTER_CONFIG: PublicationFilterConfig = {
+  minYear: DEFAULT_MIN_YEAR,
+  affiliationPhrases: DEFAULT_AFFILIATION_PHRASES,
+  institutionRors: DEFAULT_INSTITUTION_RORS,
+  strongKeywords: DEFAULT_STRONG_KEYWORDS,
+  weakKeywords: DEFAULT_WEAK_KEYWORDS,
+  exclusionKeywords: DEFAULT_EXCLUSION_KEYWORDS,
+};
+
+// Build a config from a persisted singleton row (text fields → arrays), falling
+// back to the defaults for any list that's empty.
+export function configFromRow(row: {
+  minYear: number;
+  affiliationPhrases: string;
+  institutionRors: string;
+  strongKeywords: string;
+  weakKeywords: string;
+  exclusionKeywords: string;
+}): PublicationFilterConfig {
+  const affiliationPhrases = parseLines(row.affiliationPhrases);
+  const institutionRors = parseLines(row.institutionRors);
+  const strongKeywords = parseLines(row.strongKeywords);
+  const weakKeywords = parseLines(row.weakKeywords);
+  const exclusionKeywords = parseLines(row.exclusionKeywords);
+
+  return {
+    minYear:
+      Number.isInteger(row.minYear) && row.minYear > 0
+        ? row.minYear
+        : DEFAULT_MIN_YEAR,
+    affiliationPhrases: affiliationPhrases.length
+      ? affiliationPhrases
+      : DEFAULT_AFFILIATION_PHRASES,
+    institutionRors: institutionRors.length
+      ? institutionRors
+      : DEFAULT_INSTITUTION_RORS,
+    strongKeywords: strongKeywords.length
+      ? strongKeywords
+      : DEFAULT_STRONG_KEYWORDS,
+    weakKeywords: weakKeywords.length ? weakKeywords : DEFAULT_WEAK_KEYWORDS,
+    exclusionKeywords: exclusionKeywords.length
+      ? exclusionKeywords
+      : DEFAULT_EXCLUSION_KEYWORDS,
   };
-  
-  const STRONG_HNU_KEYWORDS = [
-    "nutrition",
-    "nutritional",
-    "diet",
-    "dietary",
-    "metabolism",
-    "metabolic",
-    "glycaemic",
-    "glycemic",
-    "prediabetes",
-    "pre-diabetes",
-    "diabetes",
-    "obesity",
-    "appetite",
-    "satiety",
-    "body composition",
-    "energy expenditure",
-    "cardiometabolic",
-    "pancreatic fat",
-    "intra-pancreatic fat",
-    "clinical trial",
-    "randomized",
-    "randomised",
-    "whey protein",
-    "microbiota",
-    "gut microbiota",
-    "food",
-    "rice",
-    "protein diet",
-    "low-energy diet",
-    "preview",
-    "tofi",
-    "tofi_asia",
-    "tū ora",
-    "tu ora",
-    "synergy study",
-  ];
-  
-  const WEAK_HNU_KEYWORDS = [
-    "health",
-    "weight loss",
-    "overweight",
-    "insulin",
-    "glucose",
-    "cholesterol",
-    "fat",
-    "bariatric",
-  ];
-  
-  const EXCLUSION_KEYWORDS = [
-    "dog",
-    "dogs",
-    "canine",
-    "veterinary",
-    "parkinson",
-    "alzheimer",
-    "huntington",
-    "schizophrenia",
-    "stroke",
-    "amyotrophic lateral sclerosis",
-    "frontotemporal dementia",
-  ];
-  
-  function normalizeText(input: string) {
-    return input
-      .toLowerCase()
-      .replace(/&ldquo;|&rdquo;|&mdash;|&ndash;|&beta;|ß/g, " ")
-      .replace(/[^\p{L}\p{N}\s]/gu, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+}
+
+export type PublicationRelevanceInput = {
+  title: string;
+  journal: string | null;
+  abstract: string | null;
+  pubType: string;
+  year?: number | null;
+  // Raw affiliation strings for this work (from OpenAlex). May be empty when
+  // OpenAlex has no coverage — in which case we fall back to keyword-only.
+  affiliationStrings?: string[];
+  // ROR ids of the institutions on this work (from OpenAlex).
+  rors?: string[];
+};
+
+/**
+ * Decide whether an ORCID work belongs on the HNU research page.
+ *
+ * Signals, in priority order:
+ *  1. Year < minYear            → Rejected outright.
+ *  2. Unit-phrasing in the paper's affiliation (e.g. "Human Nutrition Unit")
+ *                               → STRONG: the unit is literally named.
+ *  3. Accepted institution ROR but NO unit phrasing
+ *                               → WEAK: e.g. a UoA author from another school.
+ *  4. Strong/weak title-journal-abstract keywords (secondary signal).
+ *
+ * Decision matrix (biased toward Pending so a human, not silence, decides):
+ *  - unit phrasing, OR (institution + strong keyword), OR (>=2 strong keywords)
+ *      → Approved
+ *  - some signal but not enough (institution-only, single strong keyword,
+ *    >=2 weak keywords, weak+affiliation)
+ *      → Pending
+ *  - no signal at all, or exclusion-only with no strong signal
+ *      → Rejected
+ */
+export function classifyPublicationRelevance(
+  input: PublicationRelevanceInput,
+  config: PublicationFilterConfig = DEFAULT_FILTER_CONFIG,
+): PublicationRelevanceResult {
+  // 1. Hard year cutoff.
+  if (
+    typeof input.year === "number" &&
+    Number.isFinite(input.year) &&
+    input.year < config.minYear
+  ) {
+    return {
+      status: "Rejected",
+      matchedKeywords: [],
+      matchedAffiliation: [],
+      reason: `before ${config.minYear}`,
+    };
   }
-  
-  export function normalizePublicationTitle(title: string) {
-    return normalizeText(title);
+
+  // 2/3. Affiliation signals.
+  const normalizedAffiliations = (input.affiliationStrings ?? []).map((s) => ({
+    raw: s,
+    normalized: normalizeText(s),
+  }));
+
+  const matchedUnitPhrases: string[] = [];
+  for (const phrase of config.affiliationPhrases) {
+    const normalizedPhrase = normalizeText(phrase);
+    if (!normalizedPhrase) continue;
+    const hit = normalizedAffiliations.find((aff) =>
+      aff.normalized.includes(normalizedPhrase),
+    );
+    if (hit) matchedUnitPhrases.push(phrase);
   }
-  
-  export function buildPublicationDedupKey(input: {
-    title: string;
-    year: number | null;
-  }) {
-    return `${normalizePublicationTitle(input.title)}::${input.year ?? "unknown"}`;
-  }
-  
-  export function classifyPublicationRelevance(input: {
-    title: string;
-    journal: string | null;
-    abstract: string | null;
-    pubType: string;
-  }): PublicationRelevanceResult {
-    const searchableText = normalizeText(
-      [input.title, input.journal ?? "", input.abstract ?? "", input.pubType].join(" "),
-    );
-  
-    const matchedStrong = STRONG_HNU_KEYWORDS.filter((keyword) =>
-      searchableText.includes(normalizeText(keyword)),
-    );
-  
-    const matchedWeak = WEAK_HNU_KEYWORDS.filter((keyword) =>
-      searchableText.includes(normalizeText(keyword)),
-    );
-  
-    const matchedExcluded = EXCLUSION_KEYWORDS.filter((keyword) =>
-      searchableText.includes(normalizeText(keyword)),
-    );
-  
-    const matchedKeywords = [...matchedStrong, ...matchedWeak];
-  
-    if (matchedExcluded.length > 0 && matchedStrong.length === 0) {
-      return {
-        status: "Rejected",
-        matchedKeywords,
-      };
-    }
-  
-    if (matchedStrong.length >= 1) {
-      return {
-        status: "Approved",
-        matchedKeywords,
-      };
-    }
-  
-    if (matchedWeak.length >= 2) {
-      return {
-        status: "Pending",
-        matchedKeywords,
-      };
-    }
-  
+  const hasUnitPhrasing = matchedUnitPhrases.length > 0;
+
+  const acceptedRors = new Set(config.institutionRors.map(normalizeRor));
+  const matchedInstitutionRors = (input.rors ?? [])
+    .map(normalizeRor)
+    .filter((ror) => ror && acceptedRors.has(ror));
+  const hasInstitutionMatch = matchedInstitutionRors.length > 0;
+
+  // 4. Keyword signals (title / journal / abstract / type).
+  const searchableText = normalizeText(
+    [input.title, input.journal ?? "", input.abstract ?? "", input.pubType].join(
+      " ",
+    ),
+  );
+
+  const matchedStrong = config.strongKeywords.filter((keyword) =>
+    searchableText.includes(normalizeText(keyword)),
+  );
+  const matchedWeak = config.weakKeywords.filter((keyword) =>
+    searchableText.includes(normalizeText(keyword)),
+  );
+  const matchedExcluded = config.exclusionKeywords.filter((keyword) =>
+    searchableText.includes(normalizeText(keyword)),
+  );
+
+  const matchedKeywords = [...matchedStrong, ...matchedWeak];
+  const matchedAffiliation = [...matchedUnitPhrases, ...matchedInstitutionRors];
+
+  const hasStrongKeyword = matchedStrong.length >= 1;
+  const hasAnyKeywordSignal = matchedKeywords.length > 0;
+
+  // Off-topic with no strong counter-signal → reject (the seabird-researcher case
+  // also lands here unless a strong keyword appears).
+  if (matchedExcluded.length > 0 && !hasStrongKeyword && !hasUnitPhrasing) {
     return {
       status: "Rejected",
       matchedKeywords,
+      matchedAffiliation,
+      reason: `excluded term${matchedExcluded.length > 1 ? "s" : ""}: ${matchedExcluded.join(", ")}`,
     };
   }
+
+  // --- Approve ---
+  if (hasUnitPhrasing) {
+    return {
+      status: "Approved",
+      matchedKeywords,
+      matchedAffiliation,
+      reason: `unit affiliation: ${matchedUnitPhrases.join(", ")}`,
+    };
+  }
+  if (hasInstitutionMatch && hasStrongKeyword) {
+    return {
+      status: "Approved",
+      matchedKeywords,
+      matchedAffiliation,
+      reason: `institution affiliation + keyword: ${matchedStrong.join(", ")}`,
+    };
+  }
+  if (matchedStrong.length >= 2) {
+    return {
+      status: "Approved",
+      matchedKeywords,
+      matchedAffiliation,
+      reason: `strong keywords: ${matchedStrong.join(", ")}`,
+    };
+  }
+
+  // --- Pending (ambiguous → human decides) ---
+  if (hasInstitutionMatch) {
+    // Accepted institution but no unit phrasing and no strong keyword: this is the
+    // "UoA but maybe not nutrition" case — surface for review, never auto-approve.
+    return {
+      status: "Pending",
+      matchedKeywords,
+      matchedAffiliation,
+      reason: `institution affiliation only (no unit phrasing) — needs review`,
+    };
+  }
+  if (hasStrongKeyword) {
+    return {
+      status: "Pending",
+      matchedKeywords,
+      matchedAffiliation,
+      reason: `single strong keyword: ${matchedStrong.join(", ")} — needs review`,
+    };
+  }
+  if (matchedWeak.length >= 2) {
+    return {
+      status: "Pending",
+      matchedKeywords,
+      matchedAffiliation,
+      reason: `weak keywords: ${matchedWeak.join(", ")} — needs review`,
+    };
+  }
+  if (hasAnyKeywordSignal && normalizedAffiliations.length === 0) {
+    // A single weak keyword and we have NO affiliation data to corroborate:
+    // err toward review rather than silently dropping.
+    return {
+      status: "Pending",
+      matchedKeywords,
+      matchedAffiliation,
+      reason: `weak keyword: ${matchedWeak.join(", ")} — needs review`,
+    };
+  }
+
+  // --- Reject (no signal) ---
+  return {
+    status: "Rejected",
+    matchedKeywords,
+    matchedAffiliation,
+    reason: normalizedAffiliations.length
+      ? "not HNU-affiliated and no relevant keywords"
+      : "no relevant keywords",
+  };
+}
