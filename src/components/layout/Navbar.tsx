@@ -4,14 +4,23 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
 import { useLanguage } from "@/contexts/LanguageContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
+import type { SearchResult } from "@/app/api/search/route";
 
 export default function Navbar() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  // True once a fetch for a >=2-char query has completed, so we can tell the
+  // "no results" state apart from "haven't searched yet".
+  const [searchPerformed, setSearchPerformed] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [studiesOpen, setStudiesOpen] = useState(false);
   const [searchStudiesOpen, setSearchStudiesOpen] = useState(false);
@@ -123,6 +132,63 @@ export default function Navbar() {
     wasSearchOpenRef.current = searchOpen;
   }, [searchOpen]);
 
+  // Reset all search query state whenever the dialog closes, so reopening it
+  // starts clean (and the popular-searches list shows again).
+  useEffect(() => {
+    if (!searchOpen) {
+      setSearchQuery("");
+      setSearchResults([]);
+      setSearchLoading(false);
+      setSearchPerformed(false);
+      setActiveIndex(-1);
+    }
+  }, [searchOpen]);
+
+  // Debounced live search. Fires ~250ms after the user stops typing and cancels
+  // any in-flight request so stale responses can't clobber newer ones.
+  useEffect(() => {
+    const trimmed = searchQuery.trim();
+
+    if (trimmed.length < 2) {
+      setSearchResults([]);
+      setSearchLoading(false);
+      setSearchPerformed(false);
+      setActiveIndex(-1);
+      return;
+    }
+
+    const controller = new AbortController();
+    setSearchLoading(true);
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`Search request failed: ${res.status}`);
+        const data: { results?: SearchResult[] } = await res.json();
+        setSearchResults(Array.isArray(data.results) ? data.results : []);
+        setSearchPerformed(true);
+        setActiveIndex(-1);
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+        console.error("Search failed:", error);
+        setSearchResults([]);
+        setSearchPerformed(true);
+        setActiveIndex(-1);
+      } finally {
+        // The abort path leaves loading on for the superseding request, which
+        // sets its own loading=true; only clear when this request wasn't aborted.
+        if (!controller.signal.aborted) setSearchLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [searchQuery]);
+
   useEffect(() => {
     if (searchOpen) {
       previousBodyOverflowRef.current = document.body.style.overflow;
@@ -218,6 +284,75 @@ export default function Navbar() {
     return () =>
       document.removeEventListener("keydown", handleSearchDialogKeyDown);
   }, [searchOpen]);
+
+  // Activate a result by index by clicking its rendered <Link> anchor. Routing
+  // through the real anchor keeps Next.js client-side navigation (and the
+  // anchor's own onClick, which closes the dialog) intact, and handles external
+  // links correctly — so the component needs no router instance of its own.
+  const goToResult = (index: number) => {
+    const anchor = document
+      .getElementById(`search-result-${index}`)
+      ?.querySelector<HTMLAnchorElement>("a[href]");
+    anchor?.click();
+  };
+
+  // Arrow-key navigation through the live results, with Enter selecting the
+  // active one. Lives on the input (which stays focused while typing) so it
+  // doesn't interfere with the dialog-level Escape/Tab focus trap.
+  const handleSearchInputKeyDown = (
+    event: ReactKeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (searchResults.length === 0) return;
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveIndex((index) => (index + 1) % searchResults.length);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((index) =>
+        index <= 0 ? searchResults.length - 1 : index - 1,
+      );
+    } else if (event.key === "Enter") {
+      if (activeIndex >= 0 && activeIndex < searchResults.length) {
+        event.preventDefault();
+        goToResult(activeIndex);
+      }
+    }
+  };
+
+  const SEARCH_GROUP_LABELS: Record<SearchResult["type"], string> = {
+    page: t.navbar.searchGroupPages,
+    study: t.navbar.searchGroupStudies,
+    team: t.navbar.searchGroupTeam,
+    publication: t.navbar.searchGroupPublications,
+    "page-content": t.navbar.searchGroupContent,
+  };
+
+  // Keep results in a stable, readable order, then group them by type while
+  // preserving the flat index each row carries (used for arrow-key highlight).
+  const SEARCH_GROUP_ORDER: SearchResult["type"][] = [
+    "page",
+    "study",
+    "team",
+    "publication",
+    "page-content",
+  ];
+  const groupedResults = SEARCH_GROUP_ORDER.map((type) => ({
+    type,
+    items: searchResults
+      .map((result, index) => ({ result, index }))
+      .filter((entry) => entry.result.type === type),
+  })).filter((group) => group.items.length > 0);
+
+  const trimmedQuery = searchQuery.trim();
+  const showPopularSearches = trimmedQuery.length < 2;
+  const showNoResults =
+    !showPopularSearches &&
+    !searchLoading &&
+    searchPerformed &&
+    searchResults.length === 0;
+  const showResults =
+    !showPopularSearches && searchResults.length > 0;
 
   // The home page hero pulls its own gradient up over the navbar, so the
   // navbar stays transparent there to let it show through. On every other
@@ -826,9 +961,19 @@ export default function Navbar() {
                 <input
                   ref={searchInputRef}
                   type="search"
-                  placeholder={t.navbar.search}
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onKeyDown={handleSearchInputKeyDown}
+                  placeholder={t.navbar.searchPlaceholder}
                   className="flex-1 bg-transparent text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
                   aria-label={t.navbar.search}
+                  role="combobox"
+                  aria-expanded={showResults}
+                  aria-controls="search-results"
+                  aria-activedescendant={
+                    activeIndex >= 0 ? `search-result-${activeIndex}` : undefined
+                  }
+                  autoComplete="off"
                 />
                 <svg
                   className="w-10 h-10 text-white/75 flex-shrink-0"
@@ -846,23 +991,94 @@ export default function Navbar() {
                 </svg>
               </div>
 
-              <div className="mt-3">
-                <p className="text-white text-[16px] tracking-[0.32px] mb-1">
-                  {t.navbar.popularSearches}
-                </p>
-                <ul>
-                  {POPULAR_SEARCHES.map((item) => (
-                    <li key={`${item.label}-${item.href}`}>
-                      <Link
-                        href={item.href}
-                        className="block text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
-                        onClick={() => setSearchOpen(false)}
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+              <div
+                className="mt-3 overflow-y-auto"
+                style={{ maxHeight: "calc(100vh - 220px)" }}
+              >
+                {/* Popular searches — shown until the query reaches 2 chars. */}
+                {showPopularSearches && (
+                  <div>
+                    <p className="text-white text-[16px] tracking-[0.32px] mb-1">
+                      {t.navbar.popularSearches}
+                    </p>
+                    <ul>
+                      {POPULAR_SEARCHES.map((item) => (
+                        <li key={`${item.label}-${item.href}`}>
+                          <Link
+                            href={item.href}
+                            className="block text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"
+                            onClick={() => setSearchOpen(false)}
+                          >
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Loading — only before the first results for this query land. */}
+                {!showPopularSearches && searchLoading && !showResults && (
+                  <p
+                    className="text-white/70 text-[18px] leading-[50px]"
+                    aria-live="polite"
+                  >
+                    {t.navbar.searchLoading}
+                  </p>
+                )}
+
+                {/* No results. */}
+                {showNoResults && (
+                  <p
+                    className="text-white/70 text-[18px] leading-[50px]"
+                    aria-live="polite"
+                  >
+                    {t.navbar.searchNoResults}
+                  </p>
+                )}
+
+                {/* Live results, grouped and labelled by type. */}
+                {showResults && (
+                  <ul id="search-results" role="listbox" aria-label={t.navbar.search}>
+                    {groupedResults.map((group) => (
+                      <li key={group.type} className="mb-3">
+                        <p className="text-white/50 text-[13px] uppercase tracking-[1.5px] mb-1">
+                          {SEARCH_GROUP_LABELS[group.type]}
+                        </p>
+                        <ul>
+                          {group.items.map(({ result, index }) => (
+                            <li
+                              key={`${result.type}-${result.href}-${index}`}
+                              id={`search-result-${index}`}
+                              role="option"
+                              aria-selected={activeIndex === index}
+                            >
+                              <Link
+                                href={result.href}
+                                onClick={() => setSearchOpen(false)}
+                                onMouseEnter={() => setActiveIndex(index)}
+                                className={`block rounded-lg px-3 py-2 transition-colors ${
+                                  activeIndex === index
+                                    ? "bg-white/15"
+                                    : "hover:bg-white/10"
+                                }`}
+                              >
+                                <span className="block text-[20px] font-bold text-white leading-snug">
+                                  {result.title}
+                                </span>
+                                {result.snippet && (
+                                  <span className="block text-[15px] text-white/60 leading-snug mt-0.5 line-clamp-2">
+                                    {result.snippet}
+                                  </span>
+                                )}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>

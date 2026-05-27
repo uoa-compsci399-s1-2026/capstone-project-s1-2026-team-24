@@ -19,6 +19,14 @@ const zh = {
     openMenu: "打开菜单",
     home: "首页",
     popularSearches: "热门搜索",
+    searchPlaceholder: "搜索网站",
+    searchLoading: "搜索中…",
+    searchNoResults: "未找到结果",
+    searchGroupPages: "页面",
+    searchGroupStudies: "研究项目",
+    searchGroupTeam: "团队",
+    searchGroupPublications: "出版物",
+    searchGroupContent: "页面内容",
   },
 
   home: {
