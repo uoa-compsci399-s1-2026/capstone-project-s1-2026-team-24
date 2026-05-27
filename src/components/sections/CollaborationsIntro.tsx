@@ -152,6 +152,7 @@ export default function CollaborationsIntro() {
                 src="/Our Team.jpg"
                 alt="Research collaboration"
                 fill
+                sizes="(max-width: 1024px) 100vw, 35vw"
                 style={{ objectFit: "cover" }}
               />
             </div>
