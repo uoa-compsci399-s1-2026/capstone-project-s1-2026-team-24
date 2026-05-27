@@ -35,10 +35,10 @@ export default function AcademicCollaborators({
   buttonLabel = ACADEMIC_COLLABORATORS_DEFAULTS.buttonLabel,
   buttonHref = ACADEMIC_COLLABORATORS_DEFAULTS.buttonHref,
 }: AcademicCollaboratorsProps) {
-  const resolvedCards =
+  const resolvedCards: StudyCardContent[] =
     cards && cards.length > 0
       ? cards
-      : (ACADEMIC_COLLABORATORS_DEFAULTS.cards as unknown as StudyCardContent[]);
+      : ACADEMIC_COLLABORATORS_DEFAULTS.cards.map((card) => ({ ...card }));
   const rows = toRows(resolvedCards);
 
   return (

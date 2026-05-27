@@ -35,10 +35,10 @@ export default function IndustryCollaborators({
   buttonLabel = INDUSTRY_COLLABORATORS_DEFAULTS.buttonLabel,
   buttonHref = INDUSTRY_COLLABORATORS_DEFAULTS.buttonHref,
 }: IndustryCollaboratorsProps) {
-  const resolvedCards =
+  const resolvedCards: StudyCardContent[] =
     cards && cards.length > 0
       ? cards
-      : (INDUSTRY_COLLABORATORS_DEFAULTS.cards as unknown as StudyCardContent[]);
+      : INDUSTRY_COLLABORATORS_DEFAULTS.cards.map((card) => ({ ...card }));
   const rows = toRows(resolvedCards);
 
   return (

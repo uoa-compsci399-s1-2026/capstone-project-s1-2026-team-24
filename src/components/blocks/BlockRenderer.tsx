@@ -57,6 +57,28 @@ const teamTab = (
     ? v
     : undefined;
 
+// Coerce persisted `studyCards` JSON into a safe StudyCardContent[]: every field
+// becomes a string (so nothing undefined reaches next/image's `src`), and cards
+// without a usable image are dropped — a malformed entry can't crash the render.
+const studyCards = (v: unknown): StudyCardContent[] =>
+  (Array.isArray(v) ? v : [])
+    .map((card) => {
+      const o = (
+        card && typeof card === "object" ? card : {}
+      ) as Record<string, unknown>;
+      return {
+        title: str(o.title),
+        subtitle: str(o.subtitle) || undefined,
+        description: str(o.description),
+        buttonLabel: str(o.buttonLabel) || undefined,
+        buttonHref: str(o.buttonHref) || undefined,
+        imageSrc: str(o.imageSrc),
+        imageAlt: str(o.imageAlt),
+        imagePosition: imgPos(o.imagePosition),
+      };
+    })
+    .filter((card) => card.imageSrc !== "");
+
 function infoCardProps(c: Content) {
   return {
     title: str(c.title),
@@ -290,32 +312,28 @@ export default function BlockRenderer({
       return <OurPartners group={partnerGroup(c.group)} />;
     case "publicationIndex":
       return <PublicationIndex pageSize={Number(c.pageSize) || undefined} />;
-    case "academicCollaborators":
+    case "academicCollaborators": {
+      const cards = studyCards(c.cards);
       return (
         <AcademicCollaborators
           heading={str(c.heading) || undefined}
-          cards={
-            Array.isArray(c.cards) && c.cards.length > 0
-              ? (c.cards as StudyCardContent[])
-              : undefined
-          }
+          cards={cards.length > 0 ? cards : undefined}
           buttonLabel={str(c.buttonLabel) || undefined}
           buttonHref={str(c.buttonHref) || undefined}
         />
       );
-    case "industryCollaborators":
+    }
+    case "industryCollaborators": {
+      const cards = studyCards(c.cards);
       return (
         <IndustryCollaborators
           heading={str(c.heading) || undefined}
-          cards={
-            Array.isArray(c.cards) && c.cards.length > 0
-              ? (c.cards as StudyCardContent[])
-              : undefined
-          }
+          cards={cards.length > 0 ? cards : undefined}
           buttonLabel={str(c.buttonLabel) || undefined}
           buttonHref={str(c.buttonHref) || undefined}
         />
       );
+    }
     case "teamSections":
       return <TeamSectionsBlock defaultTab={teamTab(c.defaultTab)} />;
 

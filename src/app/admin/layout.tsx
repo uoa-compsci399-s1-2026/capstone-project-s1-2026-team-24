@@ -13,7 +13,7 @@ const NAV_LINKS = [
   // Partners (Option A): the /admin/partners section is retired from the UI —
   // it only fed the deleted carousels. The PartnerLogo data/API are kept (still
   // read by the media-usage scan); the standalone Academic/Industry grids are
-  // edited as page-builder image blocks. See partners-collaborations-design.md.
+  // edited as page-builder image blocks. See GitHub issue #142.
   { href: "/admin/publications", label: "Publications", icon: PublicationsIcon },
   { href: "/admin/contacts", label: "Contact Submissions", icon: ContactsIcon },
   {

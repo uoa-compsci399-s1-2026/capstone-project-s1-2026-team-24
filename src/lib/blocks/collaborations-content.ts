@@ -8,9 +8,10 @@
 //
 // These values were lifted verbatim from the EN translation dictionary
 // (`src/messages/en.ts` → `collaborations`) and the original component JSX, so
-// the page is byte-identical after conversion. The curated 中文 in `zh.ts` is now
-// produced by machine translation on publish (`warmBlockTranslations`) — accepted
-// behaviour for every non-study page.
+// the page is byte-identical after conversion. The native-speaker 中文 from
+// `zh.ts` is PRESERVED: prisma/seed-page-blocks.ts pre-seeds it into the
+// translation cache (keyed by the EN source text), so publish reuses the human
+// translation rather than machine-translating over it.
 //
 // ─────────────────────────────────────────────────────────────────────────────
 // IMAGE WORKFLOW (read this before changing an image) — keep raw paths first-class
