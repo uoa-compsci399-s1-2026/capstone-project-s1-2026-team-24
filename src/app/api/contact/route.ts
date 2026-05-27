@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendContactNotification } from "@/lib/email";
 
 const ALLOWED_CATEGORIES = [
   "Study Participant Enquiry",
@@ -179,6 +180,23 @@ export async function POST(request: NextRequest) {
         message,
       },
     });
+
+    // Best-effort: email the configured recipient. The submission is already
+    // saved (it shows in the admin console regardless), so a delivery failure
+    // must not fail the request — log it and move on.
+    const emailResult = await sendContactNotification({
+      recipientEmail: recipient.email,
+      submission: { name, email, category, message },
+    }).catch((err) => {
+      console.error("Contact notification email threw (non-fatal):", err);
+      return { ok: false as const, error: "threw" };
+    });
+
+    if (!emailResult.ok) {
+      console.error(
+        `Contact notification email not delivered for "${category}" enquiry from ${email}.`,
+      );
+    }
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
