@@ -1,25 +1,42 @@
-"use client";
-
 import Image from "next/image";
-import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import { COLLABORATIONS_INTRO_DEFAULTS } from "@/lib/blocks/collaborations-content";
 
 // The "Research Collaborations + Pathway" intro section on the Collaborations
-// page. Fixed copy, translated via the shared dictionary.
-export default function CollaborationsIntro() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+// page. Editable page-builder block: all copy and the image come from block
+// content (resolved + machine-translated server-side before render). Empty
+// props fall back to the shared defaults so a freshly-converted block renders
+// unchanged.
+//
+// IMAGE NOTE: `image` is a resolved path string (a raw "/file.jpg" or the path a
+// "media:{id}" ref resolved to). To swap it in code and keep it library-managed,
+// set a raw path in the block content/seed/defaults (NOT here in JSX), drop the
+// file in /public, and run `npm run catalog:media`. See
+// src/lib/blocks/collaborations-content.ts for the full workflow.
+interface CollaborationsIntroProps {
+  sectionTitle?: string;
+  sectionText?: string;
+  pathwayTitle?: string;
+  pathwaySteps?: string[];
+  image?: string;
+  imageAlt?: string;
+  complianceTitle?: string;
+  complianceText?: string;
+}
 
-  const RESEARCH_PATHWAY = [
-    t.collaborations.pathwayEarlyInception,
-    t.collaborations.pathwayProtocolDevelopment,
-    t.collaborations.pathwayEthicalApproval,
-    t.collaborations.pathwayCompletionTrials,
-    t.collaborations.pathwayDataAnalysis,
-    t.collaborations.pathwayInterpretation,
-    t.collaborations.pathwayReportWriting,
-  ];
+export default function CollaborationsIntro({
+  sectionTitle = COLLABORATIONS_INTRO_DEFAULTS.sectionTitle,
+  sectionText = COLLABORATIONS_INTRO_DEFAULTS.sectionText,
+  pathwayTitle = COLLABORATIONS_INTRO_DEFAULTS.pathwayTitle,
+  pathwaySteps,
+  image = COLLABORATIONS_INTRO_DEFAULTS.image,
+  imageAlt = COLLABORATIONS_INTRO_DEFAULTS.imageAlt,
+  complianceTitle = COLLABORATIONS_INTRO_DEFAULTS.complianceTitle,
+  complianceText = COLLABORATIONS_INTRO_DEFAULTS.complianceText,
+}: CollaborationsIntroProps) {
+  const steps =
+    pathwaySteps && pathwaySteps.length > 0
+      ? pathwaySteps
+      : [...COLLABORATIONS_INTRO_DEFAULTS.pathwaySteps];
 
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
@@ -44,7 +61,7 @@ export default function CollaborationsIntro() {
                 lineHeight: 1.2,
               }}
             >
-              {t.collaborations.researchPartnershipsTitle}
+              {sectionTitle}
             </h2>
             <p
               style={{
@@ -55,7 +72,7 @@ export default function CollaborationsIntro() {
                 marginBottom: "32px",
               }}
             >
-              {t.collaborations.researchPartnershipsText}
+              {sectionText}
             </p>
 
             <div
@@ -75,7 +92,7 @@ export default function CollaborationsIntro() {
                   marginBottom: "20px",
                 }}
               >
-                {t.collaborations.researchPathwayTitle}
+                {pathwayTitle}
               </h2>
               <div
                 style={{
@@ -84,9 +101,9 @@ export default function CollaborationsIntro() {
                   gap: "12px",
                 }}
               >
-                {RESEARCH_PATHWAY.map((step, i) => (
+                {steps.map((step, i) => (
                   <div
-                    key={step}
+                    key={`${i}-${step}`}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -148,13 +165,15 @@ export default function CollaborationsIntro() {
                 position: "relative",
               }}
             >
-              <Image
-                src="/Our Team.jpg"
-                alt="Research collaboration"
-                fill
-                sizes="(max-width: 1024px) 100vw, 35vw"
-                style={{ objectFit: "cover" }}
-              />
+              {image ? (
+                <Image
+                  src={image}
+                  alt={imageAlt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 35vw"
+                  style={{ objectFit: "cover" }}
+                />
+              ) : null}
             </div>
 
             <div
@@ -194,7 +213,7 @@ export default function CollaborationsIntro() {
                     margin: 0,
                   }}
                 >
-                  {t.collaborations.complianceTitle}
+                  {complianceTitle}
                 </h3>
               </div>
               <p
@@ -206,7 +225,7 @@ export default function CollaborationsIntro() {
                   margin: 0,
                 }}
               >
-                {t.collaborations.complianceText}
+                {complianceText}
               </p>
             </div>
           </div>

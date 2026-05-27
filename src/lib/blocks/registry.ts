@@ -9,6 +9,11 @@ import {
   DISCOVER_VIDEO_DEFAULTS,
   TRIAL_DESIGN_DEFAULTS,
 } from "./default-content";
+import {
+  ACADEMIC_COLLABORATORS_DEFAULTS,
+  COLLABORATIONS_INTRO_DEFAULTS,
+  INDUSTRY_COLLABORATORS_DEFAULTS,
+} from "./collaborations-content";
 
 const IMAGE_POSITION_OPTIONS = [
   "center",
@@ -80,6 +85,17 @@ const SUBPAGE_HERO_FIELDS: readonly BlockField[] = [
     type: "text",
     help: "Optional. Leave blank for full width.",
   },
+];
+
+// The two "Featured collaborations" blocks (academic + industry) share an
+// identical shape: a heading, four featured cards, and a "view all" button. The
+// cards reuse the `studyCards` field type so they get the existing card editor
+// and the studyCards translation path for free.
+const FEATURED_COLLABORATORS_FIELDS: readonly BlockField[] = [
+  { key: "heading", label: "Section heading", type: "text" },
+  { key: "cards", label: "Featured cards", type: "studyCards" },
+  { key: "buttonLabel", label: "Button label", type: "text" },
+  { key: "buttonHref", label: "Button link", type: "url" },
 ];
 
 const DEFINITIONS: BlockDefinition[] = [
@@ -326,9 +342,27 @@ const DEFINITIONS: BlockDefinition[] = [
     type: "collaborationsIntro",
     label: "Collaborations intro",
     category: "Content",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    editable: true,
+    fields: [
+      { key: "sectionTitle", label: "Section title", type: "text" },
+      { key: "sectionText", label: "Section text", type: "textarea" },
+      { key: "pathwayTitle", label: "Research pathway title", type: "text" },
+      {
+        key: "pathwaySteps",
+        label: "Research pathway steps",
+        type: "paragraphArray",
+        help: "Each step is numbered automatically in order.",
+      },
+      // Raw paths are first-class here. To swap this image in code and keep it
+      // library-managed: set a raw path (here or in block content), drop the
+      // file in /public, then run `npm run catalog:media`. See
+      // src/lib/blocks/collaborations-content.ts for the full workflow note.
+      { key: "image", label: "Image", type: "image" },
+      { key: "imageAlt", label: "Image alt text", type: "text" },
+      { key: "complianceTitle", label: "Compliance card title", type: "text" },
+      { key: "complianceText", label: "Compliance card text", type: "textarea" },
+    ],
+    defaultContent: { ...COLLABORATIONS_INTRO_DEFAULTS },
   },
   {
     type: "partnerImageGrid",
@@ -479,20 +513,23 @@ const DEFINITIONS: BlockDefinition[] = [
     defaultContent: { pageSize: "10" },
   },
   {
+    // Featured cards are editable content now (not live data), so this lives in
+    // the "Content" category. Card images follow the raw-path workflow noted in
+    // src/lib/blocks/collaborations-content.ts.
     type: "academicCollaborators",
     label: "Academic collaborators",
-    category: "Dynamic",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    category: "Content",
+    editable: true,
+    fields: FEATURED_COLLABORATORS_FIELDS,
+    defaultContent: { ...ACADEMIC_COLLABORATORS_DEFAULTS },
   },
   {
     type: "industryCollaborators",
     label: "Industry collaborators",
-    category: "Dynamic",
-    editable: false,
-    fields: [],
-    defaultContent: {},
+    category: "Content",
+    editable: true,
+    fields: FEATURED_COLLABORATORS_FIELDS,
+    defaultContent: { ...INDUSTRY_COLLABORATORS_DEFAULTS },
   },
   {
     type: "teamSections",

@@ -57,7 +57,9 @@ export default function AdminDashboard() {
   }> = [
     { title: "Studies", count: stats.studies, href: "/admin/studies" },
     { title: "Team members", count: stats.teamMembers, href: "/admin/team" },
-    { title: "Partners", count: stats.partners, href: "/admin/partners" },
+    // Partners (Option A): the /admin/partners section is retired from the UI.
+    // Partner logos are managed as page-builder image blocks on the standalone
+    // grid pages; the stat is no longer surfaced here.
     {
       title: "Publications",
       count: stats.publications,
@@ -117,7 +119,6 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <QuickAction href="/admin/studies/new">Add a study</QuickAction>
           <QuickAction href="/admin/team/new">Add a team member</QuickAction>
-          <QuickAction href="/admin/partners/new">Add a partner</QuickAction>
           <QuickAction href="/admin/publications">
             Review publications
           </QuickAction>

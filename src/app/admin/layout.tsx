@@ -10,7 +10,10 @@ const NAV_LINKS = [
   { href: "/admin/media", label: "Media", icon: MediaIcon },
   { href: "/admin/studies", label: "Studies", icon: StudiesIcon },
   { href: "/admin/team", label: "Team", icon: TeamIcon },
-  { href: "/admin/partners", label: "Partners", icon: PartnersIcon },
+  // Partners (Option A): the /admin/partners section is retired from the UI —
+  // it only fed the deleted carousels. The PartnerLogo data/API are kept (still
+  // read by the media-usage scan); the standalone Academic/Industry grids are
+  // edited as page-builder image blocks. See GitHub issue #142.
   { href: "/admin/publications", label: "Publications", icon: PublicationsIcon },
   { href: "/admin/contacts", label: "Contact Submissions", icon: ContactsIcon },
   {
@@ -200,27 +203,6 @@ function TeamIcon() {
       <circle cx="9" cy="7" r="4" />
       <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
       <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-    </svg>
-  );
-}
-
-function PartnersIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M11 12 5.6 6.6a2 2 0 0 1 0-2.83l.83-.83a2 2 0 0 1 2.83 0L14 8" />
-      <path d="m13 12 5.4-5.4a2 2 0 0 1 2.83 0l.83.83a2 2 0 0 1 0 2.83L17 16" />
-      <path d="m11 16 4 4 5-5" />
-      <path d="m3 12 4 4" />
     </svg>
   );
 }
