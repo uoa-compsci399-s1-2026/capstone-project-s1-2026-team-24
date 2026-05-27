@@ -8,6 +8,8 @@ import StudyContent from "./StudyContent";
 import { prisma } from "@/lib/prisma";
 import { resolveStudyLayoutBlocks } from "@/components/blocks/study/resolve-study-layout";
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
+import { getServerLang } from "@/lib/lang";
+import { localizeStrings } from "@/lib/translate/blocks";
 
 
 export const dynamic = "force-dynamic";
@@ -32,6 +34,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const study = await fetchStudy(slug);
   if (!study || !study.isActive) {
     return { title: "Study Not Found | HNU Auckland" };
+  }
+  const lang = await getServerLang();
+  if (lang === "ZH") {
+    const [title, description] = await localizeStrings([
+      study.title,
+      study.shortDescription,
+    ]);
+    return {
+      title: `${title} | HNU Auckland`,
+      description,
+    };
   }
   return {
     title: `${study.title} | HNU Auckland`,

@@ -32,7 +32,6 @@ export default function MediaLibrary() {
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
-  const detailsRef = useRef<HTMLElement>(null);
 
   // Load "where is this used" whenever the selected asset changes.
   useEffect(() => {
@@ -53,13 +52,6 @@ export default function MediaLibrary() {
     return () => {
       cancelled = true;
     };
-  }, [selected?.id]);
-
-  // Bring the details panel into view when a different asset is selected, so the
-  // editor appears near where the admin is looking rather than only at the top.
-  useEffect(() => {
-    if (selected?.id == null) return;
-    detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [selected?.id]);
 
   const load = useCallback(async () => {
@@ -220,8 +212,12 @@ export default function MediaLibrary() {
   const selectedManaged = selected ? isManagedPath(selected.filePath) : false;
 
   return (
-    <div>
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+    // At lg+ this is a fixed-height canvas: the toolbar/search stay in view and
+    // the image grid scrolls in its own pane, so the details panel beside it
+    // stays put — clicking an image never jumps the page to the top.
+    // (5rem = the admin shell's vertical padding around this content.)
+    <div className="lg:flex lg:h-[calc(100dvh_-_5rem)] lg:flex-col">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3 lg:flex-shrink-0">
         <div>
           <h1 className="text-2xl font-bold text-[#0c0c48]">Media library</h1>
           <p className="mt-1 text-sm text-gray-500">
@@ -247,7 +243,7 @@ export default function MediaLibrary() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700">
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 lg:flex-shrink-0">
           {error}
         </div>
       )}
@@ -257,11 +253,11 @@ export default function MediaLibrary() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by name or alt text…"
-        className="mb-4 w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0c0c48] focus:outline-none"
+        className="mb-4 w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0c0c48] focus:outline-none lg:flex-shrink-0"
       />
 
-      <div className="flex gap-6">
-        <div className="flex-1">
+      <div className="flex gap-6 lg:min-h-0 lg:flex-1">
+        <div className="flex-1 lg:overflow-y-auto lg:pr-1">
           {loading ? (
             <p className="text-sm text-gray-400">Loading…</p>
           ) : filtered.length === 0 ? (
@@ -305,8 +301,7 @@ export default function MediaLibrary() {
 
         {selected && (
           <aside
-            ref={detailsRef}
-            className="sticky top-4 w-72 flex-shrink-0 self-start rounded-xl border border-gray-200 bg-white p-4 shadow-sm"
+            className="w-72 flex-shrink-0 self-start rounded-xl border border-gray-200 bg-white p-4 shadow-sm lg:max-h-full lg:overflow-y-auto"
           >
             <div className="mb-3 flex items-center justify-between">
               <p className="truncate text-xs font-semibold uppercase tracking-wide text-gray-500">

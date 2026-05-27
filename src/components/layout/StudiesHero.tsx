@@ -30,6 +30,7 @@ export default function StudyHero({
           src={imageSrc}
           alt={imageAlt}
           fill
+          sizes="100vw"
           style={{ objectFit: "cover", objectPosition: imagePosition }}
           priority
         />

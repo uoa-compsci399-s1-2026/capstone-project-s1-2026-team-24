@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useLanguage } from '@/contexts/LanguageContext';
+import en from '@/messages/en';
+import zh from '@/messages/zh';
 
 const STUDY_IMAGE_FALLBACK = '/images/team/placeholder.jpg';
 
@@ -38,14 +41,24 @@ function isStudy(data: unknown): data is Study {
 }
 
 export default function StudiesOverview() {
+  const { lang } = useLanguage();
+  const t = lang === 'EN' ? en : zh;
   const [studies, setStudies] = useState<Study[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
 
+  // Re-fetch when the language changes so the listing's titles/descriptions pick
+  // up the auto-translated versions. The lang is passed explicitly (not relied on
+  // via cookie) to avoid the cookie-write timing of a fresh toggle.
   useEffect(() => {
+    let cancelled = false;
+
     async function loadStudies() {
+      setLoading(true);
       try {
-        const res = await fetch('/api/studies');
+        const res = await fetch(
+          `/api/studies?lang=${lang === 'ZH' ? 'zh' : 'en'}`,
+        );
         if (!res.ok) {
           throw new Error('Failed to fetch studies');
         }
@@ -55,16 +68,19 @@ export default function StudiesOverview() {
           throw new Error('Invalid studies response');
         }
 
-        setStudies(data);
+        if (!cancelled) setStudies(data);
       } catch {
-        setStudies([]);
+        if (!cancelled) setStudies([]);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     loadStudies();
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [lang]);
 
   const filtered = studies.filter(s =>
     s.title.toLowerCase().includes(query.toLowerCase())
@@ -79,8 +95,8 @@ export default function StudiesOverview() {
             type="search"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search"
-            aria-label="Search studies"
+            placeholder={t.studies.search}
+            aria-label={t.studies.searchStudies}
             className="w-full h-[72px] sm:h-[94px] border-[3px] border-[#8e8d8d] rounded-[50px] pl-8 sm:pl-16 pr-16 sm:pr-24 text-[#8e8d8d] text-xl sm:text-[36px] tracking-[0.72px] focus:outline-none focus:border-[#0a4479] transition-colors bg-white"
           />
           <div className="absolute right-5 sm:right-6 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -119,7 +135,7 @@ export default function StudiesOverview() {
           ))
         ) : filtered.length === 0 ? (
           <p className="col-span-full text-center text-[#8e8d8d] text-xl py-12">
-            {studies.length === 0 ? 'No studies available.' : 'No studies match your search.'}
+            {studies.length === 0 ? t.studies.noStudiesAvailable : t.studies.noStudiesMatch}
           </p>
         ) : (
           filtered.map(study => (

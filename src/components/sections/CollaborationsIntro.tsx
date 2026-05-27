@@ -1,18 +1,43 @@
 import Image from "next/image";
+import { COLLABORATIONS_INTRO_DEFAULTS } from "@/lib/blocks/collaborations-content";
 
 // The "Research Collaborations + Pathway" intro section on the Collaborations
-// page. Extracted verbatim so it can be reordered as a single block.
-const RESEARCH_PATHWAY = [
-  "Early Inception Hypotheses",
-  "Protocol Development",
-  "Ethical And Regulatory Approval",
-  "Completion Of Trials",
-  "Data Analysis",
-  "Interpretation",
-  "Report Writing And Publication",
-];
+// page. Editable page-builder block: all copy and the image come from block
+// content (resolved + machine-translated server-side before render). Empty
+// props fall back to the shared defaults so a freshly-converted block renders
+// unchanged.
+//
+// IMAGE NOTE: `image` is a resolved path string (a raw "/file.jpg" or the path a
+// "media:{id}" ref resolved to). To swap it in code and keep it library-managed,
+// set a raw path in the block content/seed/defaults (NOT here in JSX), drop the
+// file in /public, and run `npm run catalog:media`. See
+// src/lib/blocks/collaborations-content.ts for the full workflow.
+interface CollaborationsIntroProps {
+  sectionTitle?: string;
+  sectionText?: string;
+  pathwayTitle?: string;
+  pathwaySteps?: string[];
+  image?: string;
+  imageAlt?: string;
+  complianceTitle?: string;
+  complianceText?: string;
+}
 
-export default function CollaborationsIntro() {
+export default function CollaborationsIntro({
+  sectionTitle = COLLABORATIONS_INTRO_DEFAULTS.sectionTitle,
+  sectionText = COLLABORATIONS_INTRO_DEFAULTS.sectionText,
+  pathwayTitle = COLLABORATIONS_INTRO_DEFAULTS.pathwayTitle,
+  pathwaySteps,
+  image = COLLABORATIONS_INTRO_DEFAULTS.image,
+  imageAlt = COLLABORATIONS_INTRO_DEFAULTS.imageAlt,
+  complianceTitle = COLLABORATIONS_INTRO_DEFAULTS.complianceTitle,
+  complianceText = COLLABORATIONS_INTRO_DEFAULTS.complianceText,
+}: CollaborationsIntroProps) {
+  const steps =
+    pathwaySteps && pathwaySteps.length > 0
+      ? pathwaySteps
+      : [...COLLABORATIONS_INTRO_DEFAULTS.pathwaySteps];
+
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -36,7 +61,7 @@ export default function CollaborationsIntro() {
                 lineHeight: 1.2,
               }}
             >
-              Research Collaborations and Partnerships
+              {sectionTitle}
             </h2>
             <p
               style={{
@@ -47,9 +72,7 @@ export default function CollaborationsIntro() {
                 marginBottom: "32px",
               }}
             >
-              The Human Nutrition Unit encourages research collaborations
-              with industry and academic units, both nationally and
-              internationally.
+              {sectionText}
             </p>
 
             <div
@@ -69,7 +92,7 @@ export default function CollaborationsIntro() {
                   marginBottom: "20px",
                 }}
               >
-                The Research Pathway
+                {pathwayTitle}
               </h2>
               <div
                 style={{
@@ -78,9 +101,9 @@ export default function CollaborationsIntro() {
                   gap: "12px",
                 }}
               >
-                {RESEARCH_PATHWAY.map((step, i) => (
+                {steps.map((step, i) => (
                   <div
-                    key={step}
+                    key={`${i}-${step}`}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -142,12 +165,15 @@ export default function CollaborationsIntro() {
                 position: "relative",
               }}
             >
-              <Image
-                src="/Our Team.jpg"
-                alt="Research collaboration"
-                fill
-                style={{ objectFit: "cover" }}
-              />
+              {image ? (
+                <Image
+                  src={image}
+                  alt={imageAlt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 35vw"
+                  style={{ objectFit: "cover" }}
+                />
+              ) : null}
             </div>
 
             <div
@@ -187,7 +213,7 @@ export default function CollaborationsIntro() {
                     margin: 0,
                   }}
                 >
-                  Compliance & Quality Assurance
+                  {complianceTitle}
                 </h3>
               </div>
               <p
@@ -199,10 +225,7 @@ export default function CollaborationsIntro() {
                   margin: 0,
                 }}
               >
-                The Unit ensures compliance with Good Clinical Practice, up
-                to the level of ICH GCP where required, and has experience
-                of and welcomes independent trial monitoring and audit
-                processes.
+                {complianceText}
               </p>
             </div>
           </div>

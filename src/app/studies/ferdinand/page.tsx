@@ -5,23 +5,34 @@ import StudyDetail from "@/components/sections/StudyDetail";
 import StudiesHero from "@/components/layout/StudiesHero";
 import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
+import { getServerLang } from "@/lib/lang";
+import { localizedMetadata } from "@/lib/localized-metadata";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
-export const metadata: Metadata = {
-  title: "Ferdinand | HNU Auckland",
-  description:
-    "A 6-month weight loss nutrition study investigating whether daily feijoa whole fruit powder alters the risk of developing type 2 diabetes.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata({
+    en: {
+      title: "Ferdinand | HNU Auckland",
+      description:
+        "A 6-month weight loss nutrition study investigating whether daily feijoa whole fruit powder alters the risk of developing type 2 diabetes.",
+    },
+    zh: {
+      title: "Ferdinand 研究 | HNU Auckland",
+      description:
+        "一项为期 6 个月的体重管理营养研究，探讨每日食用斐济果全果粉是否会改变 2 型糖尿病风险。",
+    },
+  });
+}
 
 export const dynamic = "force-dynamic";
-
-// Full navbar height (utility bar 40px + main nav 140px)
-const NAVBAR_HEIGHT = 180;
 
 export default async function FerdinandPage() {
   const layout = await getStudyLayoutForSlug("ferdinand");
   if (layout) {
     return <StudyLayoutView study={layout.study} blocks={layout.blocks} />;
   }
+  const t = (await getServerLang()) === "ZH" ? zh : en;
 
   return (
     <>
@@ -29,20 +40,19 @@ export default async function FerdinandPage() {
 
       <StudiesHero
         imageSrc="/ferdinand study.jpg"
-        imageAlt="Ferdinand Study"
-        title="Ferdinand Study"
+        imageAlt={t.studies.ferdinandPageTitle}
+        title={t.studies.ferdinandPageTitle}
       />
 
       <StudyDetail
-        title="Ferdinand Study"
         status="Open"
-        deadline="31 December 2025"
+        deadline={t.studies.ferdinandDeadline}
         eligibility={[
-          "Have elevated blood glucose but are not diabetic",
-          "Are between 18-70 years",
-          "Are overweight or obese",
-          "Located in Tāmaki Makaurau (Auckland area)",
-          "Happy to complete 7 visits to the Human Nutrition Unit",
+          t.studies.ferdinandEligibilityGlucose,
+          t.studies.eligibilityAge18To70,
+          t.studies.ferdinandEligibilityWeight,
+          t.studies.eligibilityAuckland,
+          t.studies.ferdinandEligibilityVisits,
         ]}
         joinHref="/contact"
         contactHref="/contact"
@@ -50,16 +60,14 @@ export default async function FerdinandPage() {
           <div>
             <ul>
               <li>
-                Would you like to participate in a 6-month nutrition study?
+                {t.studies.ferdinandQuestion1}
               </li>
-              <li>Would you like to lose weight?</li>
-              <li>Are you concerned about your diabetes risk?</li>
+              <li>{t.studies.ferdinandQuestion2}</li>
+              <li>{t.studies.ferdinandQuestion3}</li>
             </ul>
             <p>
-              We will investigate whether daily consumption of feijoa whole
-              fruit powder alters risk of developing type 2 diabetes.
+              {t.studies.ferdinandDescriptionText}
             </p>
-            {/* add more content */}
           </div>
         }
       />

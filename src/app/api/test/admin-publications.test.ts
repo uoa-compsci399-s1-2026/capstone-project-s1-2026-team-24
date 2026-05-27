@@ -141,6 +141,43 @@ describe("admin publications/[id] routes", () => {
     expect(body.status).toBe("Approved");
   });
 
+  it("PATCH marks reviewedManually when status changes (so re-sync won't clobber it)", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
+    mockPrisma.publication.update.mockResolvedValueOnce({
+      ...basePublication,
+      status: "Rejected",
+      reviewedManually: true,
+    });
+    const req = new Request("http://localhost", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "Rejected" }),
+    });
+    const res = await patchPublication(req, makeParams("1"));
+    expect(res.status).toBe(200);
+    // The update payload must flip reviewedManually so the ORCID sync preserves it.
+    const updateArg = mockPrisma.publication.update.mock.calls[0][0];
+    expect(updateArg.data.status).toBe("Rejected");
+    expect(updateArg.data.reviewedManually).toBe(true);
+  });
+
+  it("PATCH does NOT set reviewedManually for non-status edits", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
+    mockPrisma.publication.update.mockResolvedValueOnce({
+      ...basePublication,
+      title: "Edited title",
+    });
+    const req = new Request("http://localhost", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ title: "Edited title" }),
+    });
+    const res = await patchPublication(req, makeParams("1"));
+    expect(res.status).toBe(200);
+    const updateArg = mockPrisma.publication.update.mock.calls[0][0];
+    expect(updateArg.data.reviewedManually).toBeUndefined();
+  });
+
   it("PATCH returns 400 for invalid categoryId type", async () => {
     mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
     const req = new Request("http://localhost", {

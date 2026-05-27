@@ -57,6 +57,28 @@ const teamTab = (
     ? v
     : undefined;
 
+// Coerce persisted `studyCards` JSON into a safe StudyCardContent[]: every field
+// becomes a string (so nothing undefined reaches next/image's `src`), and cards
+// without a usable image are dropped — a malformed entry can't crash the render.
+const studyCards = (v: unknown): StudyCardContent[] =>
+  (Array.isArray(v) ? v : [])
+    .map((card) => {
+      const o = (
+        card && typeof card === "object" ? card : {}
+      ) as Record<string, unknown>;
+      return {
+        title: str(o.title),
+        subtitle: str(o.subtitle) || undefined,
+        description: str(o.description),
+        buttonLabel: str(o.buttonLabel) || undefined,
+        buttonHref: str(o.buttonHref) || undefined,
+        imageSrc: str(o.imageSrc),
+        imageAlt: str(o.imageAlt),
+        imagePosition: imgPos(o.imagePosition),
+      };
+    })
+    .filter((card) => card.imageSrc !== "");
+
 function infoCardProps(c: Content) {
   return {
     title: str(c.title),
@@ -218,9 +240,27 @@ export default function BlockRenderer({
         />
       );
 
-    // Content-frozen
+    // Editable collaborations blocks. Empty fields fall back to each
+    // component's defaults (the original copy/images), so a freshly-converted
+    // block renders unchanged. `str()`/`strArray()` coerce untrusted JSON; the
+    // resolver has already turned any "media:{id}" refs into plain paths.
     case "collaborationsIntro":
-      return <CollaborationsIntro />;
+      return (
+        <CollaborationsIntro
+          sectionTitle={str(c.sectionTitle) || undefined}
+          sectionText={str(c.sectionText) || undefined}
+          pathwayTitle={str(c.pathwayTitle) || undefined}
+          pathwaySteps={
+            Array.isArray(c.pathwaySteps) ? strArray(c.pathwaySteps) : undefined
+          }
+          image={str(c.image) || undefined}
+          imageAlt={str(c.imageAlt) || undefined}
+          complianceTitle={str(c.complianceTitle) || undefined}
+          complianceText={str(c.complianceText) || undefined}
+        />
+      );
+
+    // Content-frozen
     case "studiesContactCard":
       return <StudiesContactCard />;
     case "studiesOverview":
@@ -265,14 +305,35 @@ export default function BlockRenderer({
     // Dynamic (live data, with optional display config)
     case "recentPublications":
       return <RecentPublications limit={Number(c.limit) || undefined} />;
+    // TODO: remove once carousel-deletion PR lands (Karendeep). The OurPartners
+    // marquee + its home-page seed + the OurPartners component go together —
+    // coordinate merge order so this case isn't deleted before the seed is.
     case "ourPartners":
       return <OurPartners group={partnerGroup(c.group)} />;
     case "publicationIndex":
       return <PublicationIndex pageSize={Number(c.pageSize) || undefined} />;
-    case "academicCollaborators":
-      return <AcademicCollaborators />;
-    case "industryCollaborators":
-      return <IndustryCollaborators />;
+    case "academicCollaborators": {
+      const cards = studyCards(c.cards);
+      return (
+        <AcademicCollaborators
+          heading={str(c.heading) || undefined}
+          cards={cards.length > 0 ? cards : undefined}
+          buttonLabel={str(c.buttonLabel) || undefined}
+          buttonHref={str(c.buttonHref) || undefined}
+        />
+      );
+    }
+    case "industryCollaborators": {
+      const cards = studyCards(c.cards);
+      return (
+        <IndustryCollaborators
+          heading={str(c.heading) || undefined}
+          cards={cards.length > 0 ? cards : undefined}
+          buttonLabel={str(c.buttonLabel) || undefined}
+          buttonHref={str(c.buttonHref) || undefined}
+        />
+      );
+    }
     case "teamSections":
       return <TeamSectionsBlock defaultTab={teamTab(c.defaultTab)} />;
 

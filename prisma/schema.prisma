@@ -143,6 +143,15 @@ model Publication {
   isVisible       Boolean  @default(true)
   hiddenManually  Boolean  @default(false)
   matchedKeywords String   @default("")
+  // Per-paper affiliation snippet(s) that matched the unit/institution filter
+  // during the last ORCID/OpenAlex sync (empty when nothing matched).
+  matchedAffiliation String @default("")
+  // Human-readable explanation of the last automatic relevance decision
+  // (e.g. "before 1998", "unit phrasing: Human Nutrition Unit"). Surfaced in admin.
+  relevanceReason String   @default("")
+  // Set true once an admin approves/rejects via the PATCH route. When true, the
+  // ORCID sync MUST NOT overwrite `status` — preserves human review across re-syncs.
+  reviewedManually Boolean @default(false)
   lastSyncedAt    DateTime?
 
   categoryId      Int?
@@ -168,6 +177,29 @@ model PublicationAuthor {
 
   @@unique([publicationId, teamMemberId])
   @@index([teamMemberId])
+}
+
+// Singleton (expected: exactly one row, id = 1) holding the admin-editable
+// relevance filter used by the ORCID publications sync. List-type fields are
+// stored as newline-separated text because SQLite has no array type; the sync
+// route parses them with parseLines() in src/lib/publication-filter.ts.
+model PublicationFilterSetting {
+  id                Int      @id @default(autoincrement())
+  // Works published before this year are auto-rejected.
+  minYear           Int      @default(1998)
+  // Phrasings matched (normalised `includes`) against per-paper affiliation
+  // strings from OpenAlex. A hit is a STRONG relevance signal.
+  affiliationPhrases String  @default("")
+  // ROR IDs of accepted institutions (e.g. University of Auckland 03b94tp07).
+  // An institution-only hit (no unit phrasing) is a WEAK signal.
+  institutionRors   String   @default("")
+  // Title/journal/abstract keywords: a single strong hit can approve a work.
+  strongKeywords    String   @default("")
+  // Weaker keywords: only meaningful in combination (>=2, or alongside affiliation).
+  weakKeywords      String   @default("")
+  // Off-topic keywords that push a work toward Rejected unless a strong signal exists.
+  exclusionKeywords String   @default("")
+  updatedAt         DateTime @updatedAt
 }
 
 // A public page whose content is composed from an ordered list of blocks.
@@ -218,6 +250,27 @@ model PageBlock {
   page Page @relation(fields: [pageId], references: [id], onDelete: Cascade)
 
   @@index([pageId, position])
+}
+
+// Cache of machine translations for the auto-translated (non-study) site copy.
+// Populated when an admin publishes/saves content (translate-on-write); the
+// public render only READS from here and never calls the translation API, so the
+// site renders translated content even with no API key configured at run time.
+// Keyed by a hash of the source string, so an entry is reused until the source
+// text changes (its hash changes). Study-detail content is never stored here.
+model TranslationCache {
+  id             Int      @id @default(autoincrement())
+  targetLang     String // e.g. "ZH"
+  format         String   @default("text") // "text" | "html"
+  sourceHash     String // sha256 hex of the source string
+  sourceText     String // retained for debugging / re-translation audits
+  translatedText String
+  provider       String   @default("")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([targetLang, format, sourceHash])
+  @@index([targetLang])
 }
 
 // A centrally managed image asset. Files live under /public/uploads/media.

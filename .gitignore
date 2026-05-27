@@ -27,6 +27,7 @@
 # Claude Code
 CLAUDE.md
 AGENTS.md
+.claude/
 
 # Local planning / context — never push
 keep-local-claude-made-for-personal-planning-and-context/
@@ -59,6 +60,11 @@ dev.db
 # Playwright MCP output and local screenshots
 .playwright-mcp/
 /*.png
+/*.jpeg
+/*.jpg
+
+# Runtime-uploaded media (not committed; production uses its own storage)
+/public/uploads/
 
 # Playwright E2E run artifacts (snapshots under e2e/**-snapshots are committed)
 /test-results/

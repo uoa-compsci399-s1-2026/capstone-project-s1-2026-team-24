@@ -1,11 +1,18 @@
+"use client";
+
 import DirectorCard from "@/components/team/DirectorCard";
 import type { TeamMemberRecord } from "@/lib/fetch-api";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 export default function BoardOfDirectors({
   members,
 }: {
   members: TeamMemberRecord[];
 }) {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
   return (
     <section style={{ backgroundColor: "white", padding: "60px 48px" }}>
       <h2
@@ -18,7 +25,7 @@ export default function BoardOfDirectors({
           marginBottom: "48px",
         }}
       >
-        Board of Directors
+        {t.team.boardOfDirectors}
       </h2>
 
       <div

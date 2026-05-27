@@ -12,6 +12,7 @@
     "build-storybook": "storybook build",
     "seed": "prisma db seed",
     "seed:pages": "tsx prisma/seed-page-blocks.ts",
+    "warm:translations": "NODE_OPTIONS=--conditions=react-server tsx prisma/warm-translations.ts",
     "migrate:richtext": "tsx prisma/migrate-blocks-richtext.ts",
     "catalog:media": "tsx prisma/catalog-public-media.ts",
     "backfill:media-dims": "tsx prisma/backfill-media-dimensions.ts",
@@ -37,7 +38,9 @@
     "prisma": "^7.7.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "sanitize-html": "^2.17.4"
+    "resend": "^6.12.4",
+    "sanitize-html": "^2.17.4",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^5.1.2",

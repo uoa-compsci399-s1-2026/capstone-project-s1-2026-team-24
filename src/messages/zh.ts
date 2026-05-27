@@ -184,6 +184,10 @@ const zh = {
     noStudiesAvailable: "暂无研究项目。",
     noStudiesMatch: "没有符合搜索条件的研究项目。",
     contactUs: "联系我们",
+    panelHours: "周一至周五 9:00–17:00",
+    panelEnquiriesTitle: "咨询与机会",
+    panelEnquiriesText:
+      "对我们的研究、合作、伙伴关系或实习机会感兴趣？欢迎与我们联系。",
     heroTitle: "研究项目",
     heroSubtitleLine1:
       "参与 Human Nutrition Unit 的世界级营养研究。",
@@ -283,6 +287,8 @@ const zh = {
     heroSubtitleLine2: "进一步了解 Human Nutrition Unit",
     heroSubtitleLine3: "背后的团队成员",
     filterAll: "全部",
+    filterBoard: "董事会",
+    filterResearch: "研究团队",
     boardOfDirectors: "董事会",
     researchTeam: "研究团队",
     alumni: "校友",

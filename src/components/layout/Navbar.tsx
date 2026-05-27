@@ -39,7 +39,7 @@ export default function Navbar() {
   ] as const;
 
   const TOP_BAR_LINKS = [
-    { label: t.navbar.donations, href: "/collaborations/funding" },
+    { label: t.navbar.donations, href: "/contact" },
     { label: t.navbar.contact, href: "/contact" },
   ] as const;
 
@@ -253,7 +253,7 @@ export default function Navbar() {
           <div className="max-w-[1512px] ml-auto px-12 flex items-center justify-end h-9.5">
             {TOP_BAR_LINKS.map((link) => (
               <Link
-                key={link.href}
+                key={`${link.label}-${link.href}`}
                 href={link.href}
                 className="px-3 text-[14px] font-bold tracking-[0.28px] text-[#0c0c48] hover:opacity-70 transition-opacity whitespace-nowrap"
               >
@@ -852,7 +852,7 @@ export default function Navbar() {
                 </p>
                 <ul>
                   {POPULAR_SEARCHES.map((item) => (
-                    <li key={item.href}>
+                    <li key={`${item.label}-${item.href}`}>
                       <Link
                         href={item.href}
                         className="block text-[20px] font-bold text-white leading-[50px] hover:opacity-80 transition-opacity"

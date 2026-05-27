@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import BlockRenderer from "@/components/blocks/BlockRenderer";
 import { resolveBlockContents } from "@/lib/media-resolve";
 import { parsePublishedSnapshot } from "@/lib/page-publish";
+import { getServerLang } from "@/lib/lang";
+import { localizeBlockContents } from "@/lib/translate/blocks";
+import { parseBlockContent, serializeBlockContent } from "@/lib/blocks/validate";
 
 /**
  * Server helper that renders a page's blocks, in order, wrapped in the shared
@@ -53,10 +56,29 @@ export async function renderPageBlocks(
   // block components keep receiving plain path strings.
   const contents = await resolveBlockContents(blocks.map((b) => b.content));
 
+  // When the visitor has chosen 中文, swap in cached machine translations for the
+  // admin-authored copy (read-only: cache miss falls back to the English source,
+  // never a live API call). Study-detail pages render through a different path and
+  // keep their manual, board-approved translations.
+  let renderContents = contents;
+  const lang = await getServerLang();
+  if (lang === "ZH") {
+    const parsed = contents.map((c) => parseBlockContent(c));
+    const localized = await localizeBlockContents(
+      blocks.map((b, i) => ({ type: b.type, content: parsed[i] })),
+      "ZH",
+    );
+    renderContents = localized.map((c) => serializeBlockContent(c));
+  }
+
   return (
     <main id="main-content">
       {blocks.map((block, i) => (
-        <BlockRenderer key={block.key} type={block.type} content={contents[i]} />
+        <BlockRenderer
+          key={block.key}
+          type={block.type}
+          content={renderContents[i]}
+        />
       ))}
     </main>
   );

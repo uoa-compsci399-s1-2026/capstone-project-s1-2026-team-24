@@ -1,4 +1,5 @@
 import "dotenv/config";
+import crypto from "node:crypto";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
 import {
@@ -6,7 +7,14 @@ import {
   DISCOVER_VIDEO_DEFAULTS,
   TRIAL_DESIGN_DEFAULTS,
 } from "../src/lib/blocks/default-content";
+import {
+  ACADEMIC_COLLABORATORS_DEFAULTS,
+  COLLABORATIONS_INTRO_DEFAULTS,
+  INDUSTRY_COLLABORATORS_DEFAULTS,
+} from "../src/lib/blocks/collaborations-content";
 import { snapshotBlocks } from "../src/lib/page-publish";
+import enMessages from "../src/messages/en";
+import zhMessages from "../src/messages/zh";
 
 // Seeds the page-builder tables (Page + PageBlock) with the content that was
 // previously hardcoded in each page's JSX. Running this reproduces the exact
@@ -278,10 +286,13 @@ const PAGE_SEEDS: PageSeed[] = [
           subtitleMaxWidth: "",
         },
       },
-      { type: "collaborationsIntro", content: {} },
-      { type: "academicCollaborators", content: {} },
+      // Seeded with the original copy + image paths so the page renders
+      // identically after these blocks became editable. Images are raw paths
+      // (see src/lib/blocks/collaborations-content.ts for the catalog workflow).
+      { type: "collaborationsIntro", content: { ...COLLABORATIONS_INTRO_DEFAULTS } },
+      { type: "academicCollaborators", content: { ...ACADEMIC_COLLABORATORS_DEFAULTS } },
       { type: "benefitsRow", content: { variant: "academic", title: "" } },
-      { type: "industryCollaborators", content: {} },
+      { type: "industryCollaborators", content: { ...INDUSTRY_COLLABORATORS_DEFAULTS } },
       { type: "benefitsRow", content: { variant: "industry", title: "" } },
       {
         type: "calloutBannerRight",
@@ -398,6 +409,35 @@ export async function seedPageBlocks(prisma: PrismaClient, force = false) {
       create: { slug: pageSeed.slug, title: pageSeed.title },
     });
 
+    // Canonical snapshot of this page's as-designed default layout.
+    const seedSnapshot = snapshotBlocks(
+      pageSeed.blocks.map((b) => ({
+        type: b.type,
+        content: JSON.stringify(b.content),
+        isVisible: true,
+      })),
+    );
+
+    // Preserve the default as an "Original" revision so a page can always be
+    // reverted to its original layout from History — even after it's been edited
+    // and republished. Idempotent, and created for existing pages too (it runs
+    // before the block-seeding skip below), so re-running the seed backfills
+    // pages that were seeded before this baseline existed.
+    const hasOriginal = await prisma.pageRevision.count({
+      where: { pageId: page.id, label: "Original" },
+    });
+    if (hasOriginal === 0) {
+      await prisma.pageRevision.create({
+        data: {
+          pageId: page.id,
+          content: seedSnapshot,
+          label: "Original",
+          // Backdate to the page's creation so it always sorts oldest in History.
+          createdAt: page.createdAt,
+        },
+      });
+    }
+
     const existing = await prisma.pageBlock.count({
       where: { pageId: page.id },
     });
@@ -430,20 +470,77 @@ export async function seedPageBlocks(prisma: PrismaClient, force = false) {
     // the editor shows the page as published (not "unpublished changes").
     await prisma.page.update({
       where: { id: page.id },
-      data: {
-        publishedContent: snapshotBlocks(
-          pageSeed.blocks.map((b) => ({
-            type: b.type,
-            content: JSON.stringify(b.content),
-            isVisible: true,
-          })),
-        ),
-        publishedAt: new Date(),
-      },
+      data: { publishedContent: seedSnapshot, publishedAt: new Date() },
     });
 
     console.log(`✓ ${pageSeed.slug}: seeded ${pageSeed.blocks.length} blocks`);
   }
+
+  await seedCollaborationTranslations(prisma);
+}
+
+const sha256 = (text: string): string =>
+  crypto.createHash("sha256").update(text).digest("hex");
+
+// Pre-seed the native-speaker Chinese for the collaborations copy into the
+// translation cache so publishing never machine-translates over it. The
+// collaborations sections were converted to editable blocks whose EN content is
+// seeded verbatim from `src/lib/blocks/collaborations-content.ts` (identical to
+// `en.collaborations`); without this, the first publish would replace the
+// hand-written 中文 (authored by native speakers in `zh.ts`) with machine output.
+//
+// How it survives: `warmTranslations` only fills MISSING cache keys, and the
+// render path prefers the cache over local fallbacks — so a pre-seeded row is a
+// cache hit that publish leaves untouched and render uses. Keys are
+// `sha256(EN source)` + format "text", matching `src/lib/translate/blocks.ts`.
+// Idempotent (upsert). If an admin later edits a block's EN text, its hash no
+// longer matches and that new text is machine-translated as normal.
+async function seedCollaborationTranslations(prisma: PrismaClient) {
+  const en = enMessages.collaborations as Record<string, string>;
+  const zh = zhMessages.collaborations as Record<string, string>;
+
+  // Strings that appear in block content but not in the dictionary.
+  const pairs: Array<[string, string]> = [
+    ["Research collaboration", "研究合作"], // collaborationsIntro image alt
+  ];
+  for (const [key, enText] of Object.entries(en)) {
+    const zhText = zh[key];
+    if (
+      typeof enText === "string" &&
+      enText.trim() &&
+      typeof zhText === "string" &&
+      zhText.trim()
+    ) {
+      pairs.push([enText, zhText]);
+    }
+  }
+
+  let count = 0;
+  for (const [sourceText, translatedText] of pairs) {
+    const sourceHash = sha256(sourceText);
+    await prisma.translationCache.upsert({
+      where: {
+        targetLang_format_sourceHash: {
+          targetLang: "ZH",
+          format: "text",
+          sourceHash,
+        },
+      },
+      update: { sourceText, translatedText, provider: "manual-zh-seed" },
+      create: {
+        targetLang: "ZH",
+        format: "text",
+        sourceHash,
+        sourceText,
+        translatedText,
+        provider: "manual-zh-seed",
+      },
+    });
+    count += 1;
+  }
+  console.log(
+    `✓ collaboration translations: ensured ${count} manual ZH cache entries`,
+  );
 }
 
 async function main() {

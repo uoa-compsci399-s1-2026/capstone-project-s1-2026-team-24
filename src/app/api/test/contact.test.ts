@@ -10,12 +10,18 @@ const mockPrisma = vi.hoisted(() => ({
   },
 }));
 
+const mockSendContactNotification = vi.hoisted(() => vi.fn());
+
 vi.mock("@/lib/prisma", () => ({
   prisma: mockPrisma,
 }));
 
 vi.mock("@/lib/rate-limit", () => ({
   checkRateLimit: () => ({ allowed: true }),
+}));
+
+vi.mock("@/lib/email", () => ({
+  sendContactNotification: mockSendContactNotification,
 }));
 
 import { POST as postContact } from "@/app/api/contact/route";
@@ -42,6 +48,7 @@ function buildValidPayload(overrides: Record<string, unknown> = {}) {
 describe("POST /api/contact", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSendContactNotification.mockResolvedValue({ ok: true });
   });
 
   it("returns 400 for invalid category", async () => {
@@ -78,6 +85,30 @@ describe("POST /api/contact", () => {
         message: "Hello there, this is valid.",
       },
     });
+    expect(mockSendContactNotification).toHaveBeenCalledWith({
+      recipientEmail: "general@example.com",
+      submission: {
+        name: "Alice",
+        email: "alice@example.com",
+        category: "General Enquiry",
+        message: "Hello there, this is valid.",
+      },
+    });
+  });
+
+  it("returns 201 even when the notification email fails", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "General Enquiry",
+      email: "general@example.com",
+    });
+    mockPrisma.contactSubmission.create.mockResolvedValueOnce({});
+    mockSendContactNotification.mockRejectedValueOnce(new Error("mail down"));
+
+    const response = await postContact(buildRequest(buildValidPayload()));
+
+    expect(response.status).toBe(201);
+    await expect(response.json()).resolves.toEqual({ ok: true });
+    expect(mockPrisma.contactSubmission.create).toHaveBeenCalled();
   });
 
   it("silently accepts when elapsedMs is missing", async () => {
