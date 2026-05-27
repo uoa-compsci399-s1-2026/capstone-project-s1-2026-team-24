@@ -232,6 +232,15 @@ export default function Navbar() {
       ? undefined
       : { backgroundColor: "#00000000" };
 
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
   return (
     <>
       <header
@@ -240,8 +249,8 @@ export default function Navbar() {
         style={{ position: "fixed", top: 0, left: 0, right: 0 }}
       >
         {/* Top utility bar */}
-        <div className="relative z-[100] bg-white">
-          <div className="max-w-[1512px] mx-auto px-12 flex items-center justify-end h-9.5">
+        <div className="hidden lg:flex relative z-[100] bg-white">
+          <div className="max-w-[1512px] ml-auto px-12 flex items-center justify-end h-9.5">
             {TOP_BAR_LINKS.map((link) => (
               <Link
                 key={link.href}
@@ -311,49 +320,33 @@ export default function Navbar() {
           aria-label="Main navigation"
         >
           <div
+            className="w-full mx-auto"
             style={{
-              maxWidth: mounted && scrolled ? "900px" : "1512px",
+              maxWidth: mounted && scrolled && isDesktop ? "900px" : "1512px",
               margin: "0 auto",
-              padding: mounted && scrolled ? "0 32px" : "0 48px",
-              height: mounted && scrolled ? "80px" : "120px",
+              padding: mounted && scrolled && isDesktop ? "0 32px" : "0 48px",
+              height: mounted && scrolled && isDesktop ? "80px" : "120px",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               backgroundColor:
-                mounted && scrolled ? "rgba(0, 0, 0, 0.35)" : "transparent",
-              backdropFilter: mounted && scrolled ? "blur(15px)" : "none",
-              borderRadius: mounted && scrolled ? "9999px" : "0",
+                mounted && scrolled && isDesktop ? "rgba(0, 0, 0, 0.35)" : "transparent",
+              backdropFilter: mounted && scrolled && isDesktop ? "blur(15px)" : "none",
+              borderRadius: mounted && scrolled && isDesktop ? "9999px" : "0",
               transition: "all 0.4s ease",
-              marginTop: mounted && scrolled ? "8px" : "0",
-              marginBottom: mounted && scrolled ? "8px" : "0",
+              marginTop: mounted && scrolled && isDesktop ? "8px" : "0",
+              marginBottom: mounted && scrolled && isDesktop ? "8px" : "0",
             }}
           >
             {/* Logos */}
-            <div className="flex items-center">
-              {(!mounted || !scrolled) && (
-                <>
-                  <Link href="/" aria-label="University of Auckland — Home">
-                    <Image
-                      src="/images/logos/UoA-Logo-Primary-RGB-Reversed-Small.png"
-                      alt="University of Auckland"
-                      width={164}
-                      height={78}
-                      priority
-                      className="object-contain"
-                    />
-                  </Link>
-                  <div
-                    className="w-[2px] h-16 bg-white/60 mx-2"
-                    aria-hidden="true"
-                  />
-                </>
-              )}
+            <div className="hidden lg:block flex items-center">
+              {(!mounted || !scrolled) && <></>}
               <Link href="/" aria-label="HNU — Home">
                 <Image
                   src="/images/logos/hnu-logo.svg"
                   alt="HNU"
-                  width={mounted && scrolled ? 150 : 200}
-                  height={mounted && scrolled ? 52 : 70}
+                  width={mounted && scrolled && isDesktop ? 180 : 200}
+                  height={mounted && scrolled && isDesktop ? 52 : 70}
                   className="object-contain ml-[-10px]"
                 />
               </Link>
@@ -363,7 +356,7 @@ export default function Navbar() {
               {/* About dropdown */}
               <div className="relative">
                 <button
-                  className="flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+                  className="nav-link flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
                   onClick={() => {
                     if (aboutOpen) {
                       setAboutClosing(true);
@@ -403,7 +396,9 @@ export default function Navbar() {
                     role="menu"
                     className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${aboutClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
                     style={{
-                      backgroundColor: "#0c0c48",
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      backdropFilter:
+                        mounted && scrolled && isDesktop ? "blur(15px)" : "blur(15px)",
                       height: scrolled ? "350px" : "400px",
                       paddingTop: scrolled
                         ? `${searchContentTopOffset - 40}px`
@@ -431,7 +426,7 @@ export default function Navbar() {
                               className="w-[300px] h-[200px] object-cover rounded-[30px]"
                               alt={item.label}
                             />
-                            <div className="absolute inset-[-1] bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90" />
+                            <div className="absolute inset-[-0.25] bg-gradient-to-t from-[#000000] to-[#00000020] opacity-90 rounded-[30px]" />
                             <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
                               {item.label}
                             </p>
@@ -446,7 +441,7 @@ export default function Navbar() {
               {/* Studies dropdown */}
               <div className="relative">
                 <button
-                  className="flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+                  className="nav-link flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
                   onClick={() => {
                     if (studiesOpen) {
                       setStudiesClosing(true);
@@ -486,9 +481,10 @@ export default function Navbar() {
                   <div
                     id="studies-dropdown"
                     role="menu"
-                    className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${studiesClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
+                    className={`fixed inset-x-0 top-0 z-[-1] ${aboutClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
                     style={{
-                      backgroundColor: "#0c0c48",
+                      backgroundColor: "rgba(0, 0, 0, 0.5)",
+                      backdropFilter: "blur(15px)",
                       height: scrolled ? "350px" : "400px",
                       paddingTop: scrolled
                         ? `${searchContentTopOffset - 40}px`
@@ -516,7 +512,7 @@ export default function Navbar() {
                               className="w-[300px] h-[200px] object-cover rounded-[30px]"
                               alt={item.label}
                             />
-                            <div className="absolute inset-[-1] bg-gradient-to-t from-[#0c0c48] to-[#0c0c4830] opacity-90 " />
+                            <div className="absolute inset-[-0.25] bg-gradient-to-t from-[#000000] to-[#00000020] opacity-90 rounded-[30px]" />
                             <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
                               {item.label}
                             </p>
@@ -530,7 +526,7 @@ export default function Navbar() {
 
               <Link
                 href="/collaborations"
-                className="text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+                className="nav-link text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
               >
                 {t.navbar.collaborations}
               </Link>
@@ -610,154 +606,200 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* Mobile hamburger */}
-            <button
-              className="lg:hidden p-2 rounded text-white hover:bg-white/10 transition-colors"
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-expanded={mobileOpen}
-              aria-controls="mobile-menu"
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
+            {/* Mobile nav bar — logo center, search left, hamburger right */}
+            <div className="lg:hidden flex items-center justify-between w-full">
+              {/* Search */}
+              <button
+                onClick={() => setSearchOpen(true)}
+                aria-label="Open search"
+                className="w-11 h-11 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
               >
-                {mobileOpen ? (
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
-                ) : (
+                </svg>
+              </button>
+
+              {/* Logo — centered absolutely */}
+              <Link
+                href="/"
+                aria-label="HNU — Home"
+                className="absolute left-1/2 -translate-x-1/2"
+              >
+                <Image
+                  src="/images/logos/hnu-logo.svg"
+                  alt="HNU"
+                  width={140}
+                  height={40}
+                  className="object-contain"
+                />
+              </Link>
+
+              {/* Hamburger */}
+              <button
+                onClick={() => setMobileOpen(true)}
+                aria-label="Open menu"
+                className="w-11 h-11 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
                     d="M4 6h16M4 12h16M4 18h16"
                   />
-                )}
-              </svg>
-            </button>
+                </svg>
+              </button>
+            </div>
           </div>
         </nav>
 
-        {/* Mobile menu */}
+        {/* Mobile full-screen overlay */}
         {mobileOpen && (
           <div
-            id="mobile-menu"
-            className="lg:hidden"
+            className="fixed inset-0 z-[200] flex flex-col animate-[fadeIn_0.3s_ease-out] lg:hidden"
             style={{
-              backgroundColor: "#0c0c48",
-              borderTop: "1px solid rgba(255,255,255,0.15)",
+              backgroundColor: "rgba(0,0,0,0.88)",
+              backdropFilter: "blur(24px)",
             }}
           >
-            <ul className="px-4 py-2 space-y-1">
-              <li>
-                <Link
-                  href="/"
-                  className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
+            {/* Header row */}
+            <div className="flex items-center justify-between h-16 px-5 border-b border-white/10">
+              <Link
+                href="/"
+                onClick={() => setMobileOpen(false)}
+                aria-label="HNU — Home"
+              >
+                <Image
+                  src="/images/logos/hnu-logo.svg"
+                  alt="HNU"
+                  width={140}
+                  height={40}
+                  className="object-contain"
+                />
+              </Link>
+              <button
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+                className="w-11 h-11 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  {t.navbar.home}
-                </Link>
-              </li>
-              <li>
-                <button
-                  className="w-full flex items-center justify-between px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
-                  onClick={() => setMobileAboutOpen(!mobileAboutOpen)}
-                  aria-expanded={mobileAboutOpen}
-                >
-                  {t.navbar.about}
-                  <svg
-                    className={`w-4 h-4 transition-transform ${mobileAboutOpen ? "rotate-180" : ""}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                {mobileAboutOpen && (
-                  <ul className="ml-4 mt-1 space-y-1">
-                    {ABOUT_ITEMS.map((item) => (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-              <li>
-                <button
-                  className="w-full flex items-center justify-between px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
-                  onClick={() => setMobileStudiesOpen(!mobileStudiesOpen)}
-                  aria-expanded={mobileStudiesOpen}
-                >
-                  {t.navbar.studies}
-                  <svg
-                    className={`w-4 h-4 transition-transform ${mobileStudiesOpen ? "rotate-180" : ""}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                {mobileStudiesOpen && (
-                  <ul className="ml-4 mt-1 space-y-1">
-                    {STUDIES_ITEMS.map((item) => (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
-                        >
-                          {item.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-              <li>
-                <Link
-                  href="/collaborations"
-                  className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
-                >
-                  {t.navbar.collaborations}
-                </Link>
-              </li>
-              <li className="border-t border-white/15 pt-1 mt-1">
-                {TOP_BAR_LINKS.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="block px-3 py-2 text-sm text-white rounded hover:bg-white/10 transition-colors"
-                  >
-                    {link.label}
-                  </Link>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Menu content */}
+            <div className="flex-1 overflow-y-auto px-7 py-10">
+              <p className="text-[11px] tracking-[2px] uppercase text-white/35 mb-4">
+                Explore
+              </p>
+              <ul className="space-y-0 mb-10">
+                {[
+                  { label: t.navbar.home, href: "/" },
+                  { label: t.navbar.about, href: "/about" },
+                  { label: t.navbar.studies, href: "/studies" },
+                  { label: t.navbar.collaborations, href: "/collaborations" },
+                  { label: t.navbar.research, href: "/research" },
+                ].map((item) => (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-between py-3.5 text-white text-[22px] font-medium tracking-tight border-b border-white/10 hover:opacity-70 transition-opacity"
+                    >
+                      {item.label}
+                      <svg
+                        className="w-4 h-4 text-white/35"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </Link>
+                  </li>
                 ))}
-              </li>
-            </ul>
+              </ul>
+
+              <p className="text-[11px] tracking-[2px] uppercase text-white/35 mb-4">
+                Connect
+              </p>
+              <ul className="space-y-0 mb-12">
+                {TOP_BAR_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-between py-3 text-white/70 text-[17px] border-b border-white/08 hover:opacity-70 transition-opacity"
+                    >
+                      {link.label}
+                      <svg
+                        className="w-3.5 h-3.5 text-white/25"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Language */}
+              <div className="flex gap-2.5">
+                {(["EN", "ZH"] as const).map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => {
+                      setLang(l);
+                    }}
+                    className={`flex-1 py-3 rounded-xl text-sm tracking-widest transition-colors border ${
+                      lang === l
+                        ? "bg-white/15 border-white/30 text-white"
+                        : "bg-white/06 border-white/15 text-white/50"
+                    }`}
+                  >
+                    {l === "EN" ? "EN" : "中文"}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </header>
@@ -767,7 +809,10 @@ export default function Navbar() {
         <div
           ref={searchDialogRef}
           className="fixed inset-x-0 top-0 z-40 min-h-screen animate-[slideDown_0.3s_ease-out]"
-          style={{ backgroundColor: "#0c0c48" }}
+          style={{
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backdropFilter: "blur(15px)",
+          }}
           role="dialog"
           aria-modal="true"
           aria-label={t.navbar.search}
