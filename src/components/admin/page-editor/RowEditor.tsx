@@ -194,7 +194,7 @@ function Column({
   return (
     <div
       ref={setNodeRef}
-      className={`flex-1 rounded-lg border bg-gray-50 p-3 transition-colors ${
+      className={`min-w-[220px] flex-1 rounded-lg border bg-gray-50 p-3 transition-colors ${
         isOver ? "border-[#0c0c48]" : "border-gray-200"
       }`}
     >
@@ -451,7 +451,7 @@ export default function RowEditor({
         onDragEnd={onDragEnd}
         onDragCancel={onDragCancel}
       >
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-wrap gap-3">
           {row.columns.map((col, i) => (
             <Column
               key={i}

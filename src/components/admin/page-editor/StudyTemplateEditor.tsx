@@ -108,6 +108,7 @@ export default function StudyTemplateEditor({
         backHref="/admin/studies"
         backLabel="← Back to studies"
         headerExtra={headerExtra}
+        fillViewport={false}
       />
     </div>
   );

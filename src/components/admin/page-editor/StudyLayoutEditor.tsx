@@ -147,6 +147,7 @@ export default function StudyLayoutEditor({
         viewHref={`/studies/${studySlug}`}
         previewHref={`/studies/${studySlug}`}
         headerExtra={headerExtra}
+        fillViewport={false}
       />
     </div>
   );
