@@ -9,8 +9,8 @@ export default function ResearchTeam({
 }) {
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
-      <div style={{ maxWidth: "1420px", margin: "0 auto" }}>
-        <h2 className="text-3xl sm:text-5xl lg:text-[64px] font-extrabold text-[#0c0c48] tracking-[1.28px] text-center mb-12 sm:mb-16 lg:mb-20">
+      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <h2 className="text-3xl sm:text-5xl lg:text-[48px] font-extrabold text-[#0c0c48] tracking-[1.28px] text-center mb-12 sm:mb-16 lg:mb-20">
           Research Team
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12">

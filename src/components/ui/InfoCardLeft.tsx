@@ -40,7 +40,7 @@ export default function InfoCard({
 }: InfoCardProps) {
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
-      <div className="max-w-[1512px] mx-auto">
+      <div className="max-w-[1100px] mx-auto">
         <div className="relative flex flex-col lg:flex-row items-center gap-0">
           {/* Blue text card — overlaps the image on the left */}
           <div
@@ -115,23 +115,20 @@ export default function InfoCard({
         </div>
       </div>
       <div
-        className="absolute inset-0 overflow-hidden pointer-events-none"
+        className="absolute inset-0 overflow-hidden pointer-events-none flex items-center"
         aria-hidden="true"
       >
         <div
-          style={{
-            position: "absolute",
-            width: "4000px",
-            height: "200px",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
-            opacity: 0.25,
-            backgroundImage: "url(/maori-pattern.svg)",
-            backgroundRepeat: "repeat-x",
-            backgroundSize: "auto 100%",
-            filter: "brightness(3) invert(0)",
-          }}
-        />
+        className="w-full h-[200px]"
+        style={{
+          backgroundImage: "url(/maori-pattern.svg)",
+          backgroundRepeat: "repeat-x",
+          backgroundSize: "auto 100%",
+          filter: "brightness(3) invert(0)",
+          opacity: 0.25,
+        }}
+        aria-hidden="true"
+      />
       </div>
     </section>
   );

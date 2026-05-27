@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from "react";
 
 // Full navbar height = 40px white utility bar + 140px main nav row.
 // Heroes use a negative margin-top equal to this height so the hero gradient
@@ -10,7 +10,7 @@ export const NAVBAR_HEIGHT = 180;
 // component (node 2008:275 / 146:6446). #092d65 at the top-left through to
 // #02a8d0 at the bottom-right; 112deg matches the home hero's gradient angle.
 export const SUBPAGE_HERO_GRADIENT =
-  'linear-gradient(112deg, #092d65 0%, #06699b 50%, #02a8d0 100%)';
+  "linear-gradient(112deg, #092d65 0%, #06699b 50%, #02a8d0 100%)";
 
 type SubpageHeroProps = {
   title: string;
@@ -29,12 +29,12 @@ export default function SubpageHero({
 }: SubpageHeroProps) {
   return (
     <section
-      className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden"
+      className="relative w-full bg-white py-16 px-6 sm:px-12 overflow-hidden"
       style={{
         marginTop: `0`,
         paddingTop: 250,
         backgroundImage: SUBPAGE_HERO_GRADIENT,
-        backgroundColor: '#ffffff',
+        backgroundColor: "#ffffff",
         height: 600,
       }}
     >
@@ -48,23 +48,23 @@ export default function SubpageHero({
       >
         <div
           style={{
-            position: 'absolute',
-            width: '4000px',
-            height: '250px',
-            top: '100%',
-            left: '50%',
-            transform: 'translate(-50%, -50%) rotate(-12.38deg)',
+            position: "absolute",
+            width: "4000px",
+            height: "250px",
+            top: "100%",
+            left: "50%",
+            transform: "translate(-50%, -50%) rotate(-12.38deg)",
             opacity: 0.25,
-            backgroundImage: 'url(/maori-pattern.svg)',
-            backgroundRepeat: 'repeat-x',
-            backgroundSize: 'auto 100%',
-            filter: 'brightness(0) invert(1)',
+            backgroundImage: "url(/maori-pattern.svg)",
+            backgroundRepeat: "repeat-x",
+            backgroundSize: "auto 100%",
+            filter: "brightness(0) invert(1)",
           }}
         />
       </div>
 
       {/* Content */}
-      <div>
+      <div className="max-w-[1200px] mx-auto">
         <h1 className="text-4xl sm:text-5xl lg:text-[76px] font-extrabold text-white/75 tracking-[1.52px] leading-normal">
           {title}
         </h1>

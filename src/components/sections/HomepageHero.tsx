@@ -13,31 +13,30 @@ interface HomepageHeroProps {
 export default function HomepageHero({
   title = "Unlock the power of food with \n the Human Nutrition Unit",
   buttonLabel = "JOIN A STUDY",
-  buttonHref = "/studies",
-  backgroundGradient = "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
+  buttonHref = "/contact",
+  backgroundGradient = "linear-gradient(112deg, #0f2e75 0%, #0b4e93 50%, #0a95ca 100%)",
   heroImageSrc = "/images/homepage-hero-bowl.webp",
 }: HomepageHeroProps = {}) {
   const titleLines = title.split("\n");
   return (
     <section
       style={{
-        width: "100%",
-        marginLeft: 0,
-        marginRight: 0,
-        marginTop: 0,
-        marginBottom: "0px",
+        maxWidth: "100%",
       }}
       aria-label="Human Nutrition Unit hero section"
       className="overflow-visible"
     >
       <div
-        className="relative min-h-[810px] px-8 pb-24 pt-[315px] md:px-14 md:pb-28 md:pt-[315px] lg:px-15"
+        className="relative min-h-[810px] md:px-15 md:pt-[280px] lg:px-15"
         style={{
           background: backgroundGradient,
         }}
       >
         {/* Hero bowl image */}
-        <div className="pointer-events-none absolute -left-75 bottom-[-400px] h-[1000px] w-[1000px]">
+        <div
+          className="pointer-events-none absolute bottom-[-400px] h-[1000px] w-[1000px]"
+          style={{ left: "max(-400px, calc(50% - 1000px))" }}
+        >
           <Image
             src={heroImageSrc}
             alt="Colourful salad bowl with fresh vegetables"
@@ -49,7 +48,17 @@ export default function HomepageHero({
           />
         </div>
 
-        <div className="relative z-10 mx-0 flex min-h-[350px] max-w-10xl justify-center lg:justify-end">
+        <div
+          className="max-w-[1400px] mx-auto"
+          style={{
+            position: "relative",
+            zIndex: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            minHeight: "350px",
+          }}
+        >
           <div className="max-w-6xl text-center text-white lg:text-right">
             <h2
               className="leading-[1.05]"
@@ -69,10 +78,9 @@ export default function HomepageHero({
             </h2>
             <Link
               href={buttonHref}
-              className="mt-15 inline-flex rounded-full border-[5px] border-white/75 px-10 py-3 font-bold tracking-wide text-white transition hover:bg-white/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="mt-15 inline-flex rounded-full border-[5px] border-white px-10 py-3 font-bold tracking-wide text-white transition hover:bg-white/25 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               style={{
                 fontSize: "28px",
-                opacity: 0.75,
               }}
             >
               {buttonLabel}
@@ -80,8 +88,18 @@ export default function HomepageHero({
           </div>
         </div>
 
-        <div className="absolute bottom-5 right-13 z-5 hidden items-end gap-1 md:flex">
-          <div className="relative h-[120px] w-[300px]">
+        <div
+          className="max-w-[1400px] mx-auto"
+          style={{
+            position: "relative",
+            zIndex: 10,
+            display: "flex",
+            alignItems: "end",
+            justifyContent: "flex-end",
+            minHeight: "150px",
+          }}
+        >
+          <div className="relative h-[120px] w-[300px] mr-[-20]">
             <Image
               src="/1000003090.png"
               alt="Uniservices logo"
@@ -92,7 +110,7 @@ export default function HomepageHero({
             />
           </div>
           <div
-            className="mb-5 h-[75px] w-[3px] bg-white/100 mr-[15]"
+            className="m-5 h-[75px] w-[3px] bg-white/100 mr-[15]"
             aria-hidden="true"
             style={{ opacity: 0.5 }}
           />
