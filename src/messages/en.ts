@@ -188,6 +188,10 @@ const en = {
     noStudiesAvailable: "No studies available.",
     noStudiesMatch: "No studies match your search.",
     contactUs: "Contact us",
+    panelHours: "Mon – Fri  9am–5pm",
+    panelEnquiriesTitle: "Enquiries & Opportunities",
+    panelEnquiriesText:
+      "Interested in our research, collaborations, partnerships, or internships? We welcome you to get in touch.",
     heroTitle: "Studies",
     heroSubtitleLine1:
       "Participate in world-class nutrition research at the Human Nutrition Unit.",
@@ -288,6 +292,8 @@ const en = {
     heroSubtitleLine2: "Find out more about the people behind",
     heroSubtitleLine3: "the Human Nutrition Unit",
     filterAll: "All",
+    filterBoard: "Board",
+    filterResearch: "Research",
     boardOfDirectors: "Board of Directors",
     researchTeam: "Research Team",
     alumni: "Alumni",

@@ -1,4 +1,9 @@
+'use client';
+
 import Link from 'next/link';
+import { useLanguage } from '@/contexts/LanguageContext';
+import en from '@/messages/en';
+import zh from '@/messages/zh';
 
 function PhoneIcon() {
   return (
@@ -64,15 +69,16 @@ function LocationIcon() {
 }
 
 export default function StudiesContactPanel() {
+  const { lang } = useLanguage();
+  const t = lang === 'EN' ? en : zh;
   return (
     <div className="flex flex-col gap-8">
       <div>
         <h3 className="text-[#0a4479] text-lg sm:text-[24px] font-semibold leading-normal mb-3">
-          Volunteering for Clinical Trial as a Study Participant
+          {t.contactPage.volunteeringTitle}
         </h3>
         <p className="text-[#0a4479] text-base sm:text-[20px] font-normal leading-normal">
-          See our current studies or express your interest to participate in a
-          future study through our contact form.
+          {t.contactPage.volunteeringText}
         </p>
       </div>
 
@@ -86,7 +92,7 @@ export default function StudiesContactPanel() {
         <div className="flex items-start gap-4">
           <ClockIcon />
           <p className="text-[#0a4479] text-base sm:text-[20px] tracking-[0.4px]">
-            Mon - Fri&nbsp; 9am-5pm
+            {t.studies.panelHours}
           </p>
         </div>
         <div className="flex items-start gap-4">
@@ -101,13 +107,10 @@ export default function StudiesContactPanel() {
 
       <div>
         <h3 className="text-[#0a4479] text-lg sm:text-[24px] font-semibold leading-normal mb-3">
-          Enquiries &amp; Opportunities
+          {t.studies.panelEnquiriesTitle}
         </h3>
         <p className="text-[#0a4479] text-base sm:text-[20px] font-normal leading-normal">
-          Interested in our research, collaborations, partnerships, or
-          internships?
-          <br />
-          We welcome you to get in touch.
+          {t.studies.panelEnquiriesText}
         </p>
       </div>
 
@@ -116,7 +119,7 @@ export default function StudiesContactPanel() {
           href="/contact"
           className="inline-flex items-center gap-2 bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors"
         >
-          Learn More <span aria-hidden="true">→</span>
+          {t.common.learnMore} <span aria-hidden="true">→</span>
         </Link>
       </div>
     </div>

@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 type FilterKey = "all" | "board" | "research" | "alumni";
 
@@ -23,13 +26,15 @@ export default function TeamFilter({
   hasAlumni: boolean;
   defaultTab?: FilterKey;
 }) {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
   const [filter, setFilter] = useState<FilterKey>(defaultTab);
 
   const options: FilterOption[] = [
-    { key: "all", label: "All" },
-    { key: "board", label: "Board" },
-    { key: "research", label: "Research" },
-    { key: "alumni", label: "Alumni", disabled: !hasAlumni },
+    { key: "all", label: t.team.filterAll },
+    { key: "board", label: t.team.filterBoard },
+    { key: "research", label: t.team.filterResearch },
+    { key: "alumni", label: t.team.alumni, disabled: !hasAlumni },
   ];
 
   const show = (key: Exclude<FilterKey, "all">) =>
