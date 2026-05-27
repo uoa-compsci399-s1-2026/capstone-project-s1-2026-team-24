@@ -6,6 +6,11 @@ import {
   DISCOVER_VIDEO_DEFAULTS,
   TRIAL_DESIGN_DEFAULTS,
 } from "../src/lib/blocks/default-content";
+import {
+  ACADEMIC_COLLABORATORS_DEFAULTS,
+  COLLABORATIONS_INTRO_DEFAULTS,
+  INDUSTRY_COLLABORATORS_DEFAULTS,
+} from "../src/lib/blocks/collaborations-content";
 import { snapshotBlocks } from "../src/lib/page-publish";
 
 // Seeds the page-builder tables (Page + PageBlock) with the content that was
@@ -278,10 +283,13 @@ const PAGE_SEEDS: PageSeed[] = [
           subtitleMaxWidth: "",
         },
       },
-      { type: "collaborationsIntro", content: {} },
-      { type: "academicCollaborators", content: {} },
+      // Seeded with the original copy + image paths so the page renders
+      // identically after these blocks became editable. Images are raw paths
+      // (see src/lib/blocks/collaborations-content.ts for the catalog workflow).
+      { type: "collaborationsIntro", content: { ...COLLABORATIONS_INTRO_DEFAULTS } },
+      { type: "academicCollaborators", content: { ...ACADEMIC_COLLABORATORS_DEFAULTS } },
       { type: "benefitsRow", content: { variant: "academic", title: "" } },
-      { type: "industryCollaborators", content: {} },
+      { type: "industryCollaborators", content: { ...INDUSTRY_COLLABORATORS_DEFAULTS } },
       { type: "benefitsRow", content: { variant: "industry", title: "" } },
       {
         type: "calloutBannerRight",

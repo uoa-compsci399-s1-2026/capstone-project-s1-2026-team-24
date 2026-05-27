@@ -218,9 +218,27 @@ export default function BlockRenderer({
         />
       );
 
-    // Content-frozen
+    // Editable collaborations blocks. Empty fields fall back to each
+    // component's defaults (the original copy/images), so a freshly-converted
+    // block renders unchanged. `str()`/`strArray()` coerce untrusted JSON; the
+    // resolver has already turned any "media:{id}" refs into plain paths.
     case "collaborationsIntro":
-      return <CollaborationsIntro />;
+      return (
+        <CollaborationsIntro
+          sectionTitle={str(c.sectionTitle) || undefined}
+          sectionText={str(c.sectionText) || undefined}
+          pathwayTitle={str(c.pathwayTitle) || undefined}
+          pathwaySteps={
+            Array.isArray(c.pathwaySteps) ? strArray(c.pathwaySteps) : undefined
+          }
+          image={str(c.image) || undefined}
+          imageAlt={str(c.imageAlt) || undefined}
+          complianceTitle={str(c.complianceTitle) || undefined}
+          complianceText={str(c.complianceText) || undefined}
+        />
+      );
+
+    // Content-frozen
     case "studiesContactCard":
       return <StudiesContactCard />;
     case "studiesOverview":
@@ -265,14 +283,39 @@ export default function BlockRenderer({
     // Dynamic (live data, with optional display config)
     case "recentPublications":
       return <RecentPublications limit={Number(c.limit) || undefined} />;
+    // TODO: remove once carousel-deletion PR lands (Karendeep). The OurPartners
+    // marquee + its home-page seed + the OurPartners component go together —
+    // coordinate merge order so this case isn't deleted before the seed is.
     case "ourPartners":
       return <OurPartners group={partnerGroup(c.group)} />;
     case "publicationIndex":
       return <PublicationIndex pageSize={Number(c.pageSize) || undefined} />;
     case "academicCollaborators":
-      return <AcademicCollaborators />;
+      return (
+        <AcademicCollaborators
+          heading={str(c.heading) || undefined}
+          cards={
+            Array.isArray(c.cards) && c.cards.length > 0
+              ? (c.cards as StudyCardContent[])
+              : undefined
+          }
+          buttonLabel={str(c.buttonLabel) || undefined}
+          buttonHref={str(c.buttonHref) || undefined}
+        />
+      );
     case "industryCollaborators":
-      return <IndustryCollaborators />;
+      return (
+        <IndustryCollaborators
+          heading={str(c.heading) || undefined}
+          cards={
+            Array.isArray(c.cards) && c.cards.length > 0
+              ? (c.cards as StudyCardContent[])
+              : undefined
+          }
+          buttonLabel={str(c.buttonLabel) || undefined}
+          buttonHref={str(c.buttonHref) || undefined}
+        />
+      );
     case "teamSections":
       return <TeamSectionsBlock defaultTab={teamTab(c.defaultTab)} />;
 
