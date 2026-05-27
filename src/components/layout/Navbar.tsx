@@ -162,9 +162,12 @@ export default function Navbar() {
 
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, {
-          signal: controller.signal,
-        });
+        const res = await fetch(
+          `/api/search?q=${encodeURIComponent(trimmed)}`,
+          {
+            signal: controller.signal,
+          },
+        );
         if (!res.ok) throw new Error(`Search request failed: ${res.status}`);
         const data: { results?: SearchResult[] } = await res.json();
         setSearchResults(Array.isArray(data.results) ? data.results : []);
@@ -351,8 +354,7 @@ export default function Navbar() {
     !searchLoading &&
     searchPerformed &&
     searchResults.length === 0;
-  const showResults =
-    !showPopularSearches && searchResults.length > 0;
+  const showResults = !showPopularSearches && searchResults.length > 0;
 
   // The home page hero pulls its own gradient up over the navbar, so the
   // navbar stays transparent there to let it show through. On every other
@@ -459,16 +461,33 @@ export default function Navbar() {
             style={{
               maxWidth: mounted && scrolled && isDesktop ? "900px" : "1512px",
               margin: "0 auto",
-              padding: mounted && scrolled && isDesktop ? "0 32px" : "0 48px",
-              height: mounted && scrolled && isDesktop ? "80px" : "120px",
+              padding:
+                mounted && scrolled && isDesktop
+                  ? "11px 32px 0 32px"
+                  : "20px 48px 0 48px",
+              height:
+                aboutOpen || studiesOpen
+                  ? "380px"
+                  : mounted && scrolled && isDesktop
+                    ? "80px"
+                    : "120px",
               display: "flex",
-              alignItems: "center",
+              alignItems: "flex-start",
               justifyContent: "space-between",
               backgroundColor:
-                mounted && scrolled && isDesktop ? "rgba(0, 0, 0, 0.35)" : "transparent",
-              backdropFilter: mounted && scrolled && isDesktop ? "blur(15px)" : "none",
-              borderRadius: mounted && scrolled && isDesktop ? "9999px" : "0",
-              transition: "all 0.4s ease",
+                (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
+                  ? "rgba(0, 0, 0, 0.25)"
+                  : "transparent",
+              backdropFilter:
+                (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
+                  ? "blur(40px) brightness(1.25)"
+                  : "none",
+              boxShadow:
+                (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
+                  ? "0 0 0 1px rgba(255,255,255,0.3), 0 8px 32px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.04)"
+                  : "none",
+              borderRadius: mounted && scrolled && isDesktop ? "40px" : "0",
+              transition: "all 0.3s ease",
               marginTop: mounted && scrolled && isDesktop ? "8px" : "0",
               marginBottom: mounted && scrolled && isDesktop ? "8px" : "0",
             }}
@@ -487,7 +506,7 @@ export default function Navbar() {
               </Link>
             </div>
             {/* Desktop nav items */}
-            <div className="hidden lg:flex items-center gap-8">
+            <div className="hidden lg:flex items-center gap-8 z-[60] relative">
               {/* About dropdown */}
               <div className="relative">
                 <button
@@ -531,14 +550,7 @@ export default function Navbar() {
                     role="menu"
                     className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${aboutClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
                     style={{
-                      backgroundColor: "rgba(0, 0, 0, 0.5)",
-                      backdropFilter:
-                        mounted && scrolled && isDesktop ? "blur(15px)" : "blur(15px)",
-                      height: scrolled ? "350px" : "400px",
-                      paddingTop: scrolled
-                        ? `${searchContentTopOffset - 40}px`
-                        : `${searchContentTopOffset}px`,
-                      borderRadius: scrolled ? "40px" : "0",
+                      height: "380px",
                     }}
                   >
                     <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
@@ -556,13 +568,15 @@ export default function Navbar() {
                             }}
                             className="relative group block transition-transform duration-300 hover:scale-105"
                           >
-                            <img
-                              src={`/${item.image}.jpg`}
-                              className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                              alt={item.label}
-                            />
-                            <div className="absolute inset-[-0.25] bg-gradient-to-t from-[#000000] to-[#00000020] opacity-90 rounded-[30px]" />
-                            <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
+                            <div className="relative">
+                              <img
+                                src={`/${item.image}.jpg`}
+                                className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                                alt={item.label}
+                              />
+                            </div>
+
+                            <p className="mt-3 text-white text-[18px] font-semibold text-center">
                               {item.label}
                             </p>
                           </Link>
@@ -616,15 +630,9 @@ export default function Navbar() {
                   <div
                     id="studies-dropdown"
                     role="menu"
-                    className={`fixed inset-x-0 top-0 z-[-1] ${aboutClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
+                    className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${studiesClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
                     style={{
-                      backgroundColor: "rgba(0, 0, 0, 0.5)",
-                      backdropFilter: "blur(15px)",
-                      height: scrolled ? "350px" : "400px",
-                      paddingTop: scrolled
-                        ? `${searchContentTopOffset - 40}px`
-                        : `${searchContentTopOffset}px`,
-                      borderRadius: scrolled ? "40px" : "0",
+                      height: "380px",
                     }}
                   >
                     <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
@@ -640,15 +648,17 @@ export default function Navbar() {
                                 setStudiesClosing(false);
                               }, 300);
                             }}
-                            className="relative group block transition-transform duration-300 hover:scale-105"
+                            className="group block transition-transform duration-300 hover:scale-105"
                           >
-                            <img
-                              src={`/${item.image}.jpg`}
-                              className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                              alt={item.label}
-                            />
-                            <div className="absolute inset-[-0.25] bg-gradient-to-t from-[#000000] to-[#00000020] opacity-90 rounded-[30px]" />
-                            <p className="absolute bottom-0 left-0 pl-[20px] pb-[10px] text-white text-[18px] font-semibold">
+                            <div className="relative">
+                              <img
+                                src={`/${item.image}.jpg`}
+                                className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                                alt={item.label}
+                              />
+                            </div>
+
+                            <p className="mt-3 text-white text-[18px] font-semibold text-center">
                               {item.label}
                             </p>
                           </Link>
@@ -808,8 +818,8 @@ export default function Navbar() {
           <div
             className="fixed inset-0 z-[200] flex flex-col animate-[fadeIn_0.3s_ease-out] lg:hidden"
             style={{
-              backgroundColor: "rgba(0,0,0,0.88)",
-              backdropFilter: "blur(24px)",
+              backgroundColor: "rgba(0, 0, 0, 0.25)",
+              backdropFilter: "blur(40px) brightness(1.25)",
             }}
           >
             {/* Header row */}
@@ -946,7 +956,7 @@ export default function Navbar() {
           className="fixed inset-x-0 top-0 z-40 min-h-screen animate-[slideDown_0.3s_ease-out]"
           style={{
             backgroundColor: "rgba(0, 0, 0, 0.5)",
-            backdropFilter: "blur(15px)",
+            backdropFilter: "blur(40px) brightness(1.25)",
           }}
           role="dialog"
           aria-modal="true"
@@ -971,7 +981,9 @@ export default function Navbar() {
                   aria-expanded={showResults}
                   aria-controls={showResults ? "search-results" : undefined}
                   aria-activedescendant={
-                    activeIndex >= 0 ? `search-result-${activeIndex}` : undefined
+                    activeIndex >= 0
+                      ? `search-result-${activeIndex}`
+                      : undefined
                   }
                   autoComplete="off"
                 />
@@ -1039,7 +1051,11 @@ export default function Navbar() {
 
                 {/* Live results, grouped and labelled by type. */}
                 {showResults && (
-                  <ul id="search-results" role="listbox" aria-label={t.navbar.search}>
+                  <ul
+                    id="search-results"
+                    role="listbox"
+                    aria-label={t.navbar.search}
+                  >
                     {groupedResults.map((group) => (
                       <li
                         key={group.type}
