@@ -110,7 +110,7 @@ export default function SortableBlock({
             type="button"
             onClick={() => setMenuOpen((o) => !o)}
             aria-label="More actions"
-            aria-haspopup="menu"
+            aria-haspopup="true"
             aria-expanded={menuOpen}
             className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 hover:text-[#0c0c48]"
           >
@@ -130,7 +130,6 @@ export default function SortableBlock({
           >
             <button
               type="button"
-              role="menuitem"
               onClick={() => {
                 onDuplicate(block.id);
                 setMenuOpen(false);
@@ -141,7 +140,6 @@ export default function SortableBlock({
             </button>
             <button
               type="button"
-              role="menuitem"
               onClick={() => {
                 onToggleVisible(block.id, !block.isVisible);
                 setMenuOpen(false);
@@ -152,7 +150,6 @@ export default function SortableBlock({
             </button>
             <button
               type="button"
-              role="menuitem"
               onClick={() => {
                 setMenuOpen(false);
                 if (

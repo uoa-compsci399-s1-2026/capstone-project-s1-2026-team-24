@@ -39,7 +39,7 @@ export default function AddBlockButton({
         ref={btnRef}
         type="button"
         onClick={() => setOpen((o) => !o)}
-        aria-haspopup="menu"
+        aria-haspopup="true"
         aria-expanded={open}
         className={
           compact
@@ -69,7 +69,6 @@ export default function AddBlockButton({
                 <button
                   key={def.type}
                   type="button"
-                  role="menuitem"
                   onClick={() => {
                     onAdd(def.type);
                     setOpen(false);

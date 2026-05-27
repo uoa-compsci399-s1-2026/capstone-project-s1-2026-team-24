@@ -141,20 +141,43 @@ export default function PopoverMenu({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  // Move focus into the popover on open and restore it to the trigger on close,
+  // so keyboard users land in — and return cleanly from — the menu. This is a
+  // plain popover (items are ordinary buttons), so Tab/Enter/Escape work without
+  // claiming the full ARIA menu keyboard pattern (roving arrow-key navigation).
+  useEffect(() => {
+    if (!open) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const raf = requestAnimationFrame(() => {
+      const first = panelRef.current?.querySelector<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      first?.focus({ preventScroll: true });
+    });
+    return () => {
+      cancelAnimationFrame(raf);
+      previouslyFocused?.focus?.({ preventScroll: true });
+    };
+  }, [open]);
+
   if (!open || !mounted) return null;
 
   return createPortal(
     <>
-      {/* Click-away backdrop. Transparent; sits just under the panel. */}
+      {/*
+        Click-away backdrop. Transparent and non-focusable (tabIndex={-1} +
+        aria-hidden) so it stays out of the tab order and is ignored by screen
+        readers; keyboard users close via Escape (handled above).
+      */}
       <button
         type="button"
-        aria-label="Close menu"
+        tabIndex={-1}
+        aria-hidden="true"
         className="fixed inset-0 z-40 cursor-default"
         onClick={onClose}
       />
       <div
         ref={panelRef}
-        role="menu"
         style={style}
         className={`z-50 overflow-y-auto overscroll-contain rounded-xl border border-gray-200 bg-white p-2 shadow-xl ${className}`}
       >
