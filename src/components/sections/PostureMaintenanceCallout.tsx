@@ -34,6 +34,7 @@ export default function PostureMaintenanceCallout() {
             src="/spinal-page-clipboard.png"
             alt="Spinal page clipboard"
             fill
+            sizes="(max-width: 1024px) 100vw, 45vw"
             className="object-cover object-right"
             priority
           />

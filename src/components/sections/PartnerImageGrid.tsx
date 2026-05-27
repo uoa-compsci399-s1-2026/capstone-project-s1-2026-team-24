@@ -1,5 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 // Breadcrumbed grid of partner logos used on the Academic / Industry partner
 // pages. Images are editable via the page builder. The two pages differ only in
@@ -13,6 +18,8 @@ export default function PartnerImageGrid({
   images: string[];
   variant?: "academic" | "industry";
 }) {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
   const containerStyle =
     variant === "academic"
       ? { borderRadius: "30px", border: "1px solid #e5e7eb", padding: "10px" }
@@ -26,11 +33,11 @@ export default function PartnerImageGrid({
         {/* Breadcrumbs */}
         <nav className="mb-10 text-[16px] tracking-[0.4px] text-[#0c0c48]">
           <Link href="/" className="hover:underline">
-            Home
+            {t.navbar.home}
           </Link>
           <span className="mx-2">›</span>
           <Link href="/collaborations" className="hover:underline">
-            Collaborations
+            {t.navbar.collaborations}
           </Link>
           <span className="mx-2">›</span>
           <strong>{breadcrumbLabel}</strong>

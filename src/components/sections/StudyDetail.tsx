@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 interface StudyDetailProps {
-  title: string;
   status: "Open" | "Closed" | "Coming Soon";
   deadline?: string;
   eligibility: string[];
@@ -19,7 +21,6 @@ const statusColors: Record<string, { bg: string; color: string }> = {
 };
 
 export default function StudyDetail({
-  title,
   status,
   deadline,
   eligibility,
@@ -27,7 +28,15 @@ export default function StudyDetail({
   joinHref = "/contact",
   content,
 }: StudyDetailProps) {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
   const statusStyle = statusColors[status];
+  const statusLabel =
+    status === "Open"
+      ? t.studies.statusOpen
+      : status === "Closed"
+        ? t.studies.statusClosed
+        : t.studies.statusComingSoon;
 
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
@@ -55,7 +64,7 @@ export default function StudyDetail({
               display: "inline-block",
             }}
           />
-          {status}
+          {statusLabel}
         </div>
 
         {deadline && (
@@ -140,7 +149,7 @@ export default function StudyDetail({
                 marginBottom: "16px",
               }}
             >
-              Eligibility
+              {t.studies.eligibility}
             </h2>
             <ul
               style={{
@@ -209,7 +218,7 @@ export default function StudyDetail({
               (e.currentTarget as HTMLElement).style.color = "#0c0c48";
             }}
           >
-            Join now
+            {t.studies.joinNow}
           </Link>
 
           {/* Contact link */}
@@ -223,7 +232,7 @@ export default function StudyDetail({
               textDecoration: "underline",
             }}
           >
-            Have questions? Contact us
+            {t.studies.haveQuestions}
           </Link>
         </div>
       </div>

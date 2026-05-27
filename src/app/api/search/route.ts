@@ -16,7 +16,7 @@ const PAGES: { title: string; snippet: string; href: string; keywords: string[] 
   { title: "Our Research", snippet: "Research focus areas and trials", href: "/research", keywords: ["research", "trials", "publications"] },
   { title: "Studies", snippet: "Current studies you can join", href: "/studies", keywords: ["studies", "join", "participant"] },
   { title: "Collaborations", snippet: "Partner with HNU", href: "/collaborations", keywords: ["collaborations", "partners", "industry"] },
-  { title: "Donations", snippet: "Support our research", href: "/collaborations/funding", keywords: ["donations", "donate", "funding"] },
+  { title: "Donations", snippet: "Support our research", href: "/contact", keywords: ["donations", "donate", "funding"] },
   { title: "Contact", snippet: "Get in touch with our team", href: "/contact", keywords: ["contact", "email", "phone", "address"] },
 ];
 

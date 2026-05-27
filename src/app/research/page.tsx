@@ -2,12 +2,22 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { renderPageBlocks } from "@/components/blocks/render-page";
+import { localizedMetadata } from "@/lib/localized-metadata";
 
-export const metadata: Metadata = {
-  title: "Our Research | HNU",
-  description:
-    "Better health through nutrition science. Explore our research in diet, disease, and clinical trials.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return localizedMetadata({
+    en: {
+      title: "Our Research | HNU",
+      description:
+        "Better health through nutrition science. Explore our research in diet, disease, and clinical trials.",
+    },
+    zh: {
+      title: "我们的研究 | HNU",
+      description:
+        "通过营养科学促进健康。探索我们在饮食、疾病与临床试验方面的研究。",
+    },
+  });
+}
 
 export const dynamic = "force-dynamic";
 
