@@ -1,9 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import en from '@/messages/en';
+import zh from '@/messages/zh';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
+// Canonical inquiry-type values sent to the API (must stay English for contact
+// routing / recipient matching). The visible label is translated separately.
 const INQUIRY_TYPES = [
   'Study Participant Enquiry',
   'Industry Partnership',
@@ -27,6 +32,17 @@ function isValidEmail(email: string) {
 }
 
 export default function ContactEmailForm() {
+  const { lang } = useLanguage();
+  const t = lang === 'EN' ? en : zh;
+  const inquiryLabels: Record<(typeof INQUIRY_TYPES)[number], string> = {
+    'Study Participant Enquiry': t.contactPage.inquiryStudyParticipant,
+    'Industry Partnership': t.contactPage.inquiryIndustryPartnership,
+    'Internship or PhD Opportunity': t.contactPage.inquiryInternshipPhd,
+    Donation: t.contactPage.inquiryDonation,
+    'General Enquiry': t.contactPage.inquiryGeneral,
+    Other: t.contactPage.inquiryOther,
+  };
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [category, setCategory] = useState('');
@@ -51,13 +67,13 @@ export default function ContactEmailForm() {
     e.preventDefault();
 
     if (!name.trim() || !email.trim() || !category || !message.trim()) {
-      setErrorMsg('Please fill in all fields.');
+      setErrorMsg(t.contactPage.requiredError);
       setState('error');
       return;
     }
 
     if (!isValidEmail(email.trim())) {
-      setErrorMsg('Please enter a valid email address.');
+      setErrorMsg(t.contactPage.invalidEmailError);
       setState('error');
       return;
     }
@@ -81,14 +97,14 @@ export default function ContactEmailForm() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setErrorMsg(data.error || 'Submission failed. Please try again.');
+        setErrorMsg(data.error || t.contactPage.submissionError);
         setState('error');
         return;
       }
 
       setState('success');
     } catch {
-      setErrorMsg('Something went wrong. Please try again.');
+      setErrorMsg(t.contactPage.genericError);
       setState('error');
     }
   }
@@ -96,10 +112,10 @@ export default function ContactEmailForm() {
   if (state === 'success') {
     return (
       <div className="flex flex-col gap-3 py-10">
-        <p className="text-[#0a4479] text-xl font-bold">Message sent!</p>
-        <p className="text-[#0a4479] text-base">
-          Thank you for reaching out. We&apos;ll get back to you soon.
+        <p className="text-[#0a4479] text-xl font-bold">
+          {t.contactPage.successTitle}
         </p>
+        <p className="text-[#0a4479] text-base">{t.contactPage.successText}</p>
       </div>
     );
   }
@@ -108,7 +124,7 @@ export default function ContactEmailForm() {
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div>
         <label htmlFor="contact-name" className={labelClass}>
-          Name
+          {t.contactPage.nameLabel}
         </label>
         <input
           id="contact-name"
@@ -118,7 +134,7 @@ export default function ContactEmailForm() {
             setName(e.target.value);
             clearError();
           }}
-          placeholder="Enter your name"
+          placeholder={t.contactPage.namePlaceholder}
           className={inputClass}
           disabled={state === 'loading'}
         />
@@ -126,7 +142,7 @@ export default function ContactEmailForm() {
 
       <div>
         <label htmlFor="contact-email" className={labelClass}>
-          Email
+          {t.contactPage.emailLabel}
         </label>
         <input
           id="contact-email"
@@ -144,7 +160,7 @@ export default function ContactEmailForm() {
 
       <div>
         <label htmlFor="contact-category" className={labelClass}>
-          Inquiry Type
+          {t.contactPage.inquiryTypeLabel}
         </label>
         <div className="relative">
           <select
@@ -158,11 +174,11 @@ export default function ContactEmailForm() {
             disabled={state === 'loading'}
           >
             <option value="" disabled>
-              Select
+              {t.contactPage.selectPlaceholder}
             </option>
             {INQUIRY_TYPES.map(type => (
               <option key={type} value={type}>
-                {type}
+                {inquiryLabels[type]}
               </option>
             ))}
           </select>
@@ -188,7 +204,7 @@ export default function ContactEmailForm() {
 
       <div>
         <label htmlFor="contact-message" className={labelClass}>
-          Message
+          {t.contactPage.messageLabel}
         </label>
         <textarea
           id="contact-message"
@@ -197,7 +213,7 @@ export default function ContactEmailForm() {
             setMessage(e.target.value);
             clearError();
           }}
-          placeholder="Write your message here..."
+          placeholder={t.contactPage.messagePlaceholder}
           rows={6}
           className={textareaClass}
           disabled={state === 'loading'}
@@ -230,7 +246,7 @@ export default function ContactEmailForm() {
         disabled={state === 'loading'}
         className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {state === 'loading' ? 'Sending…' : 'Send Message'}
+        {state === 'loading' ? t.contactPage.sending : t.contactPage.sendMessage}
       </button>
     </form>
   );

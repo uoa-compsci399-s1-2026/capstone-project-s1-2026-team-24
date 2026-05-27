@@ -1,6 +1,14 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { useRouter } from "next/navigation";
 
 type Language = "EN" | "ZH";
 
@@ -16,26 +24,35 @@ const LanguageContext = createContext<LanguageContextType>({
 
 export function LanguageProvider({
   children,
+  initialLang = "EN",
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
+  // Seeded from the `lang` cookie on the server (see getServerLang), so the first
+  // paint already matches the visitor's choice — no English flash, no hydration
+  // mismatch.
+  initialLang?: Language;
 }) {
-  const [lang, setLang] = useState<Language>("EN");
+  const router = useRouter();
+  const [lang, setLang] = useState<Language>(initialLang);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
-    const savedLang = localStorage.getItem("lang");
+    // Persist the choice (the cookie is what the server reads) and reflect it on
+    // <html lang> for accessibility.
+    localStorage.setItem("lang", lang);
+    document.cookie = `lang=${lang}; path=/; max-age=31536000`;
+    document.documentElement.lang = lang === "ZH" ? "zh" : "en";
 
-    if (savedLang === "EN" || savedLang === "ZH") {
-      // One-time hydration-safe read of the persisted language; localStorage
-      // isn't available during SSR so this must run in an effect.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLang(savedLang);
+    // Skip the initial mount — the server already rendered in `initialLang`, so
+    // there's nothing to re-fetch. On a genuine change, refresh re-renders the
+    // server components (page blocks) against the updated cookie, translating
+    // the rest of the site to match.
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
     }
-  }, []);
-
-  useEffect(() => {
-  localStorage.setItem("lang", lang);
-  document.cookie = `lang=${lang}; path=/; max-age=31536000`;
-}, [lang]);
+    router.refresh();
+  }, [lang, router]);
 
   return (
     <LanguageContext.Provider value={{ lang, setLang }}>

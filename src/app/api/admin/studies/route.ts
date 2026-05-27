@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";
+import { warmStrings } from "@/lib/translate/blocks";
 
 function asTrimmedString(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
@@ -107,6 +108,14 @@ export async function POST(request: Request) {
         order: clampOrder(body?.order, 0),
       },
     });
+
+    // Pre-warm 中文 translations for the listing's auto-translated title and short
+    // description (best-effort; never fail the create over a translation hiccup).
+    try {
+      await warmStrings([created.title, created.shortDescription], "ZH");
+    } catch (err) {
+      console.error("Study translation warm failed (non-fatal):", err);
+    }
 
     return NextResponse.json(created, { status: 201 });
   } catch (error) {

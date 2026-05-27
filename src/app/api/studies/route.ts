@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getServerLang } from "@/lib/lang";
+import { localizeStrings } from "@/lib/translate/blocks";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const studies = await prisma.study.findMany({
       where: {
@@ -20,6 +22,38 @@ export async function GET() {
         isActive: true,
       },
     });
+
+    // The studies *listing* auto-translates: localize the model-sourced title and
+    // short description for 中文 (read-only cache lookup — a miss falls back to the
+    // English source, never a live API call). The client passes ?lang= explicitly
+    // so a fresh toggle isn't subject to cookie-write timing; we fall back to the
+    // cookie for any direct request. Individual study *detail* pages keep their
+    // manual, board-approved translations and are untouched by this.
+    const param = new URL(request.url).searchParams.get("lang");
+    const lang = param
+      ? param.toLowerCase() === "zh"
+        ? "ZH"
+        : "EN"
+      : await getServerLang();
+
+    if (lang === "ZH") {
+      const [titles, shorts] = await Promise.all([
+        localizeStrings(
+          studies.map((s) => s.title),
+          "ZH",
+        ),
+        localizeStrings(
+          studies.map((s) => s.shortDescription ?? ""),
+          "ZH",
+        ),
+      ]);
+      const localized = studies.map((s, i) => ({
+        ...s,
+        title: titles[i],
+        shortDescription: s.shortDescription == null ? null : shorts[i],
+      }));
+      return NextResponse.json(localized, { status: 200 });
+    }
 
     return NextResponse.json(studies, { status: 200 });
   } catch (error) {

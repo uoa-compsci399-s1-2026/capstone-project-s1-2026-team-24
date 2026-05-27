@@ -1,9 +1,13 @@
+import crypto from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockPrisma = vi.hoisted(() => ({
   study: {
     findMany: vi.fn(),
     findFirst: vi.fn(),
+  },
+  translationCache: {
+    findMany: vi.fn(),
   },
 }));
 
@@ -32,7 +36,9 @@ describe("GET /api/studies", () => {
       },
     ]);
 
-    const response = await getStudies();
+    const response = await getStudies(
+      new Request("http://localhost/api/studies?lang=en"),
+    );
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toEqual([
       {
@@ -60,9 +66,47 @@ describe("GET /api/studies", () => {
     });
   });
 
+  it("localizes title and short description to Chinese from the cache", async () => {
+    mockPrisma.study.findMany.mockResolvedValueOnce([
+      {
+        id: 1,
+        slug: "s1",
+        title: "Study 1",
+        shortDescription: "Desc",
+        imagePath: "/images/studies/s1.jpg",
+        contactEmail: "team@example.com",
+        isActive: true,
+      },
+    ]);
+    const sha256 = (s: string) =>
+      crypto.createHash("sha256").update(s).digest("hex");
+    mockPrisma.translationCache.findMany.mockResolvedValue([
+      { format: "text", sourceHash: sha256("Study 1"), translatedText: "研究一" },
+      { format: "text", sourceHash: sha256("Desc"), translatedText: "描述" },
+    ]);
+
+    const response = await getStudies(
+      new Request("http://localhost/api/studies?lang=zh"),
+    );
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual([
+      {
+        id: 1,
+        slug: "s1",
+        title: "研究一",
+        shortDescription: "描述",
+        imagePath: "/images/studies/s1.jpg",
+        contactEmail: "team@example.com",
+        isActive: true,
+      },
+    ]);
+  });
+
   it("returns 500 when database query fails", async () => {
     mockPrisma.study.findMany.mockRejectedValueOnce(new Error("db error"));
-    const response = await getStudies();
+    const response = await getStudies(
+      new Request("http://localhost/api/studies?lang=en"),
+    );
     expect(response.status).toBe(500);
     await expect(response.json()).resolves.toEqual({
       error: "Failed to fetch studies.",

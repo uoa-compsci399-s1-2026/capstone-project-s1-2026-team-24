@@ -1,18 +1,26 @@
+"use client";
+
 import Image from "next/image";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 // The "Research Collaborations + Pathway" intro section on the Collaborations
-// page. Extracted verbatim so it can be reordered as a single block.
-const RESEARCH_PATHWAY = [
-  "Early Inception Hypotheses",
-  "Protocol Development",
-  "Ethical And Regulatory Approval",
-  "Completion Of Trials",
-  "Data Analysis",
-  "Interpretation",
-  "Report Writing And Publication",
-];
-
+// page. Fixed copy, translated via the shared dictionary.
 export default function CollaborationsIntro() {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
+  const RESEARCH_PATHWAY = [
+    t.collaborations.pathwayEarlyInception,
+    t.collaborations.pathwayProtocolDevelopment,
+    t.collaborations.pathwayEthicalApproval,
+    t.collaborations.pathwayCompletionTrials,
+    t.collaborations.pathwayDataAnalysis,
+    t.collaborations.pathwayInterpretation,
+    t.collaborations.pathwayReportWriting,
+  ];
+
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
       <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -36,7 +44,7 @@ export default function CollaborationsIntro() {
                 lineHeight: 1.2,
               }}
             >
-              Research Collaborations and Partnerships
+              {t.collaborations.researchPartnershipsTitle}
             </h2>
             <p
               style={{
@@ -47,9 +55,7 @@ export default function CollaborationsIntro() {
                 marginBottom: "32px",
               }}
             >
-              The Human Nutrition Unit encourages research collaborations
-              with industry and academic units, both nationally and
-              internationally.
+              {t.collaborations.researchPartnershipsText}
             </p>
 
             <div
@@ -69,7 +75,7 @@ export default function CollaborationsIntro() {
                   marginBottom: "20px",
                 }}
               >
-                The Research Pathway
+                {t.collaborations.researchPathwayTitle}
               </h2>
               <div
                 style={{
@@ -187,7 +193,7 @@ export default function CollaborationsIntro() {
                     margin: 0,
                   }}
                 >
-                  Compliance & Quality Assurance
+                  {t.collaborations.complianceTitle}
                 </h3>
               </div>
               <p
@@ -199,10 +205,7 @@ export default function CollaborationsIntro() {
                   margin: 0,
                 }}
               >
-                The Unit ensures compliance with Good Clinical Practice, up
-                to the level of ICH GCP where required, and has experience
-                of and welcomes independent trial monitoring and audit
-                processes.
+                {t.collaborations.complianceText}
               </p>
             </div>
           </div>
