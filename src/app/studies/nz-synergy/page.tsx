@@ -5,6 +5,9 @@ import StudiesHero from "@/components/layout/StudiesHero";
 import StudyDetail from "@/components/sections/StudyDetail";
 import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
+import { getServerLang } from "@/lib/lang";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 export const metadata: Metadata = {
   title: "NZ Synergy | HNU Auckland",
@@ -14,13 +17,12 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-const NAVBAR_HEIGHT = 180;
-
 export default async function NZSynergyPage() {
   const layout = await getStudyLayoutForSlug("nz-synergy");
   if (layout) {
     return <StudyLayoutView study={layout.study} blocks={layout.blocks} />;
   }
+  const t = (await getServerLang()) === "ZH" ? zh : en;
 
   return (
     <>
@@ -28,20 +30,19 @@ export default async function NZSynergyPage() {
 
       <StudiesHero
         imageSrc="/NZ Synergy study.jpg"
-        imageAlt="NZ Synergy Study"
-        title="NZ Synergy Study"
+        imageAlt={t.studies.nzSynergyPageTitle}
+        title={t.studies.nzSynergyPageTitle}
         imagePosition="top"
       />
 
       <StudyDetail
-        title="NZ Synergy Study"
         status="Open"
-        deadline="31 December 2024"
+        deadline={t.studies.nzSynergyDeadline}
         eligibility={[
-          "Are between 18-70 years",
-          "Have a BMI between 18.5 and 30 kg/m²",
-          "Located in Tāmaki Makaurau (Auckland area)",
-          "Happy to stay at the Human Nutrition Unit for 2 weeks",
+          t.studies.eligibilityAge18To70,
+          t.studies.eligibilityBmi18To30,
+          t.studies.eligibilityAuckland,
+          t.studies.nzSynergyEligibilityStay,
         ]}
         joinHref="/contact"
         contactHref="/contact"
@@ -49,12 +50,12 @@ export default async function NZSynergyPage() {
           <div>
             <ul>
               <li>
-                Would you like to participate in a residential nutrition study?
+                {t.studies.nzSynergyQuestion1}
               </li>
-              <li>Would you like to learn about how diet affects diabetes risk?</li>
+              <li>{t.studies.nzSynergyQuestion2}</li>
             </ul>
             <p>
-              We will investigate how different diets affect markers of diabetes risk.
+              {t.studies.nzSynergyDescriptionText}
             </p>
           </div>
         }
