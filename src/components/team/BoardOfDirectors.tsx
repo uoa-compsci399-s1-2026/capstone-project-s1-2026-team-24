@@ -19,7 +19,7 @@ export default function BoardOfDirectors({
         style={{
           fontFamily: "Inter, sans-serif",
           fontSize: "48px",
-          fontWeight: 800,
+          fontWeight: 700,
           color: "#0c0c48",
           textAlign: "center",
           marginBottom: "48px",
