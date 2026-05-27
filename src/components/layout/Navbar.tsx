@@ -249,8 +249,8 @@ export default function Navbar() {
         style={{ position: "fixed", top: 0, left: 0, right: 0 }}
       >
         {/* Top utility bar */}
-        <div className="hidden lg:flex relative z-[100] bg-white">
-          <div className="max-w-[1512px] ml-auto px-12 flex items-center justify-end h-9.5">
+        <div className="hidden lg:flex relative z-[100] bg-white ">
+          <div className="max-w-[1512px] w-full mx-auto px-12 flex items-center justify-end h-9.5">
             {TOP_BAR_LINKS.map((link) => (
               <Link
                 key={`${link.label}-${link.href}`}
@@ -324,16 +324,33 @@ export default function Navbar() {
             style={{
               maxWidth: mounted && scrolled && isDesktop ? "900px" : "1512px",
               margin: "0 auto",
-              padding: mounted && scrolled && isDesktop ? "0 32px" : "0 48px",
-              height: mounted && scrolled && isDesktop ? "80px" : "120px",
+              padding:
+                mounted && scrolled && isDesktop
+                  ? "11px 32px 0 32px"
+                  : "20px 48px 0 48px",
+              height:
+                aboutOpen || studiesOpen
+                  ? "350px"
+                  : mounted && scrolled && isDesktop
+                    ? "80px"
+                    : "120px",
               display: "flex",
-              alignItems: "center",
+              alignItems: "flex-start",
               justifyContent: "space-between",
               backgroundColor:
-                mounted && scrolled && isDesktop ? "rgba(0, 0, 0, 0.35)" : "transparent",
-              backdropFilter: mounted && scrolled && isDesktop ? "blur(15px)" : "none",
-              borderRadius: mounted && scrolled && isDesktop ? "9999px" : "0",
-              transition: "all 0.4s ease",
+                mounted && scrolled && isDesktop
+                  ? "rgba(0, 0, 0, 0.25)"
+                  : "transparent",
+              backdropFilter:
+                mounted && scrolled && isDesktop
+                  ? "blur(40px) brightness(1.25)"
+                  : "none",
+              boxShadow:
+                mounted && scrolled && isDesktop
+                  ? "0 0 0 1px rgba(255,255,255,0.3), 0 8px 32px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.04)"
+                  : "none",
+              borderRadius: mounted && scrolled && isDesktop ? "40px" : "0",
+              transition: "all 0.3s ease",
               marginTop: mounted && scrolled && isDesktop ? "8px" : "0",
               marginBottom: mounted && scrolled && isDesktop ? "8px" : "0",
             }}
@@ -396,14 +413,14 @@ export default function Navbar() {
                     role="menu"
                     className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${aboutClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
                     style={{
-                      backgroundColor: "rgba(0, 0, 0, 0.5)",
-                      backdropFilter:
-                        mounted && scrolled && isDesktop ? "blur(15px)" : "blur(15px)",
+                      backgroundColor: scrolled
+                        ? "rgba(0, 0, 0, 0"
+                        : "rgba(0, 0, 0, 0.25)",
+                      backdropFilter: scrolled
+                        ? "none"
+                        : "blur(40px) brightness(1.25)",
                       height: scrolled ? "350px" : "400px",
-                      paddingTop: scrolled
-                        ? `${searchContentTopOffset - 40}px`
-                        : `${searchContentTopOffset}px`,
-                      borderRadius: scrolled ? "40px" : "0",
+                      paddingTop: scrolled ? "25px" : "50px",
                     }}
                   >
                     <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
@@ -481,15 +498,16 @@ export default function Navbar() {
                   <div
                     id="studies-dropdown"
                     role="menu"
-                    className={`fixed inset-x-0 top-0 z-[-1] ${aboutClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
+                    className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${studiesClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
                     style={{
-                      backgroundColor: "rgba(0, 0, 0, 0.5)",
-                      backdropFilter: "blur(15px)",
+                      backgroundColor: scrolled
+                        ? "rgba(0, 0, 0, 0"
+                        : "rgba(0, 0, 0, 0.25)",
+                      backdropFilter: scrolled
+                        ? "none"
+                        : "blur(40px) brightness(1.25)",
                       height: scrolled ? "350px" : "400px",
-                      paddingTop: scrolled
-                        ? `${searchContentTopOffset - 40}px`
-                        : `${searchContentTopOffset}px`,
-                      borderRadius: scrolled ? "40px" : "0",
+                      paddingTop: scrolled ? "25px" : "50px",
                     }}
                   >
                     <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
@@ -673,8 +691,8 @@ export default function Navbar() {
           <div
             className="fixed inset-0 z-[200] flex flex-col animate-[fadeIn_0.3s_ease-out] lg:hidden"
             style={{
-              backgroundColor: "rgba(0,0,0,0.88)",
-              backdropFilter: "blur(24px)",
+              backgroundColor: "rgba(0, 0, 0, 0.25)",
+              backdropFilter: "blur(40px) brightness(1.25)",
             }}
           >
             {/* Header row */}
@@ -810,8 +828,8 @@ export default function Navbar() {
           ref={searchDialogRef}
           className="fixed inset-x-0 top-0 z-40 min-h-screen animate-[slideDown_0.3s_ease-out]"
           style={{
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
-            backdropFilter: "blur(15px)",
+            backgroundColor: "rgba(0, 0, 0, 0.25)",
+            backdropFilter: "blur(40px) brightness(1.25)",
           }}
           role="dialog"
           aria-modal="true"
