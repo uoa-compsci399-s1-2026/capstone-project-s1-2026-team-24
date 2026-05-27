@@ -41,7 +41,7 @@ export default function Navbar() {
   ] as const;
 
   const TOP_BAR_LINKS = [
-    { label: t.navbar.donations, href: "/collaborations/funding" },
+    { label: t.navbar.donations, href: "/contact" },
     { label: t.navbar.contact, href: "/contact" },
   ] as const;
 
@@ -69,7 +69,7 @@ export default function Navbar() {
   ] as const;
 
   const POPULAR_SEARCHES = [
-    { label: t.navbar.donations, href: "/collaborations/funding" },
+    { label: t.navbar.donations, href: "/contact" },
     { label: t.navbar.contact, href: "/contact" },
   ] as const;
 
