@@ -20,7 +20,7 @@ export default function DirectorCard({
   const baseClass =
     "flex flex-col items-center bg-white rounded-[20px] px-8 pt-10 pb-8 flex-1 min-w-0";
   const clickableClass =
-    "no-underline text-inherit cursor-pointer transition-all duration-200 shadow-[0_0_20px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:shadow-[0_18px_36px_rgba(0,0,0,0.32)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48] focus-visible:ring-offset-2";
+    "no-underline text-inherit cursor-pointer transition-all duration-200 shadow-[0_0_20px_rgba(0,0,0,0.25)] hover:-translate-y-1 hover:outline hover:outline-2 hover:outline-[#0c0c48] hover:outline-offset-[6px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48] focus-visible:ring-offset-2";
   const staticClass = "shadow-[0_0_20px_rgba(0,0,0,0.25)]";
 
   const inner = (

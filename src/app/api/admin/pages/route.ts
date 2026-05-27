@@ -7,7 +7,12 @@ export const runtime = "nodejs";
 export async function GET() {
   try {
     const pages = await prisma.page.findMany({
-      where: { NOT: { slug: { startsWith: "studylayout-" } } },
+      where: {
+        // "studies" is being reworked directly on the public site — hide it
+        // from the page editor so content editors don't change it here.
+        slug: { not: "studies" },
+        NOT: { slug: { startsWith: "studylayout-" } },
+      },
       orderBy: { slug: "asc" },
       include: { _count: { select: { blocks: true } } },
     });

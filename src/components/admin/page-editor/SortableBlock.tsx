@@ -62,7 +62,7 @@ export default function SortableBlock({
     <div
       ref={setNodeRef}
       style={style}
-      className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+      className="rounded-xl border border-gray-200 bg-white shadow-sm"
     >
       <div className="flex items-center gap-3 px-3 py-3">
         <button

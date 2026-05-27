@@ -8,12 +8,16 @@ import {
   emptyStudyFormData,
   type StudyFormData,
 } from "@/components/admin/StudyFormFields";
+import StudyPdfStager, {
+  type StagedPdf,
+} from "@/components/admin/StudyPdfStager";
 
 export default function NewStudy() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<StudyFormData>(emptyStudyFormData);
+  const [pdfs, setPdfs] = useState<StagedPdf[]>([]);
 
   function handleChange(
     e: React.ChangeEvent<
@@ -58,7 +62,24 @@ export default function NewStudy() {
         );
       }
 
-      router.push("/admin/studies");
+      const created = await res.json();
+
+      // Upload any staged PDFs against the new study id. If some fail, the study
+      // still exists — send the admin to its edit page to finish there.
+      let pdfFailed = false;
+      for (let i = 0; i < pdfs.length; i++) {
+        const fd = new FormData();
+        fd.append("title", pdfs[i].title);
+        fd.append("order", String(i));
+        fd.append("file", pdfs[i].file);
+        const pdfRes = await fetch(`/api/admin/studies/${created.id}/pdfs`, {
+          method: "POST",
+          body: fd,
+        });
+        if (!pdfRes.ok) pdfFailed = true;
+      }
+
+      router.push(pdfFailed ? `/admin/studies/${created.id}` : "/admin/studies");
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -78,6 +99,7 @@ export default function NewStudy() {
     >
       {error && <FormErrorBanner message={error} />}
       <StudyFormFields formData={formData} onChange={handleChange} />
+      <StudyPdfStager pdfs={pdfs} onChange={setPdfs} />
     </AdminForm>
   );
 }

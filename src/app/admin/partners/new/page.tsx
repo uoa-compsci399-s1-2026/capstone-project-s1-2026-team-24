@@ -135,6 +135,8 @@ export default function NewPartner() {
           type="number"
           value={formData.order}
           onChange={handleChange}
+          min={0}
+          step={1}
         />
       </div>
 

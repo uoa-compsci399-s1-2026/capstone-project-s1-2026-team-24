@@ -3,6 +3,7 @@ import path from "node:path";
 import { TeamSection } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { clampOrder } from "@/lib/order";
 
 export const runtime = "nodejs";
 
@@ -16,12 +17,6 @@ function sanitizeFileName(fileName: string) {
 function parseBoolean(value: FormDataEntryValue | null, fallback = true) {
   if (typeof value !== "string") return fallback;
   return value === "true";
-}
-
-function parseOrder(value: FormDataEntryValue | null, fallback = 0) {
-  if (typeof value !== "string") return fallback;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : fallback;
 }
 
 function parseSection(value: FormDataEntryValue | null) {
@@ -125,7 +120,7 @@ export async function POST(request: NextRequest) {
         orcidId: asOptionalString(formData.get("orcidId")),
         profileUrl: asOptionalString(formData.get("profileUrl")),
         yearsActive: asOptionalString(formData.get("yearsActive")),
-        order: parseOrder(formData.get("order"), 0),
+        order: clampOrder(formData.get("order"), 0),
         isVisible: parseBoolean(formData.get("isVisible"), true),
       },
     });
