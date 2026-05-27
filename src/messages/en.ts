@@ -19,6 +19,14 @@ const en = {
     openMenu: "Open menu",
     home: "Home",
     popularSearches: "Popular searches",
+    searchPlaceholder: "Search the site",
+    searchLoading: "Searching…",
+    searchNoResults: "No results found",
+    searchGroupPages: "Pages",
+    searchGroupStudies: "Studies",
+    searchGroupTeam: "Team",
+    searchGroupPublications: "Publications",
+    searchGroupContent: "On our pages",
   },
 
   home: {
