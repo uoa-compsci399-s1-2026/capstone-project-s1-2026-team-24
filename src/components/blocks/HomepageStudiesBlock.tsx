@@ -10,7 +10,7 @@ export default function HomepageStudiesBlock({
 }) {
   return (
     <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1100px] mx-auto">
         {cards.map((card, i) => (
           <StudyCard
             key={i}

@@ -52,7 +52,7 @@ export default function AcademicCollaborators({
       {rows.map((row, rowIndex) => (
         <div key={rowIndex}>
           {rowIndex > 0 && <div className="max-w-[1400px] mx-auto h-16" />}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1100px] mx-auto">
             {row.map((card, i) => (
               <StudyCard
                 key={`${rowIndex}-${i}-${card.title}`}
