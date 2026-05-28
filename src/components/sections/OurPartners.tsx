@@ -1,7 +1,4 @@
 import { fetchPartnerLogos, type PartnerLogoRecord } from "@/lib/fetch-api";
-import { getServerLang } from "@/lib/lang";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 import PartnerSectionTitle from "./PartnerSectionTitle";
 
 function PartnerMarquee({
@@ -56,9 +53,6 @@ export default async function OurPartners({
 }: {
   group?: "both" | "Collaborating" | "Industry";
 } = {}) {
-  const lang = await getServerLang();
-  const t = lang === "EN" ? en : zh;
-
   let partnerLogos: PartnerLogoRecord[] = [];
 
   try {
