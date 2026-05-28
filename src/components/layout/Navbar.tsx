@@ -451,47 +451,59 @@ export default function Navbar() {
         </div>
 
         {/* Main nav */}
-        <nav
-          style={mainNavStyle}
-          className="transition-all duration-300"
-          aria-label="Main navigation"
-        >
-          <div
-            className="w-full mx-auto"
-            style={{
-              maxWidth: mounted && scrolled && isDesktop ? "900px" : "1512px",
-              margin: "0 auto",
-              padding:
-                mounted && scrolled && isDesktop
-                  ? "11px 32px 0 32px"
-                  : "20px 48px 0 48px",
-              height:
-                aboutOpen || studiesOpen
-                  ? "380px"
-                  : mounted && scrolled && isDesktop
-                    ? "80px"
-                    : "120px",
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              backgroundColor:
-                (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
-                  ? "rgba(0, 0, 0, 0.25)"
-                  : "transparent",
-              backdropFilter:
-                (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
-                  ? "blur(40px) brightness(1.25)"
-                  : "none",
-              boxShadow:
-                (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
-                  ? "0 0 0 1px rgba(255,255,255,0.3), 0 8px 32px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.04)"
-                  : "none",
-              borderRadius: mounted && scrolled && isDesktop ? "40px" : "0",
-              transition: "all 0.3s ease",
-              marginTop: mounted && scrolled && isDesktop ? "8px" : "0",
-              marginBottom: mounted && scrolled && isDesktop ? "8px" : "0",
-            }}
-          >
+<nav
+  style={{
+    ...mainNavStyle,
+    display: "flex",
+    justifyContent: "center",
+  }}
+  className="transition-all duration-300"
+  aria-label="Main navigation"
+>
+  {/* Background layer */}
+  <div
+    style={{
+      width: mounted && scrolled && isDesktop ? "900px" : "100%",
+      backgroundColor:
+        (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
+          ? "rgba(0, 0, 0, 0.25)"
+          : "transparent",
+      backdropFilter:
+        (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
+          ? "blur(40px) brightness(1.25)"
+          : "none",
+      boxShadow:
+        (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
+          ? "0 0 0 1px rgba(255,255,255,0.3), 0 8px 32px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.04)"
+          : "none",
+      borderRadius: mounted && scrolled && isDesktop ? "40px" : "0",
+      transition: "all 0.3s ease",
+      marginTop: mounted && scrolled && isDesktop ? "8px" : "0",
+      marginBottom: mounted && scrolled && isDesktop ? "8px" : "0",
+    }}
+  >
+    {/* Inner max-width content */}
+    <div
+      className="w-full mx-auto"
+      style={{
+        maxWidth: mounted && scrolled && isDesktop ? "100%" : "1512px",
+        margin: "0 auto",
+        padding:
+          mounted && scrolled && isDesktop
+            ? "11px 32px 0 32px"
+            : "20px 48px 0 48px",
+        height:
+          aboutOpen || studiesOpen
+            ? "380px"
+            : mounted && scrolled && isDesktop
+              ? "80px"
+              : "120px",
+        display: "flex",
+        alignItems: "flex-start",
+        justifyContent: "space-between",
+        transition: "all 0.3s ease",
+      }}
+    >
             {/* Logos */}
             <div className="hidden lg:block flex items-center">
               {(!mounted || !scrolled) && <></>}
@@ -810,6 +822,7 @@ export default function Navbar() {
                 </svg>
               </button>
             </div>
+          </div>
           </div>
         </nav>
 
