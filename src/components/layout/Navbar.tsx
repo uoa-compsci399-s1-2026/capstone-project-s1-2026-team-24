@@ -387,7 +387,7 @@ export default function Navbar() {
       >
         {/* Top utility bar */}
         <div className="hidden lg:flex relative z-[100] bg-white">
-          <div className="max-w-[1512px] ml-auto px-12 flex items-center justify-end h-9.5">
+          <div className="max-w-[1512px] mx-auto w-full px-12 flex items-center justify-end h-9.5">
             {TOP_BAR_LINKS.map((link) => (
               <Link
                 key={`${link.label}-${link.href}`}
@@ -451,281 +451,331 @@ export default function Navbar() {
         </div>
 
         {/* Main nav */}
-<nav
-  style={{
-    ...mainNavStyle,
-    display: "flex",
-    justifyContent: "center",
-  }}
-  className="transition-all duration-300"
-  aria-label="Main navigation"
->
-  {/* Background layer */}
-  <div
-    style={{
-      width: mounted && scrolled && isDesktop ? "900px" : "100%",
-      backgroundColor:
-        (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
-          ? "rgba(0, 0, 0, 0.25)"
-          : "transparent",
-      backdropFilter:
-        (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
-          ? "blur(40px) brightness(1.25)"
-          : "none",
-      boxShadow:
-        (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
-          ? "0 0 0 1px rgba(255,255,255,0.3), 0 8px 32px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.04)"
-          : "none",
-      borderRadius: mounted && scrolled && isDesktop ? "40px" : "0",
-      transition: "all 0.3s ease",
-      marginTop: mounted && scrolled && isDesktop ? "8px" : "0",
-      marginBottom: mounted && scrolled && isDesktop ? "8px" : "0",
-    }}
-  >
-    {/* Inner max-width content */}
-    <div
-      className="w-full mx-auto"
-      style={{
-        maxWidth: mounted && scrolled && isDesktop ? "100%" : "1512px",
-        margin: "0 auto",
-        padding:
-          mounted && scrolled && isDesktop
-            ? "11px 32px 0 32px"
-            : "20px 48px 0 48px",
-        height:
-          aboutOpen || studiesOpen
-            ? "380px"
-            : mounted && scrolled && isDesktop
-              ? "80px"
-              : "120px",
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "space-between",
-        transition: "all 0.3s ease",
-      }}
-    >
-            {/* Logos */}
-            <div className="hidden lg:block flex items-center">
-              {(!mounted || !scrolled) && <></>}
-              <Link href="/" aria-label="HNU — Home">
-                <Image
-                  src="/images/logos/hnu-logo.svg"
-                  alt="HNU"
-                  width={mounted && scrolled && isDesktop ? 180 : 200}
-                  height={mounted && scrolled && isDesktop ? 52 : 70}
-                  className="object-contain ml-[-10px]"
-                />
-              </Link>
-            </div>
-            {/* Desktop nav items */}
-            <div className="hidden lg:flex items-center gap-8 z-[60] relative">
-              {/* About dropdown */}
-              <div className="relative">
+        <nav
+          style={{
+            ...mainNavStyle,
+            display: "flex",
+            justifyContent: "center",
+          }}
+          className="transition-all duration-300"
+          aria-label="Main navigation"
+        >
+          {/* Background layer */}
+          <div
+            style={{
+              width: mounted && scrolled && isDesktop ? "900px" : "100%",
+              backgroundColor:
+                (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
+                  ? "rgba(0, 0, 0, 0.25)"
+                  : "transparent",
+              backdropFilter:
+                (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
+                  ? "blur(40px) brightness(1.25)"
+                  : "none",
+              boxShadow:
+                (mounted && scrolled && isDesktop) || aboutOpen || studiesOpen
+                  ? "0 0 0 1px rgba(255,255,255,0.3), 0 8px 32px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.04)"
+                  : "none",
+              borderRadius: mounted && scrolled && isDesktop ? "40px" : "0",
+              transition: "all 0.3s ease",
+              marginTop: mounted && scrolled && isDesktop ? "8px" : "0",
+              marginBottom: mounted && scrolled && isDesktop ? "8px" : "0",
+            }}
+          >
+            {/* Inner max-width content */}
+            <div
+              className="w-full mx-auto"
+              style={{
+                maxWidth: mounted && scrolled && isDesktop ? "100%" : "1512px",
+                margin: "0 auto",
+                padding:
+                  mounted && scrolled && isDesktop
+                    ? "11px 32px 0 32px"
+                    : "20px 48px 0 48px",
+                height:
+                  aboutOpen || studiesOpen
+                    ? "380px"
+                    : mounted && scrolled && isDesktop
+                      ? "80px"
+                      : "120px",
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                transition: "all 0.3s ease",
+              }}
+            >
+              {/* Logos */}
+              <div className="hidden lg:block flex items-center">
+                {(!mounted || !scrolled) && <></>}
+                <Link href="/" aria-label="HNU — Home">
+                  <Image
+                    src="/images/logos/hnu-logo.svg"
+                    alt="HNU"
+                    width={mounted && scrolled && isDesktop ? 180 : 200}
+                    height={mounted && scrolled && isDesktop ? 52 : 70}
+                    className="object-contain ml-[-10px]"
+                  />
+                </Link>
+              </div>
+              {/* Desktop nav items */}
+              <div className="hidden lg:flex items-center gap-8 z-[60] relative">
+                {/* About dropdown */}
+                <div className="relative">
+                  <button
+                    className="nav-link flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                      if (aboutOpen) {
+                        setAboutClosing(true);
+                        setTimeout(() => {
+                          setAboutOpen(false);
+                          setAboutClosing(false);
+                        }, 300);
+                      } else {
+                        setAboutOpen(true);
+                      }
+                      setStudiesOpen(false);
+                      setLangOpen(false);
+                    }}
+                    aria-expanded={aboutOpen}
+                    aria-haspopup="true"
+                    aria-controls="about-dropdown"
+                  >
+                    {t.navbar.about}
+                    <svg
+                      className={`w-3 h-3 transition-transform ${aboutOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+                  {(aboutOpen || aboutClosing) && (
+                    <div
+                      id="about-dropdown"
+                      role="menu"
+                      className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${aboutClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
+                      style={{
+                        height: "380px",
+                      }}
+                    >
+                      <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
+                        <div className="flex space-x-4">
+                          {ABOUT_ITEMS.map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => {
+                                setAboutClosing(true);
+                                setTimeout(() => {
+                                  setAboutOpen(false);
+                                  setAboutClosing(false);
+                                }, 300);
+                              }}
+                              className="relative group block transition-transform duration-300 hover:scale-105"
+                            >
+                              <div className="relative">
+                                <img
+                                  src={`/${item.image}.jpg`}
+                                  className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                                  alt={item.label}
+                                />
+                              </div>
+
+                              <p className="mt-3 text-white text-[18px] font-semibold text-center">
+                                {item.label}
+                              </p>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Studies dropdown */}
+                <div className="relative">
+                  <button
+                    className="nav-link flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+                    onClick={() => {
+                      if (studiesOpen) {
+                        setStudiesClosing(true);
+                        setTimeout(() => {
+                          setStudiesOpen(false);
+                          setStudiesClosing(false);
+                        }, 300);
+                      } else {
+                        setStudiesOpen(true);
+                      }
+                      setAboutOpen(false);
+                      setLangOpen(false);
+                    }}
+                    aria-expanded={studiesOpen}
+                    aria-haspopup="true"
+                    aria-controls="studies-dropdown"
+                  >
+                    {t.navbar.studies}
+                    <svg
+                      className={`w-3 h-3 transition-transform ${studiesOpen ? "rotate-180" : ""}`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={3}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* Studies dropdown — outside header so it scrolls with page */}
+                  {(studiesOpen || studiesClosing) && (
+                    <div
+                      id="studies-dropdown"
+                      role="menu"
+                      className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${studiesClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
+                      style={{
+                        height: "380px",
+                      }}
+                    >
+                      <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
+                        <div className="flex space-x-4">
+                          {STUDIES_ITEMS.slice(1).map((item) => (
+                            <Link
+                              key={item.href}
+                              href={item.href}
+                              onClick={() => {
+                                setStudiesClosing(true);
+                                setTimeout(() => {
+                                  setStudiesOpen(false);
+                                  setStudiesClosing(false);
+                                }, 300);
+                              }}
+                              className="group block transition-transform duration-300 hover:scale-105"
+                            >
+                              <div className="relative">
+                                <img
+                                  src={`/${item.image}.jpg`}
+                                  className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                                  alt={item.label}
+                                />
+                              </div>
+
+                              <p className="mt-3 text-white text-[18px] font-semibold text-center">
+                                {item.label}
+                              </p>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <Link
+                  href="/collaborations"
+                  className="nav-link text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+                >
+                  {t.navbar.collaborations}
+                </Link>
+
+                {/* Search button */}
                 <button
-                  className="nav-link flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
+                  ref={searchTriggerRef}
                   onClick={() => {
+                    setSearchOpen(!searchOpen);
                     if (aboutOpen) {
                       setAboutClosing(true);
                       setTimeout(() => {
                         setAboutOpen(false);
                         setAboutClosing(false);
                       }, 300);
-                    } else {
-                      setAboutOpen(true);
                     }
-                    setStudiesOpen(false);
-                    setLangOpen(false);
-                  }}
-                  aria-expanded={aboutOpen}
-                  aria-haspopup="true"
-                  aria-controls="about-dropdown"
-                >
-                  {t.navbar.about}
-                  <svg
-                    className={`w-3 h-3 transition-transform ${aboutOpen ? "rotate-180" : ""}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-                {(aboutOpen || aboutClosing) && (
-                  <div
-                    id="about-dropdown"
-                    role="menu"
-                    className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${aboutClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
-                    style={{
-                      height: "380px",
-                    }}
-                  >
-                    <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
-                      <div className="flex space-x-4">
-                        {ABOUT_ITEMS.map((item) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => {
-                              setAboutClosing(true);
-                              setTimeout(() => {
-                                setAboutOpen(false);
-                                setAboutClosing(false);
-                              }, 300);
-                            }}
-                            className="relative group block transition-transform duration-300 hover:scale-105"
-                          >
-                            <div className="relative">
-                              <img
-                                src={`/${item.image}.jpg`}
-                                className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                                alt={item.label}
-                              />
-                            </div>
-
-                            <p className="mt-3 text-white text-[18px] font-semibold text-center">
-                              {item.label}
-                            </p>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Studies dropdown */}
-              <div className="relative">
-                <button
-                  className="nav-link flex items-center gap-2 text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
-                  onClick={() => {
                     if (studiesOpen) {
                       setStudiesClosing(true);
                       setTimeout(() => {
                         setStudiesOpen(false);
                         setStudiesClosing(false);
                       }, 300);
-                    } else {
-                      setStudiesOpen(true);
                     }
-                    setAboutOpen(false);
-                    setLangOpen(false);
                   }}
-                  aria-expanded={studiesOpen}
-                  aria-haspopup="true"
-                  aria-controls="studies-dropdown"
+                  aria-label={searchOpen ? "Close search" : "Open search"}
+                  className={`flex items-center justify-center border-[3px] border-white text-white hover:bg-white/10 h-[57px] transition-all duration-300 ease-in-out ${
+                    searchOpen
+                      ? "w-[57px] rounded-full"
+                      : "w-[160px] rounded-[28.5px] gap-3 pl-4 pr-6"
+                  }`}
                 >
-                  {t.navbar.studies}
-                  <svg
-                    className={`w-3 h-3 transition-transform ${studiesOpen ? "rotate-180" : ""}`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </button>
-
-                {/* Studies dropdown — outside header so it scrolls with page */}
-                {(studiesOpen || studiesClosing) && (
-                  <div
-                    id="studies-dropdown"
-                    role="menu"
-                    className={`fixed inset-x-0 top-0 z-[-1] overflow-hidden ${studiesClosing ? "animate-[slideUp_0.3s_ease-out]" : "animate-[slideDown_0.3s_ease-out]"}`}
-                    style={{
-                      height: "380px",
-                    }}
-                  >
-                    <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
-                      <div className="flex space-x-4">
-                        {STUDIES_ITEMS.slice(1).map((item) => (
-                          <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => {
-                              setStudiesClosing(true);
-                              setTimeout(() => {
-                                setStudiesOpen(false);
-                                setStudiesClosing(false);
-                              }, 300);
-                            }}
-                            className="group block transition-transform duration-300 hover:scale-105"
-                          >
-                            <div className="relative">
-                              <img
-                                src={`/${item.image}.jpg`}
-                                className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                                alt={item.label}
-                              />
-                            </div>
-
-                            <p className="mt-3 text-white text-[18px] font-semibold text-center">
-                              {item.label}
-                            </p>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
+                  <div className="relative w-5 h-5 flex-shrink-0">
+                    <svg
+                      className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                        searchOpen
+                          ? "opacity-0 rotate-90 scale-50"
+                          : "opacity-100 rotate-0 scale-100"
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    <svg
+                      className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
+                        searchOpen
+                          ? "opacity-100 rotate-0 scale-100"
+                          : "opacity-0 -rotate-90 scale-50"
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
                   </div>
-                )}
+                  <span
+                    className={`text-[20px] tracking-[0.4px] whitespace-nowrap transition-all duration-300 overflow-hidden ${
+                      searchOpen ? "w-0 opacity-0" : "w-auto opacity-100"
+                    }`}
+                  >
+                    {t.navbar.search}
+                  </span>
+                </button>
               </div>
 
-              <Link
-                href="/collaborations"
-                className="nav-link text-[20px] text-white tracking-[0.4px] hover:opacity-80 transition-opacity"
-              >
-                {t.navbar.collaborations}
-              </Link>
-
-              {/* Search button */}
-              <button
-                ref={searchTriggerRef}
-                onClick={() => {
-                  setSearchOpen(!searchOpen);
-                  if (aboutOpen) {
-                    setAboutClosing(true);
-                    setTimeout(() => {
-                      setAboutOpen(false);
-                      setAboutClosing(false);
-                    }, 300);
-                  }
-                  if (studiesOpen) {
-                    setStudiesClosing(true);
-                    setTimeout(() => {
-                      setStudiesOpen(false);
-                      setStudiesClosing(false);
-                    }, 300);
-                  }
-                }}
-                aria-label={searchOpen ? "Close search" : "Open search"}
-                className={`flex items-center justify-center border-[3px] border-white text-white hover:bg-white/10 h-[57px] transition-all duration-300 ease-in-out ${
-                  searchOpen
-                    ? "w-[57px] rounded-full"
-                    : "w-[160px] rounded-[28.5px] gap-3 pl-4 pr-6"
-                }`}
-              >
-                <div className="relative w-5 h-5 flex-shrink-0">
+              {/* Mobile nav bar — logo center, search left, hamburger right */}
+              <div className="lg:hidden flex items-center justify-between w-full">
+                {/* Search */}
+                <button
+                  onClick={() => setSearchOpen(true)}
+                  aria-label="Open search"
+                  className="w-11 h-11 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
                   <svg
-                    className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-                      searchOpen
-                        ? "opacity-0 rotate-90 scale-50"
-                        : "opacity-100 rotate-0 scale-100"
-                    }`}
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
@@ -734,95 +784,45 @@ export default function Navbar() {
                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
+                </button>
+
+                {/* Logo — centered absolutely */}
+                <Link
+                  href="/"
+                  aria-label="HNU — Home"
+                  className="absolute left-1/2 -translate-x-1/2"
+                >
+                  <Image
+                    src="/images/logos/hnu-logo.svg"
+                    alt="HNU"
+                    width={140}
+                    height={40}
+                    className="object-contain"
+                  />
+                </Link>
+
+                {/* Hamburger */}
+                <button
+                  onClick={() => setMobileOpen(true)}
+                  aria-label="Open menu"
+                  className="w-11 h-11 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                >
                   <svg
-                    className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-                      searchOpen
-                        ? "opacity-100 rotate-0 scale-100"
-                        : "opacity-0 -rotate-90 scale-50"
-                    }`}
+                    className="w-5 h-5"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
-                    aria-hidden="true"
                   >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
+                      d="M4 6h16M4 12h16M4 18h16"
                     />
                   </svg>
-                </div>
-                <span
-                  className={`text-[20px] tracking-[0.4px] whitespace-nowrap transition-all duration-300 overflow-hidden ${
-                    searchOpen ? "w-0 opacity-0" : "w-auto opacity-100"
-                  }`}
-                >
-                  {t.navbar.search}
-                </span>
-              </button>
+                </button>
+              </div>
             </div>
-
-            {/* Mobile nav bar — logo center, search left, hamburger right */}
-            <div className="lg:hidden flex items-center justify-between w-full">
-              {/* Search */}
-              <button
-                onClick={() => setSearchOpen(true)}
-                aria-label="Open search"
-                className="w-11 h-11 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-
-              {/* Logo — centered absolutely */}
-              <Link
-                href="/"
-                aria-label="HNU — Home"
-                className="absolute left-1/2 -translate-x-1/2"
-              >
-                <Image
-                  src="/images/logos/hnu-logo.svg"
-                  alt="HNU"
-                  width={140}
-                  height={40}
-                  className="object-contain"
-                />
-              </Link>
-
-              {/* Hamburger */}
-              <button
-                onClick={() => setMobileOpen(true)}
-                aria-label="Open menu"
-                className="w-11 h-11 rounded-full bg-white/10 border border-white/15 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
           </div>
         </nav>
 
