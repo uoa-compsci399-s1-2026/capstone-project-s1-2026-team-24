@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
+
+
 
 type Publication = {
   id: number;
@@ -19,6 +24,8 @@ export default function RecentPublications({
 }: {
   limit?: number;
 } = {}) {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
   const [publications, setPublications] = useState<Publication[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,12 +55,12 @@ export default function RecentPublications({
       <div className="max-w-[1100px] mx-auto">
         <div className="flex justify-center items-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48] pb-15 text-center">
-            Here is some of our previous research
+            {t.research.recentPublicationsTitle}
           </h2>
         </div>
 
         {loading ? (
-          <div className="text-center text-[#0a4479]/60 py-12">Loading...</div>
+          <div className="text-center text-[#0a4479]/60 py-12">{t.common.loading}</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
             {publications.map((pub) => (
@@ -137,7 +144,7 @@ export default function RecentPublications({
                       textDecoration: "underline",
                     }}
                   >
-                    View publication →
+                    {t.research.viewPublicationArrow}
                   </a>
                 )}
               </div>
@@ -147,7 +154,7 @@ export default function RecentPublications({
 
         <div className="flex justify-center mt-10">
           <Button href="/research" color="dark">
-            View all publications
+            {t.research.viewAllPublications}
           </Button>
         </div>
       </div>
