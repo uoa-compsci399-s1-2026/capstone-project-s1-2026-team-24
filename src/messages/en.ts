@@ -430,6 +430,28 @@ const en = {
     workTogetherDescription:
       "Whether you're looking to fund research, co-develop a study, or explore industry partnerships — we'd love to hear from you.",
     getInTouch: "Get in touch",
+    academicBenefitsTitle: "Academic Benefits",
+    industryBenefitsTitle: "Industry Benefits",
+
+    knowledgeExchangeTitle: "Knowledge Exchange",
+    knowledgeExchangeDescription: "Access to cutting-edge research and expertise",
+
+    studentTrainingTitle: "Student Training",
+    studentTrainingDescription: "Opportunities for postgraduate research projects",
+
+    jointPublicationsTitle: "Joint Publications",
+    jointPublicationsDescription: "Co-authored research in leading journals",
+
+    independentExpertiseTitle: "Independent Expertise",
+    independentExpertiseDescription: "Rigorous, unbiased research you can trust",
+
+    regulatoryComplianceTitle: "Regulatory Compliance",
+    regulatoryComplianceDescription:
+      "Full GCP compliance and ethics approval support",
+
+    commercialValueTitle: "Commercial Value",
+    commercialValueDescription:
+      "Evidence-based results that drive product innovation",
   },
 
   footer: {

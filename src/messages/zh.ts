@@ -423,6 +423,26 @@ const zh = {
     workTogetherDescription:
       "无论你希望资助研究、共同开发研究项目，还是探索行业合作机会，我们都很乐意与你联系。",
     getInTouch: "联系我们",
+    academicBenefitsTitle: "学术合作优势",
+    industryBenefitsTitle: "行业合作优势",
+
+    knowledgeExchangeTitle: "知识交流",
+    knowledgeExchangeDescription: "获得前沿研究成果与专业知识支持",
+
+    studentTrainingTitle: "学生培养",
+    studentTrainingDescription: "提供研究生科研项目合作机会",
+
+    jointPublicationsTitle: "联合发表",
+    jointPublicationsDescription: "共同在高水平学术期刊发表研究成果",
+
+    independentExpertiseTitle: "独立专业能力",
+    independentExpertiseDescription: "严谨、客观、值得信赖的研究",
+
+    regulatoryComplianceTitle: "法规合规",
+    regulatoryComplianceDescription: "全面支持 GCP 合规与伦理审批",
+
+    commercialValueTitle: "商业价值",
+    commercialValueDescription: "以证据为基础推动产品创新",
   },
 
   footer: {
