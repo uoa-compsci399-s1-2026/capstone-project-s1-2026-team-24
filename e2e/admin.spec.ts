@@ -36,10 +36,20 @@ function resolveAdminPassword(): string | undefined {
 }
 
 const ADMIN_PASSWORD = resolveAdminPassword();
+// Treat the .env.example placeholder as "not set" — otherwise a fresh copy that
+// never changed `ADMIN_PASSWORD="change-me"` would run the authenticated suite
+// and fail confusingly against a password the server never accepted.
+const USABLE_ADMIN_PASSWORD =
+  ADMIN_PASSWORD && ADMIN_PASSWORD !== "change-me" ? ADMIN_PASSWORD : undefined;
 
 async function login(page: import("@playwright/test").Page) {
+  if (!USABLE_ADMIN_PASSWORD) {
+    throw new Error(
+      "ADMIN_PASSWORD is required to log in (set a real value in env or .env.local).",
+    );
+  }
   await page.goto("/admin/login");
-  await page.locator('input[type="password"]').fill(ADMIN_PASSWORD!);
+  await page.locator('input[type="password"]').fill(USABLE_ADMIN_PASSWORD);
   await page.getByRole("button", { name: "Sign in" }).click();
   // Success lands on the dashboard (the default post-login target).
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
@@ -90,8 +100,8 @@ test.describe("admin auth gate", () => {
 test.describe("admin console (authenticated)", () => {
   test.beforeEach(async ({ page }) => {
     test.skip(
-      !ADMIN_PASSWORD,
-      "ADMIN_PASSWORD not set (env or .env.local) — skipping authenticated checks",
+      !USABLE_ADMIN_PASSWORD,
+      "ADMIN_PASSWORD not set or still the .env.example placeholder (change-me) — skipping authenticated checks",
     );
     await login(page);
   });
