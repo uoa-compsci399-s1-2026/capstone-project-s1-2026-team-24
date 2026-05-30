@@ -2,22 +2,25 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   DEFAULT_MIN_YEAR,
-  DEFAULT_ROUTES,
   parseLines,
-  parseRoute,
   type RouteTarget,
 } from "@/lib/publication-filter";
 import { getOrCreateFilterSetting } from "@/lib/publication-filter-settings";
 
-// Body key -> the route column it updates and its default. Each value must be
-// one of "Approved" | "Pending" | "Rejected"; anything else is a 400.
+const ALL_TARGETS: readonly RouteTarget[] = ["Approved", "Pending", "Rejected"];
+// Off-topic papers must never auto-approve, so the exclusion rule only accepts
+// Pending/Rejected — mirroring the admin UI, which doesn't offer Approved for it.
+const NON_APPROVE_TARGETS: readonly RouteTarget[] = ["Pending", "Rejected"];
+
+// Body key -> the buckets that key may be set to. A provided value outside its
+// allowed set is a 400 (no silent fallback).
 const ROUTE_FIELDS = [
-  ["routeUnitAffiliation", DEFAULT_ROUTES.unitAffiliation],
-  ["routeInstitutionKeyword", DEFAULT_ROUTES.institutionKeyword],
-  ["routeStrongKeywords", DEFAULT_ROUTES.strongKeywords],
-  ["routeWeakMatch", DEFAULT_ROUTES.weakMatch],
-  ["routeExclusion", DEFAULT_ROUTES.exclusion],
-] as const satisfies ReadonlyArray<readonly [string, RouteTarget]>;
+  ["routeUnitAffiliation", ALL_TARGETS],
+  ["routeInstitutionKeyword", ALL_TARGETS],
+  ["routeStrongKeywords", ALL_TARGETS],
+  ["routeWeakMatch", ALL_TARGETS],
+  ["routeExclusion", NON_APPROVE_TARGETS],
+] as const satisfies ReadonlyArray<readonly [string, readonly RouteTarget[]]>;
 
 // Reads/writes the singleton PublicationFilterSetting that drives the ORCID
 // relevance filter. The settings UI is embedded in /admin/publications.
@@ -112,15 +115,18 @@ export async function PUT(request: Request) {
     if ("exclusionKeywords" in body)
       data.exclusionKeywords = normalizeListField(body.exclusionKeywords);
 
-    // Routing rules: each provided value must be a valid bucket, else 400 so the
-    // admin gets clear feedback rather than a silent fallback.
-    for (const [key, fallback] of ROUTE_FIELDS) {
+    // Routing rules: each provided value must be one of the buckets allowed for
+    // that rule, else 400 so the admin gets clear feedback rather than a silent
+    // fallback.
+    for (const [key, allowed] of ROUTE_FIELDS) {
       if (!(key in body)) continue;
       const value = (body as Record<string, unknown>)[key];
-      if (parseRoute(value, fallback) !== value) {
+      if (typeof value !== "string" || !allowed.includes(value as RouteTarget)) {
         return NextResponse.json(
           {
-            error: `${key} must be one of "Approved", "Pending", or "Rejected".`,
+            error: `${key} must be one of ${allowed
+              .map((t) => `"${t}"`)
+              .join(", ")}.`,
           },
           { status: 400 },
         );

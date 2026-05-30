@@ -161,7 +161,10 @@ export type PublicationRoutes = {
   strongKeywords: RouteTarget;
   // A faint signal only: institution-only, a single strong keyword, or weak keywords.
   weakMatch: RouteTarget;
-  // An off-topic / exclusion term, with no unit phrasing or strong keyword.
+  // An off-topic / exclusion term, with no unit phrasing or strong keyword. The
+  // settings API + admin UI only allow Pending/Rejected here (auto-approving an
+  // off-topic paper is nonsensical); the type stays RouteTarget so a hand-edited
+  // DB value still classifies safely.
   exclusion: RouteTarget;
 };
 
