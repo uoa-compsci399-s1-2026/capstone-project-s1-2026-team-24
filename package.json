@@ -8,6 +8,7 @@
     "start": "next start",
     "clean": "rm -rf .next",
     "lint": "eslint",
+    "verify": "tsc --noEmit && eslint && vitest run --project api",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "seed": "prisma db seed",
