@@ -6,6 +6,12 @@ const mockPrisma = vi.hoisted(() => ({
     update: vi.fn(),
     delete: vi.fn(),
   },
+  deletedPublication: {
+    create: vi.fn(),
+  },
+  // The delete route wraps tombstone-create + publication-delete in a
+  // transaction; emulate it by resolving the supplied prisma-promise array.
+  $transaction: vi.fn((operations: unknown[]) => Promise.all(operations)),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -210,11 +216,49 @@ describe("admin publications/[id] routes", () => {
 
   it("DELETE returns 204 on success", async () => {
     mockPrisma.publication.findUnique.mockResolvedValueOnce(basePublication);
+    mockPrisma.deletedPublication.create.mockResolvedValueOnce({});
     mockPrisma.publication.delete.mockResolvedValueOnce({});
     const res = await deletePublication(
       new Request("http://localhost"),
       makeParams("1"),
     );
     expect(res.status).toBe(204);
+  });
+
+  it("DELETE writes a tombstone before deleting (so re-sync can't resurrect it)", async () => {
+    mockPrisma.publication.findUnique.mockResolvedValueOnce({
+      ...basePublication,
+      id: 5,
+      sourceType: "ORCID",
+      sourceId: "0000-0001-0000-0001:w1",
+      doi: "10.1000/Test", // mixed case — must be normalized in the tombstone
+      title: "Resurrectable Work",
+      year: 2020,
+    });
+    mockPrisma.deletedPublication.create.mockResolvedValueOnce({});
+    mockPrisma.publication.delete.mockResolvedValueOnce({});
+
+    const res = await deletePublication(
+      new Request("http://localhost"),
+      makeParams("5"),
+    );
+    expect(res.status).toBe(204);
+
+    // A tombstone capturing the three identity signals must be written...
+    expect(mockPrisma.deletedPublication.create).toHaveBeenCalledTimes(1);
+    const tombstoneArg = mockPrisma.deletedPublication.create.mock.calls[0][0];
+    expect(tombstoneArg.data).toMatchObject({
+      sourceType: "ORCID",
+      sourceId: "0000-0001-0000-0001:w1",
+      doi: "10.1000/test", // normalized to lowercase
+      titleYearKey: "resurrectable work::2020",
+      title: "Resurrectable Work",
+      year: 2020,
+    });
+    // ...inside a transaction, alongside the actual delete.
+    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.publication.delete).toHaveBeenCalledWith({
+      where: { id: 5 },
+    });
   });
 });
