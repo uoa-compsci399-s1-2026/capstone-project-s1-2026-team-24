@@ -143,6 +143,50 @@ function normalizeRor(value: string) {
     .replace(/\/$/, "");
 }
 
+// Where an automatic relevance match sends a synced work. These are the only
+// three buckets a publication can live in.
+export type RouteTarget = "Approved" | "Pending" | "Rejected";
+
+const ROUTE_TARGETS: readonly RouteTarget[] = ["Approved", "Pending", "Rejected"];
+
+// The five admin-configurable routing rules. Each names the kind of match and
+// chooses which bucket it lands in. (The hard year cutoff and the no-signal case
+// are always Rejected and are NOT configurable.)
+export type PublicationRoutes = {
+  // The paper's affiliation literally names the unit (e.g. "Human Nutrition Unit").
+  unitAffiliation: RouteTarget;
+  // An accepted institution (ROR) AND at least one strong keyword.
+  institutionKeyword: RouteTarget;
+  // Two or more strong keywords, with no affiliation match.
+  strongKeywords: RouteTarget;
+  // A faint signal only: institution-only, a single strong keyword, or weak keywords.
+  weakMatch: RouteTarget;
+  // An off-topic / exclusion term, with no unit phrasing or strong keyword.
+  exclusion: RouteTarget;
+};
+
+// Default routing = the affiliation-only auto-approval policy: only a unit-name
+// match auto-approves; every other positive signal waits in Pending for a human;
+// off-topic terms are rejected.
+export const DEFAULT_ROUTES: PublicationRoutes = {
+  unitAffiliation: "Approved",
+  institutionKeyword: "Pending",
+  strongKeywords: "Pending",
+  weakMatch: "Pending",
+  exclusion: "Rejected",
+};
+
+// Coerce a stored/posted route value to a valid RouteTarget, falling back when
+// it's missing or not one of the three buckets.
+export function parseRoute(
+  value: unknown,
+  fallback: RouteTarget,
+): RouteTarget {
+  return typeof value === "string" && ROUTE_TARGETS.includes(value as RouteTarget)
+    ? (value as RouteTarget)
+    : fallback;
+}
+
 export type PublicationFilterConfig = {
   minYear: number;
   affiliationPhrases: string[];
@@ -150,6 +194,7 @@ export type PublicationFilterConfig = {
   strongKeywords: string[];
   weakKeywords: string[];
   exclusionKeywords: string[];
+  routes: PublicationRoutes;
 };
 
 // The config used when no DB row exists yet (first run, before seeding).
@@ -160,6 +205,7 @@ export const DEFAULT_FILTER_CONFIG: PublicationFilterConfig = {
   strongKeywords: DEFAULT_STRONG_KEYWORDS,
   weakKeywords: DEFAULT_WEAK_KEYWORDS,
   exclusionKeywords: DEFAULT_EXCLUSION_KEYWORDS,
+  routes: DEFAULT_ROUTES,
 };
 
 // Build a config from a persisted singleton row (text fields → arrays), falling
@@ -171,6 +217,13 @@ export function configFromRow(row: {
   strongKeywords: string;
   weakKeywords: string;
   exclusionKeywords: string;
+  // Route columns are optional so older rows / partial fixtures still parse;
+  // anything missing or invalid falls back to DEFAULT_ROUTES.
+  routeUnitAffiliation?: string | null;
+  routeInstitutionKeyword?: string | null;
+  routeStrongKeywords?: string | null;
+  routeWeakMatch?: string | null;
+  routeExclusion?: string | null;
 }): PublicationFilterConfig {
   const affiliationPhrases = parseLines(row.affiliationPhrases);
   const institutionRors = parseLines(row.institutionRors);
@@ -196,6 +249,22 @@ export function configFromRow(row: {
     exclusionKeywords: exclusionKeywords.length
       ? exclusionKeywords
       : DEFAULT_EXCLUSION_KEYWORDS,
+    routes: {
+      unitAffiliation: parseRoute(
+        row.routeUnitAffiliation,
+        DEFAULT_ROUTES.unitAffiliation,
+      ),
+      institutionKeyword: parseRoute(
+        row.routeInstitutionKeyword,
+        DEFAULT_ROUTES.institutionKeyword,
+      ),
+      strongKeywords: parseRoute(
+        row.routeStrongKeywords,
+        DEFAULT_ROUTES.strongKeywords,
+      ),
+      weakMatch: parseRoute(row.routeWeakMatch, DEFAULT_ROUTES.weakMatch),
+      exclusion: parseRoute(row.routeExclusion, DEFAULT_ROUTES.exclusion),
+    },
   };
 }
 
@@ -223,14 +292,15 @@ export type PublicationRelevanceInput = {
  *                               → WEAK: e.g. a UoA author from another school.
  *  4. Strong/weak title-journal-abstract keywords (secondary signal).
  *
- * Decision matrix (biased toward Pending so a human, not silence, decides):
- *  - unit phrasing, OR (institution + strong keyword), OR (>=2 strong keywords)
- *      → Approved
- *  - some signal but not enough (institution-only, single strong keyword,
- *    >=2 weak keywords, weak+affiliation)
- *      → Pending
- *  - no signal at all, or exclusion-only with no strong signal
- *      → Rejected
+ * Each kind of match's destination is admin-configurable via `config.routes`
+ * (see PublicationRoutes). The DEFAULTS encode the affiliation-only policy:
+ *  - unit phrasing                                   → routes.unitAffiliation (default Approved)
+ *  - institution + strong keyword                    → routes.institutionKeyword (default Pending)
+ *  - >=2 strong keywords (no affiliation)            → routes.strongKeywords (default Pending)
+ *  - faint signal (institution-only, single strong
+ *    keyword, >=2 weak keywords, weak+no-affiliation)→ routes.weakMatch (default Pending)
+ *  - exclusion-only with no strong signal            → routes.exclusion (default Rejected)
+ * The hard year cutoff and the no-signal case are ALWAYS Rejected (not routable).
  */
 export function classifyPublicationRelevance(
   input: PublicationRelevanceInput,
@@ -301,7 +371,7 @@ export function classifyPublicationRelevance(
   // also lands here unless a strong keyword appears).
   if (matchedExcluded.length > 0 && !hasStrongKeyword && !hasUnitPhrasing) {
     return {
-      status: "Rejected",
+      status: config.routes.exclusion,
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "EXCLUDED",
@@ -312,7 +382,7 @@ export function classifyPublicationRelevance(
   // --- Approve ---
   if (hasUnitPhrasing) {
     return {
-      status: "Approved",
+      status: config.routes.unitAffiliation,
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "UNIT_AFFILIATION",
@@ -321,7 +391,7 @@ export function classifyPublicationRelevance(
   }
   if (hasInstitutionMatch && hasStrongKeyword) {
     return {
-      status: "Approved",
+      status: config.routes.institutionKeyword,
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "INSTITUTION_AND_KEYWORD",
@@ -330,7 +400,7 @@ export function classifyPublicationRelevance(
   }
   if (matchedStrong.length >= 2) {
     return {
-      status: "Approved",
+      status: config.routes.strongKeywords,
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "STRONG_KEYWORDS",
@@ -343,7 +413,7 @@ export function classifyPublicationRelevance(
     // Accepted institution but no unit phrasing and no strong keyword: this is the
     // "UoA but maybe not nutrition" case — surface for review, never auto-approve.
     return {
-      status: "Pending",
+      status: config.routes.weakMatch,
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "INSTITUTION_ONLY",
@@ -352,7 +422,7 @@ export function classifyPublicationRelevance(
   }
   if (hasStrongKeyword) {
     return {
-      status: "Pending",
+      status: config.routes.weakMatch,
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "SINGLE_STRONG_KEYWORD",
@@ -361,7 +431,7 @@ export function classifyPublicationRelevance(
   }
   if (matchedWeak.length >= 2) {
     return {
-      status: "Pending",
+      status: config.routes.weakMatch,
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "WEAK_KEYWORDS",
@@ -372,7 +442,7 @@ export function classifyPublicationRelevance(
     // A single weak keyword and we have NO affiliation data to corroborate:
     // err toward review rather than silently dropping.
     return {
-      status: "Pending",
+      status: config.routes.weakMatch,
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "WEAK_KEYWORDS",

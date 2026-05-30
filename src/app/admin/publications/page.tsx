@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import InfoTooltip from "@/components/admin/InfoTooltip";
+import { DEFAULT_ROUTES, type RouteTarget } from "@/lib/publication-filter";
 
 type Author = {
   id: number;
@@ -74,6 +76,14 @@ type SyncResponse = {
   message?: string;
 };
 
+// The five admin-editable routing-rule columns (mirror PublicationRoutes).
+type RouteSettingKey =
+  | "routeUnitAffiliation"
+  | "routeInstitutionKeyword"
+  | "routeStrongKeywords"
+  | "routeWeakMatch"
+  | "routeExclusion";
+
 type FilterSettings = {
   minYear: number | "";
   affiliationPhrases: string;
@@ -81,7 +91,7 @@ type FilterSettings = {
   strongKeywords: string;
   weakKeywords: string;
   exclusionKeywords: string;
-};
+} & Record<RouteSettingKey, RouteTarget>;
 
 const STATUS_OPTIONS = ["All", "Pending", "Approved", "Rejected"] as const;
 
@@ -90,6 +100,66 @@ const STATUS_COLOURS: Record<string, string> = {
   Approved: "bg-emerald-100 text-emerald-800",
   Rejected: "bg-[#0c0c48]/10 text-[#0c0c48]/70",
 };
+
+// One row per configurable routing rule: a plain-language condition, a short
+// explanation for the ⓘ tooltip, and which buckets the admin may send it to.
+const ROUTE_RULES: ReadonlyArray<{
+  key: RouteSettingKey;
+  title: string;
+  info: string;
+  allowed: readonly RouteTarget[];
+}> = [
+  {
+    key: "routeUnitAffiliation",
+    title: "Its listed affiliation names your unit",
+    info: "An author is listed as working in your unit (one of the Unit names in Advanced). The strongest sign a paper is yours.",
+    allowed: ["Approved", "Pending", "Rejected"],
+  },
+  {
+    key: "routeInstitutionKeyword",
+    title: "It's from your institution and on-topic",
+    info: "An author is at your wider institution (by Institution ID) and the paper mentions an on-topic keyword — likely, but not certainly, yours.",
+    allowed: ["Approved", "Pending", "Rejected"],
+  },
+  {
+    key: "routeStrongKeywords",
+    title: "It's strongly on-topic by keywords",
+    info: "The title or abstract mentions two or more of your on-topic keywords, even though nothing in the affiliation matched.",
+    allowed: ["Approved", "Pending", "Rejected"],
+  },
+  {
+    key: "routeWeakMatch",
+    title: "It's only a partial / weak match",
+    info: "Only a faint sign matched — a single on-topic keyword, secondary keywords, or your institution with nothing else.",
+    allowed: ["Approved", "Pending", "Rejected"],
+  },
+  {
+    key: "routeExclusion",
+    title: "It contains an off-topic word",
+    info: 'The paper mentions a word from your off-topic list (e.g. "veterinary") with no strong sign it belongs to you.',
+    // Auto-approving an off-topic paper makes no sense, so it's not offered.
+    allowed: ["Pending", "Rejected"],
+  },
+];
+
+// Filled-pill colour for the currently-selected bucket, matched to the bins.
+const ROUTE_PILL_ACTIVE: Record<RouteTarget, string> = {
+  Approved: "bg-emerald-600 text-white",
+  Pending: "bg-amber-500 text-white",
+  Rejected: "bg-[#0c0c48] text-white",
+};
+
+// Status badge text + colour. A row the admin hasn't touched (reviewedManually =
+// false) was placed by the automatic sort, so we say "Auto-approved" /
+// "Auto-rejected" to distinguish it from a human decision.
+function statusDisplay(pub: Publication): { label: string; className: string } {
+  const className = STATUS_COLOURS[pub.status] || STATUS_COLOURS.Rejected;
+  if (pub.status === "Approved")
+    return { label: pub.reviewedManually ? "Approved" : "Auto-approved", className };
+  if (pub.status === "Rejected")
+    return { label: pub.reviewedManually ? "Rejected" : "Auto-rejected", className };
+  return { label: "Pending", className };
+}
 
 export default function AdminPublications() {
   const [publications, setPublications] = useState<Publication[]>([]);
@@ -333,18 +403,18 @@ export default function AdminPublications() {
                         <span className="text-xs">
                           {pub.relevanceReason || "—"}
                         </span>
-                        {pub.reviewedManually && (
-                          <span className="ml-1 inline-flex items-center rounded-full bg-[#0a4479]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#0a4479]">
-                            Reviewed
-                          </span>
-                        )}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${STATUS_COLOURS[pub.status] || STATUS_COLOURS.Rejected}`}
-                        >
-                          {pub.status}
-                        </span>
+                        {(() => {
+                          const s = statusDisplay(pub);
+                          return (
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${s.className}`}
+                            >
+                              {s.label}
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         {pub.status !== "Approved" && (
@@ -493,6 +563,7 @@ function SyncSummary({
 
 function FilterSettingsPanel() {
   const [open, setOpen] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -505,6 +576,11 @@ function FilterSettingsPanel() {
     strongKeywords: "",
     weakKeywords: "",
     exclusionKeywords: "",
+    routeUnitAffiliation: DEFAULT_ROUTES.unitAffiliation,
+    routeInstitutionKeyword: DEFAULT_ROUTES.institutionKeyword,
+    routeStrongKeywords: DEFAULT_ROUTES.strongKeywords,
+    routeWeakMatch: DEFAULT_ROUTES.weakMatch,
+    routeExclusion: DEFAULT_ROUTES.exclusion,
   });
   const requestedRef = useRef(false);
 
@@ -525,6 +601,14 @@ function FilterSettingsPanel() {
           strongKeywords: data.strongKeywords ?? "",
           weakKeywords: data.weakKeywords ?? "",
           exclusionKeywords: data.exclusionKeywords ?? "",
+          routeUnitAffiliation:
+            data.routeUnitAffiliation ?? DEFAULT_ROUTES.unitAffiliation,
+          routeInstitutionKeyword:
+            data.routeInstitutionKeyword ?? DEFAULT_ROUTES.institutionKeyword,
+          routeStrongKeywords:
+            data.routeStrongKeywords ?? DEFAULT_ROUTES.strongKeywords,
+          routeWeakMatch: data.routeWeakMatch ?? DEFAULT_ROUTES.weakMatch,
+          routeExclusion: data.routeExclusion ?? DEFAULT_ROUTES.exclusion,
         });
         setLoaded(true);
         setError(null);
@@ -551,6 +635,11 @@ function FilterSettingsPanel() {
           strongKeywords: settings.strongKeywords,
           weakKeywords: settings.weakKeywords,
           exclusionKeywords: settings.exclusionKeywords,
+          routeUnitAffiliation: settings.routeUnitAffiliation,
+          routeInstitutionKeyword: settings.routeInstitutionKeyword,
+          routeStrongKeywords: settings.routeStrongKeywords,
+          routeWeakMatch: settings.routeWeakMatch,
+          routeExclusion: settings.routeExclusion,
         }),
       });
       if (!res.ok) {
@@ -578,12 +667,20 @@ function FilterSettingsPanel() {
         aria-expanded={open}
       >
         <span>
-          <span className="font-semibold text-[#0c0c48]">
-            Relevance settings
+          <span className="font-semibold text-[#0c0c48] inline-flex items-center gap-1.5">
+            Automatic sorting
+            <InfoTooltip label="What automatic sorting does">
+              When publications sync from ORCID, the system sorts each one for
+              you. <strong>Approved</strong> papers appear on your public website
+              automatically. <strong>Pending</strong> papers wait here for you to
+              check. <strong>Rejected</strong> papers are hidden. The rules below
+              choose where each kind of paper goes — and you can always move any
+              single paper by hand.
+            </InfoTooltip>
           </span>
           <span className="block text-xs text-[#0a4479]/70 mt-0.5">
-            Year cutoff, unit affiliations, and keywords that decide what the
-            ORCID sync keeps. Applies on the next sync.
+            Decide where new publications go when synced from ORCID. Changes apply
+            on the next sync.
           </span>
         </span>
         <span className="text-[#0a4479] text-sm font-semibold ml-4 shrink-0">
@@ -598,78 +695,139 @@ function FilterSettingsPanel() {
               <div className="h-8 w-8 rounded-full border-2 border-[#0a4479]/20 border-t-[#0a4479] animate-spin" />
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-5">
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-xl text-sm">
                   {error}
                 </div>
               )}
 
-              <div className="max-w-[200px]">
-                <SettingLabel htmlFor="minYear">Minimum year</SettingLabel>
-                <input
-                  id="minYear"
-                  type="number"
-                  value={settings.minYear}
-                  onChange={(e) =>
-                    setSettings((s) => ({
-                      ...s,
-                      minYear: e.target.value === "" ? "" : Number(e.target.value),
-                    }))
-                  }
-                  className="w-full px-4 py-2 border-2 border-[#cac7c7] rounded-xl text-sm text-[#0c0c48] focus:outline-none focus:border-[#0a4479]"
-                />
-                <p className="text-xs text-[#0a4479]/60 mt-1">
-                  Works published before this year are rejected.
+              {/* Block 1 — the routing rules (what goes where). */}
+              <div>
+                <p className="text-sm font-semibold text-[#0c0c48] mb-2">
+                  When a synced paper matches, send it to:
+                </p>
+                <div className="rounded-xl border border-[#0a4479]/10 divide-y divide-[#0a4479]/10 px-4">
+                  {ROUTE_RULES.map((rule) => (
+                    <RouteRuleRow
+                      key={rule.key}
+                      title={rule.title}
+                      info={rule.info}
+                      allowed={rule.allowed}
+                      value={settings[rule.key]}
+                      onChange={(v) =>
+                        setSettings((s) => ({ ...s, [rule.key]: v }))
+                      }
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-[#0a4479]/60 mt-2">
+                  Papers published before the minimum year, or with no match at
+                  all, are always rejected automatically.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <SettingTextarea
-                  id="affiliationPhrases"
-                  label="Unit affiliation phrasings"
-                  helper="One per line. A match in a paper's affiliation = strong signal (auto-approve)."
-                  value={settings.affiliationPhrases}
-                  onChange={(v) =>
-                    setSettings((s) => ({ ...s, affiliationPhrases: v }))
-                  }
-                />
-                <SettingTextarea
-                  id="institutionRors"
-                  label="Institution RORs"
-                  helper="One per line (e.g. 03b94tp07 for UoA). Institution-only match is a weak signal."
-                  value={settings.institutionRors}
-                  onChange={(v) =>
-                    setSettings((s) => ({ ...s, institutionRors: v }))
-                  }
-                />
-                <SettingTextarea
-                  id="strongKeywords"
-                  label="Strong keywords"
-                  helper="One per line. A single strong keyword (plus affiliation) can approve a work."
-                  value={settings.strongKeywords}
-                  onChange={(v) =>
-                    setSettings((s) => ({ ...s, strongKeywords: v }))
-                  }
-                />
-                <SettingTextarea
-                  id="weakKeywords"
-                  label="Weak keywords"
-                  helper="One per line. Only meaningful in combination → sends to Pending."
-                  value={settings.weakKeywords}
-                  onChange={(v) =>
-                    setSettings((s) => ({ ...s, weakKeywords: v }))
-                  }
-                />
-                <SettingTextarea
-                  id="exclusionKeywords"
-                  label="Exclusion keywords"
-                  helper="One per line. Off-topic terms that push toward Rejected."
-                  value={settings.exclusionKeywords}
-                  onChange={(v) =>
-                    setSettings((s) => ({ ...s, exclusionKeywords: v }))
-                  }
-                />
+              {/* Block 2 — the word lists that power the rules above. */}
+              <div className="rounded-xl border border-[#0a4479]/10 overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setAdvancedOpen((v) => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left"
+                  aria-expanded={advancedOpen}
+                >
+                  <span className="text-sm font-semibold text-[#0c0c48] inline-flex items-center gap-1.5">
+                    Advanced: the words these rules use
+                    <InfoTooltip label="What the advanced lists do">
+                      These lists define what counts as a match in the rules
+                      above. Edit them to teach the system which unit names,
+                      keywords and institutions matter for your group. You rarely
+                      need to change these.
+                    </InfoTooltip>
+                  </span>
+                  <span className="text-[#0a4479] text-sm font-semibold ml-4 shrink-0">
+                    {advancedOpen ? "Hide" : "Show"}
+                  </span>
+                </button>
+
+                {advancedOpen && (
+                  <div className="px-4 pb-4 border-t border-[#0a4479]/10 pt-4 space-y-4">
+                    <div className="max-w-[220px]">
+                      <SettingLabel htmlFor="minYear">Minimum year</SettingLabel>
+                      <input
+                        id="minYear"
+                        type="number"
+                        value={settings.minYear}
+                        onChange={(e) =>
+                          setSettings((s) => ({
+                            ...s,
+                            minYear:
+                              e.target.value === ""
+                                ? ""
+                                : Number(e.target.value),
+                          }))
+                        }
+                        className="w-full px-4 py-2 border-2 border-[#cac7c7] rounded-xl text-sm text-[#0c0c48] focus:outline-none focus:border-[#0a4479]"
+                      />
+                      <p className="text-xs text-[#0a4479]/60 mt-1">
+                        Works published before this year are always rejected.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <SettingTextarea
+                        id="affiliationPhrases"
+                        label="Unit names"
+                        helper={
+                          'One per line (e.g. "Human Nutrition Unit"). When a paper’s affiliation contains one of these, the “names your unit” rule applies.'
+                        }
+                        value={settings.affiliationPhrases}
+                        onChange={(v) =>
+                          setSettings((s) => ({ ...s, affiliationPhrases: v }))
+                        }
+                      />
+                      <SettingTextarea
+                        id="institutionRors"
+                        label="Institution IDs (ROR)"
+                        helper="One per line (e.g. 03b94tp07 for the University of Auckland). Identifies your wider institution."
+                        value={settings.institutionRors}
+                        onChange={(v) =>
+                          setSettings((s) => ({ ...s, institutionRors: v }))
+                        }
+                      />
+                      <SettingTextarea
+                        id="strongKeywords"
+                        label="On-topic keywords"
+                        helper={
+                          'One per line. The main subject words for your group (e.g. "nutrition", "diabetes"). Used by the keyword rules above.'
+                        }
+                        value={settings.strongKeywords}
+                        onChange={(v) =>
+                          setSettings((s) => ({ ...s, strongKeywords: v }))
+                        }
+                      />
+                      <SettingTextarea
+                        id="weakKeywords"
+                        label="Secondary keywords"
+                        helper="One per line. Weaker, supporting terms — only meaningful in combination."
+                        value={settings.weakKeywords}
+                        onChange={(v) =>
+                          setSettings((s) => ({ ...s, weakKeywords: v }))
+                        }
+                      />
+                      <SettingTextarea
+                        id="exclusionKeywords"
+                        label="Off-topic words"
+                        helper={
+                          'One per line. Words that mark a paper as off-topic (e.g. "veterinary"). Used by the "off-topic word" rule above.'
+                        }
+                        value={settings.exclusionKeywords}
+                        onChange={(v) =>
+                          setSettings((s) => ({ ...s, exclusionKeywords: v }))
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-3">
@@ -691,6 +849,66 @@ function FilterSettingsPanel() {
         </div>
       )}
     </section>
+  );
+}
+
+// One routing rule: plain-language condition + ⓘ + a colour-coded bucket picker.
+function RouteRuleRow({
+  title,
+  info,
+  allowed,
+  value,
+  onChange,
+}: {
+  title: string;
+  info: string;
+  allowed: readonly RouteTarget[];
+  value: RouteTarget;
+  onChange: (value: RouteTarget) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <span className="inline-flex items-start gap-1.5 text-sm text-[#0c0c48] sm:max-w-md">
+        {title}
+        <InfoTooltip label={`How this rule works: ${title}`}>{info}</InfoTooltip>
+      </span>
+      <RouteSelector allowed={allowed} value={value} onChange={onChange} />
+    </div>
+  );
+}
+
+// A compact segmented control of Approved / Pending / Rejected pills. The active
+// pill is filled in its bucket colour so the current choice reads at a glance.
+function RouteSelector({
+  allowed,
+  value,
+  onChange,
+}: {
+  allowed: readonly RouteTarget[];
+  value: RouteTarget;
+  onChange: (value: RouteTarget) => void;
+}) {
+  return (
+    <div className="inline-flex shrink-0 gap-1 rounded-full bg-[#f5f5f7] p-1">
+      {allowed.map((target) => {
+        const active = value === target;
+        return (
+          <button
+            key={target}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onChange(target)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+              active
+                ? ROUTE_PILL_ACTIVE[target]
+                : "text-[#0a4479]/70 hover:bg-white"
+            }`}
+          >
+            {target}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

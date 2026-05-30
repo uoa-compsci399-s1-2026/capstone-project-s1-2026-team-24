@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_FILTER_CONFIG,
+  DEFAULT_ROUTES,
   classifyPublicationRelevance,
   configFromRow,
   parseLines,
@@ -82,7 +83,9 @@ describe("classifyPublicationRelevance", () => {
     expect(result.status).toBe("Rejected");
   });
 
-  it("approves when an accepted institution co-occurs with a strong keyword", () => {
+  it("sends an institution + strong-keyword work to Pending under the default policy", () => {
+    // P1: without a unit-name match, a strong keyword (even with an accepted
+    // institution) no longer auto-approves — it waits for a human in Pending.
     const result = classifyPublicationRelevance(
       {
         title: "A randomised controlled trial of a low-energy diet",
@@ -96,7 +99,25 @@ describe("classifyPublicationRelevance", () => {
       },
       DEFAULT_FILTER_CONFIG,
     );
-    expect(result.status).toBe("Approved");
+    expect(result.status).toBe("Pending");
+  });
+
+  it("sends a strong-keyword-only work (no affiliation) to Pending under the default policy", () => {
+    // P1: two strong keywords with no affiliation match used to auto-approve;
+    // now it lands in Pending.
+    const result = classifyPublicationRelevance(
+      {
+        title: "Dietary nutrition and metabolic outcomes",
+        journal: "Some Journal",
+        abstract: null,
+        pubType: "Journal Article",
+        year: 2022,
+        affiliationStrings: [],
+        rors: [],
+      },
+      DEFAULT_FILTER_CONFIG,
+    );
+    expect(result.status).toBe("Pending");
   });
 
   it("rejects an excluded-term work when no strong signal counters it", () => {
@@ -129,8 +150,8 @@ describe("classifyPublicationRelevance", () => {
       },
       DEFAULT_FILTER_CONFIG,
     );
-    // strong keywords ("glycaemic", "appetite") -> approved regardless, but the
-    // ROR URL should also be recognised as a match.
+    // The ROR URL form ("https://ror.org/03b94tp07") should be normalised and
+    // recognised as an institution match.
     expect(result.matchedAffiliation).toContain("03b94tp07");
   });
 });
@@ -168,5 +189,120 @@ describe("parseLines / configFromRow", () => {
       exclusionKeywords: "",
     });
     expect(config.minYear).toBe(DEFAULT_FILTER_CONFIG.minYear);
+  });
+
+  it("defaults the routes when route fields are missing", () => {
+    const config = configFromRow({
+      minYear: 2000,
+      affiliationPhrases: "",
+      institutionRors: "",
+      strongKeywords: "",
+      weakKeywords: "",
+      exclusionKeywords: "",
+    });
+    expect(config.routes).toEqual(DEFAULT_ROUTES);
+  });
+
+  it("parses valid route values and falls back to a default for an invalid one", () => {
+    const config = configFromRow({
+      minYear: 2000,
+      affiliationPhrases: "",
+      institutionRors: "",
+      strongKeywords: "",
+      weakKeywords: "",
+      exclusionKeywords: "",
+      routeStrongKeywords: "Approved",
+      routeExclusion: "not-a-bucket",
+    });
+    expect(config.routes.strongKeywords).toBe("Approved");
+    // Invalid value reverts to the default for that rule.
+    expect(config.routes.exclusion).toBe(DEFAULT_ROUTES.exclusion);
+  });
+});
+
+describe("classifyPublicationRelevance — configurable routes", () => {
+  it("auto-approves a strong-keyword work when routes.strongKeywords is Approved", () => {
+    const config = {
+      ...DEFAULT_FILTER_CONFIG,
+      routes: { ...DEFAULT_ROUTES, strongKeywords: "Approved" as const },
+    };
+    const result = classifyPublicationRelevance(
+      {
+        title: "Dietary nutrition and metabolic outcomes",
+        journal: "Some Journal",
+        abstract: null,
+        pubType: "Journal Article",
+        year: 2022,
+        affiliationStrings: [],
+        rors: [],
+      },
+      config,
+    );
+    expect(result.reasonCode).toBe("STRONG_KEYWORDS");
+    expect(result.status).toBe("Approved");
+  });
+
+  it("routes an excluded-term work to Pending when routes.exclusion is Pending", () => {
+    const config = {
+      ...DEFAULT_FILTER_CONFIG,
+      routes: { ...DEFAULT_ROUTES, exclusion: "Pending" as const },
+    };
+    const result = classifyPublicationRelevance(
+      {
+        title: "Canine veterinary care in companion dogs",
+        journal: "Veterinary Journal",
+        abstract: null,
+        pubType: "Journal Article",
+        year: 2020,
+        affiliationStrings: [],
+        rors: [],
+      },
+      config,
+    );
+    expect(result.reasonCode).toBe("EXCLUDED");
+    expect(result.status).toBe("Pending");
+  });
+
+  it("still rejects pre-cutoff and no-signal works regardless of routes", () => {
+    const config = {
+      ...DEFAULT_FILTER_CONFIG,
+      // Even with everything pointed at Approved, the hard cases stay Rejected.
+      routes: {
+        unitAffiliation: "Approved" as const,
+        institutionKeyword: "Approved" as const,
+        strongKeywords: "Approved" as const,
+        weakMatch: "Approved" as const,
+        exclusion: "Approved" as const,
+      },
+    };
+    const beforeYear = classifyPublicationRelevance(
+      {
+        title: "Nutrition and diet",
+        journal: null,
+        abstract: null,
+        pubType: "Journal Article",
+        year: 1990,
+        affiliationStrings: [],
+        rors: [],
+      },
+      config,
+    );
+    expect(beforeYear.status).toBe("Rejected");
+    expect(beforeYear.reasonCode).toBe("BEFORE_MIN_YEAR");
+
+    const noSignal = classifyPublicationRelevance(
+      {
+        title: "Breeding ecology of grey-faced petrels",
+        journal: "Marine Ornithology",
+        abstract: null,
+        pubType: "Journal Article",
+        year: 2023,
+        affiliationStrings: [],
+        rors: [],
+      },
+      config,
+    );
+    expect(noSignal.status).toBe("Rejected");
+    expect(noSignal.reasonCode).toBe("NO_SIGNAL");
   });
 });

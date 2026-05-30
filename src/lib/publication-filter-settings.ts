@@ -4,6 +4,7 @@ import {
   DEFAULT_EXCLUSION_KEYWORDS,
   DEFAULT_INSTITUTION_RORS,
   DEFAULT_MIN_YEAR,
+  DEFAULT_ROUTES,
   DEFAULT_STRONG_KEYWORDS,
   DEFAULT_WEAK_KEYWORDS,
   configFromRow,
@@ -19,6 +20,11 @@ const SINGLETON_DEFAULTS = {
   strongKeywords: DEFAULT_STRONG_KEYWORDS.join("\n"),
   weakKeywords: DEFAULT_WEAK_KEYWORDS.join("\n"),
   exclusionKeywords: DEFAULT_EXCLUSION_KEYWORDS.join("\n"),
+  routeUnitAffiliation: DEFAULT_ROUTES.unitAffiliation,
+  routeInstitutionKeyword: DEFAULT_ROUTES.institutionKeyword,
+  routeStrongKeywords: DEFAULT_ROUTES.strongKeywords,
+  routeWeakMatch: DEFAULT_ROUTES.weakMatch,
+  routeExclusion: DEFAULT_ROUTES.exclusion,
 };
 
 export type PublicationFilterSettingRow = {
@@ -29,6 +35,11 @@ export type PublicationFilterSettingRow = {
   strongKeywords: string;
   weakKeywords: string;
   exclusionKeywords: string;
+  routeUnitAffiliation: string;
+  routeInstitutionKeyword: string;
+  routeStrongKeywords: string;
+  routeWeakMatch: string;
+  routeExclusion: string;
   updatedAt: Date;
 };
 

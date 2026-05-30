@@ -258,7 +258,8 @@ describe("ORCID sync — relevance & review preservation", () => {
   });
 
   it("preserves a manually-reviewed status on re-sync (does not clobber)", async () => {
-    // Work classifies as Approved, but the existing row was manually Rejected.
+    // The existing row was manually Rejected; the sync must not overwrite it,
+    // whatever the fresh classification would be.
     const title = "A randomised controlled trial of a low-energy diet";
     mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
       work({ title, year: 2021, doi: "10.1/keep", sourceId: "w4" }),
@@ -296,7 +297,21 @@ describe("ORCID sync — relevance & review preservation", () => {
     mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
       work({ title, year: 2021, doi: "10.1/auto", sourceId: "w5" }),
     ]);
-    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    // Names the unit, so it classifies as Approved under the default policy —
+    // proving an un-reviewed row's status is refreshed (it was Pending before).
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(
+      new Map([
+        [
+          "10.1/auto",
+          {
+            rors: ["03b94tp07"],
+            rawAffiliationStrings: [
+              "Human Nutrition Unit, University of Auckland",
+            ],
+          },
+        ],
+      ]),
+    );
     setupHappyPath({
       members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
       existing: [
@@ -317,7 +332,7 @@ describe("ORCID sync — relevance & review preservation", () => {
       (c) => (c[0] as UpdateArgs).where.id === 9,
     );
     expect(updateCall).toBeDefined();
-    // Auto rows get their status refreshed (>=2 strong keywords → Approved).
+    // Auto rows get their status refreshed (unit affiliation → Approved).
     expect((updateCall![0] as UpdateArgs).data.status).toBe("Approved");
   });
 

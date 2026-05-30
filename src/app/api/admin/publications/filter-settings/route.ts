@@ -1,7 +1,23 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_MIN_YEAR, parseLines } from "@/lib/publication-filter";
+import {
+  DEFAULT_MIN_YEAR,
+  DEFAULT_ROUTES,
+  parseLines,
+  parseRoute,
+  type RouteTarget,
+} from "@/lib/publication-filter";
 import { getOrCreateFilterSetting } from "@/lib/publication-filter-settings";
+
+// Body key -> the route column it updates and its default. Each value must be
+// one of "Approved" | "Pending" | "Rejected"; anything else is a 400.
+const ROUTE_FIELDS = [
+  ["routeUnitAffiliation", DEFAULT_ROUTES.unitAffiliation],
+  ["routeInstitutionKeyword", DEFAULT_ROUTES.institutionKeyword],
+  ["routeStrongKeywords", DEFAULT_ROUTES.strongKeywords],
+  ["routeWeakMatch", DEFAULT_ROUTES.weakMatch],
+  ["routeExclusion", DEFAULT_ROUTES.exclusion],
+] as const satisfies ReadonlyArray<readonly [string, RouteTarget]>;
 
 // Reads/writes the singleton PublicationFilterSetting that drives the ORCID
 // relevance filter. The settings UI is embedded in /admin/publications.
@@ -53,6 +69,11 @@ export async function PUT(request: Request) {
       strongKeywords: string;
       weakKeywords: string;
       exclusionKeywords: string;
+      routeUnitAffiliation: string;
+      routeInstitutionKeyword: string;
+      routeStrongKeywords: string;
+      routeWeakMatch: string;
+      routeExclusion: string;
     } = {
       minYear: current.minYear,
       affiliationPhrases: current.affiliationPhrases,
@@ -60,6 +81,11 @@ export async function PUT(request: Request) {
       strongKeywords: current.strongKeywords,
       weakKeywords: current.weakKeywords,
       exclusionKeywords: current.exclusionKeywords,
+      routeUnitAffiliation: current.routeUnitAffiliation,
+      routeInstitutionKeyword: current.routeInstitutionKeyword,
+      routeStrongKeywords: current.routeStrongKeywords,
+      routeWeakMatch: current.routeWeakMatch,
+      routeExclusion: current.routeExclusion,
     };
 
     if ("minYear" in body) {
@@ -85,6 +111,22 @@ export async function PUT(request: Request) {
       data.weakKeywords = normalizeListField(body.weakKeywords);
     if ("exclusionKeywords" in body)
       data.exclusionKeywords = normalizeListField(body.exclusionKeywords);
+
+    // Routing rules: each provided value must be a valid bucket, else 400 so the
+    // admin gets clear feedback rather than a silent fallback.
+    for (const [key, fallback] of ROUTE_FIELDS) {
+      if (!(key in body)) continue;
+      const value = (body as Record<string, unknown>)[key];
+      if (parseRoute(value, fallback) !== value) {
+        return NextResponse.json(
+          {
+            error: `${key} must be one of "Approved", "Pending", or "Rejected".`,
+          },
+          { status: 400 },
+        );
+      }
+      data[key] = value as RouteTarget;
+    }
 
     const updated = await prisma.publicationFilterSetting.update({
       where: { id: current.id },
