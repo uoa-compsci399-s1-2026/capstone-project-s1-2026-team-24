@@ -179,6 +179,26 @@ model PublicationAuthor {
   @@index([teamMemberId])
 }
 
+// Tombstone for a hard-deleted publication. The ORCID/OpenAlex sync consults
+// these so a paper an admin deleted is NOT re-created on the next sync. A synced
+// work is skipped when ANY of three signals matches a tombstone: the composite
+// {sourceType, sourceId}, the normalized DOI, or the title+year dedup key
+// (buildPublicationDedupKey) — the last covers DOI-less works whose ORCID
+// put-code changed on re-import. See src/app/api/admin/publications/sync/route.ts.
+model DeletedPublication {
+  id           Int      @id @default(autoincrement())
+  sourceType   String
+  sourceId     String? // composite "${orcidId}:${putCode}" of the deleted row; may be null
+  doi          String? // normalized (trim+lowercase) DOI of the deleted row
+  titleYearKey String? // buildPublicationDedupKey(title, year) — survives put-code/DOI drift
+  title        String? // retained for admin auditing only
+  year         Int?
+  deletedAt    DateTime @default(now())
+
+  @@index([sourceType, sourceId])
+  @@index([doi])
+}
+
 // Singleton (expected: exactly one row, id = 1) holding the admin-editable
 // relevance filter used by the ORCID publications sync. List-type fields are
 // stored as newline-separated text because SQLite has no array type; the sync
