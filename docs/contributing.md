@@ -36,7 +36,13 @@ Examples from the log: `feat: new mobile navbar`, `fix: margins for ui component
 
 ## Before you open a PR
 
-Run all three locally and fix anything they flag:
+Run the checks locally and fix anything they flag. The fastest path is the bundled **`verify`** script, which chains the type-check, lint, and the API test project:
+
+```bash
+npm run verify       # tsc --noEmit && eslint && vitest run --project api
+```
+
+Or run them individually:
 
 ```bash
 npx tsc --noEmit     # type-check (no emit)
@@ -45,7 +51,7 @@ npm run lint         # eslint
 ```
 
 - **Type-check** — the project is strict TypeScript; `tsc --noEmit` catches type errors the dev server may not surface immediately.
-- **Tests** — Vitest unit tests live next to what they cover, including under `src/app/api/test/` (route/handler tests) and `src/lib/**`. Add or update tests when you change behaviour. End-to-end tests run separately with Playwright: `npm run test:e2e` (snapshots: `npm run test:e2e:update`).
+- **Tests** — Vitest unit tests live next to what they cover, including under `src/app/api/test/` (route/handler tests) and `src/lib/**`. Add or update tests when you change behaviour. End-to-end tests run separately with Playwright: `npm run test:e2e` (snapshots: `npm run test:e2e:update`); the suite includes an admin smoke test (`e2e/admin.spec.ts`).
 - **Lint** — ESLint flat config (`eslint.config.mjs`) extends `eslint-config-next` (core-web-vitals + TypeScript) and the Storybook plugin.
 
 > **There is no build/test/lint CI yet.** The only GitHub Actions workflow (`.github/workflows/claude.yml`) is a `@claude` mention bot, not a build pipeline — so these checks are **not** enforced automatically on PRs. Running them locally before pushing is on you. Adding a CI workflow that runs `tsc --noEmit`, `vitest`, and `lint` on PRs is a recommended improvement.

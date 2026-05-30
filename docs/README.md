@@ -34,7 +34,8 @@ Documentation for the University of Auckland Human Nutrition Unit website + CMS.
 | Change a brand colour or theme token | [styling.md](./styling.md) |
 | Log in to / use the admin console | [admin-cms.md](./admin-cms.md) |
 | Manage studies, team, or partners | [admin-cms.md](./admin-cms.md) |
-| Sync publications from ORCID | [admin-cms.md](./admin-cms.md) |
+| Sync publications from ORCID (and auto-sort / delete them) | [admin-cms.md](./admin-cms.md#publications-auto-sorting--deletion) |
+| Understand the public-site search box | [architecture.md](./architecture.md#public-site-search) |
 | Wire up the contact form email | [environment.md](./environment.md#contact-form-email-resend) |
 | Build for production / deploy | [deployment.md](./deployment.md) |
 | Run tests or open a PR | [contributing.md](./contributing.md) |

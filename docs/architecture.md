@@ -80,6 +80,14 @@ For the editor side of this (draft/publish, revisions, the page-builder UI), see
 
 A study detail page (`/studies/[slug]`) is special. If an admin has built a **custom study layout** (or a shared template applies), `resolveStudyLayoutBlocks(slug)` (`src/components/blocks/study/resolve-study-layout.ts`) returns its blocks and `StudyLayoutView` renders them. Otherwise the page falls back to the default `StudyContent` markup. Study layouts are stored as `Page` rows under reserved slugs (`studylayout-<slug>` per study, `studylayout-__default__` for the shared template — see `src/components/blocks/study/study-slugs.ts`).
 
+### Publications sync (ORCID + OpenAlex → relevance routing → tombstones)
+
+The admin triggers `POST /api/admin/publications/sync`, which pulls each visible team member's ORCID works (`src/lib/orcid.ts`) plus per-paper affiliation data from OpenAlex (`src/lib/openalex.ts`), then runs `classifyPublicationRelevance()` (`src/lib/publication-filter.ts`) to auto-sort each work into **Approved / Pending / Rejected**. Where each kind of match lands is admin-configurable via the `PublicationFilterSetting` route columns (see [admin-cms.md](./admin-cms.md#publications-auto-sorting--deletion) and [database.md](./database.md#publicationfiltersetting)); the sync never overwrites a `status` a human reviewed. Deletes are durable: deleting a publication writes a **`DeletedPublication`** tombstone, and the sync skips re-creating any work matching one (by source id, DOI, or title+year key), so a removed paper doesn't reappear on the next sync.
+
+### Public-site search
+
+The navbar search box (`src/components/layout/Navbar.tsx`) calls `GET /api/search?q=…` (`src/app/api/search/route.ts`, `force-dynamic`). The handler unions matches across **studies**, **team members**, **approved+visible publications** (newest-first), the static **page list**, and **page-builder block content** — for the last it flattens each page's published snapshot (or visible draft blocks for never-published pages) to prose, strips HTML/paths, and returns a snippet centred on the match. Results are capped and de-duplicated by destination.
+
 ## Folder map
 
 ```
@@ -107,7 +115,7 @@ src/
 └── middleware.ts             # gates /admin/* and /api/admin/*
 
 prisma/
-├── schema.prisma             # 16 models (Study, TeamMember, Publication, Page, PageBlock, …)
+├── schema.prisma             # 17 models (Study, TeamMember, Publication, Page, PageBlock, …)
 ├── dev.db                    # the SQLite database (gitignored content)
 ├── seed.ts, seed-page-blocks.ts, catalog-public-media.ts, warm-translations.ts, …
 └── migrations/               # committed migration history (drifted — use db push; see database.md)
@@ -125,7 +133,7 @@ public/                       # static assets; runtime uploads land in public/up
 | `blocks/*` | The block system: `registry.ts`, `types.ts`, `default-content.ts`, `collaborations-content.ts`, `validate.ts`, `row.ts`, `page-paths.ts`. |
 | `media-resolve.ts`, `media-refs.ts`, `media-upload.ts` | Resolve `media:{id}` refs to paths; find where an asset is used; handle uploads. |
 | `translate/*` | Block-aware machine translation with a DB-backed cache (`blocks.ts`, `provider.ts`, `local-fallbacks.ts`). |
-| `orcid.ts`, `openalex.ts`, `publication-filter*.ts` | Publications sync + relevance filtering. |
+| `orcid.ts`, `openalex.ts`, `publication-filter*.ts` | Publications sync + admin-configurable relevance filtering / auto-sort routing (see below). |
 | `email.ts` | Resend contact-form email (no-op when unconfigured). |
 | `page-publish.ts`, `page-draft-ops.ts` | Draft/publish snapshot helpers for the page builder. |
 | `lang.ts`, `localized-metadata.ts` | Server-side language detection + localized page metadata. |

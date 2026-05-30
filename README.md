@@ -1,6 +1,8 @@
 # HNU Auckland
 
-The public website and content-management system (CMS) for the University of Auckland's **Human Nutrition Unit** — a marketing site for the unit and its research, plus an admin console for staff to edit page content, manage studies/team/partners, and sync publications.
+The public website and content-management system (CMS) for the University of Auckland's **Human Nutrition Unit** — a marketing site for the unit and its research, plus an admin console for staff to edit page content, manage studies/team, and sync publications.
+
+Highlights: a block-based page builder with draft/publish and EN/中文 translation, a media library, **site-wide search** (navbar → pages, studies, team, publications, and page content), and an ORCID/OpenAlex **publications sync** with admin-configurable **auto-sorting** (Approved/Pending/Rejected routing) and durable **tombstone deletes** that survive re-sync.
 
 ## Tech stack
 
@@ -57,8 +59,9 @@ The admin console lives at [http://localhost:3000/admin](http://localhost:3000/a
 | `npm run migrate:richtext` | One-off migration of block content to rich text |
 | `npm run backfill:media-dims` | Backfill width/height on media assets |
 | `npm run backfill:published` | Backfill the published flag on pages |
+| `npm run verify` | Pre-PR gate: `tsc --noEmit` + ESLint + the API Vitest project |
 | `npm run test` | Unit tests (`vitest run`) |
-| `npm run test:e2e` | End-to-end tests (`playwright test`) |
+| `npm run test:e2e` | End-to-end tests (`playwright test`, incl. an admin smoke test) |
 | `npm run test:e2e:update` | Update Playwright snapshots |
 | `npm run storybook` | Run Storybook (port 6006) |
 | `npm run build-storybook` | Build the static Storybook |

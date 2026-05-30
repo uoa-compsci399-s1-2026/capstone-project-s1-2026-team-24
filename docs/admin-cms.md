@@ -123,8 +123,30 @@ You can also pre-warm the whole site offline: `npm run warm:translations`.
 
 ## Other admin features (briefly)
 
-- **Publications** — synced from ORCID (`src/lib/orcid.ts`) with per-paper affiliation data from OpenAlex (`src/lib/openalex.ts`) and an admin-editable relevance filter (`PublicationFilterSetting`, parsed by `src/lib/publication-filter.ts`). Sync never overwrites a manually reviewed `status`.
+- **Publications** — synced from ORCID (`src/lib/orcid.ts`) with per-paper affiliation data from OpenAlex (`src/lib/openalex.ts`) and an admin-editable relevance filter (`PublicationFilterSetting`, parsed by `src/lib/publication-filter.ts`). Sync never overwrites a manually reviewed `status`. See **Publications: auto-sorting & deletion** below.
 - **Contact form** — submissions are saved (`ContactSubmission`) and an email is sent via Resend (`src/lib/email.ts`) to the per-category recipient (`ContactRecipient`); when `RESEND_API_KEY` is unset the email is logged and skipped.
+
+## Publications: auto-sorting & deletion
+
+The publications admin (`/admin/publications`, `src/app/admin/publications/page.tsx`) lists synced works and lets an admin approve/reject each one. Two pieces of behaviour matter for editors and maintainers:
+
+### Configurable automatic sorting
+
+When works sync from ORCID, the system **auto-sorts** each one into **Approved** (shows on the public site), **Pending** (waits here for a human), or **Rejected** (hidden). The **"Automatic sorting"** panel exposes the routing as plain-language rules, each with an ⓘ tooltip and a colour-coded bucket picker. The five rules map to the route columns on `PublicationFilterSetting` (see [database.md](./database.md#publicationfiltersetting)):
+
+| Rule | Routes a work whose… | Default |
+|------|----------------------|---------|
+| Unit affiliation | affiliation names the unit | Approved |
+| Institution + keyword | institution (ROR) **and** a strong keyword match | Pending |
+| Strong keywords | two or more strong keywords match | Pending |
+| Weak match | only a faint signal matches | Pending |
+| Exclusion | an off-topic term matches with no strong signal | Rejected (picker offers only Pending/Rejected) |
+
+The default is **affiliation-only auto-approval**: only a unit-name match auto-approves; every other positive signal lands in Pending. Status labels distinguish automatic decisions from human ones — an unreviewed auto-sorted row reads **"Auto-approved" / "Auto-rejected"**, while a row an admin touched reads "Approved" / "Rejected" (and a parked one reads "Pending (reviewed)"). The list and the public research page show publications **newest-first** (by year). The classification logic itself is `classifyPublicationRelevance()` in `src/lib/publication-filter.ts`; the panel posts to `/api/admin/publications/filter-settings`.
+
+### Tombstone hard-delete
+
+Deleting a publication (`DELETE /api/admin/publications/[id]`) is a **hard delete**, but first writes a **`DeletedPublication`** tombstone in the same transaction. On its next run the ORCID/OpenAlex sync (`src/app/api/admin/publications/sync/route.ts`) consults these tombstones and **skips re-creating** any matching work (by composite source id, normalized DOI, or title+year key) — so a delete is permanent and doesn't reappear on the next sync. (If an admin legitimately re-adds the paper, that creates a live row, which wins.) See [database.md](./database.md#deletedpublication-tombstone).
 
 ## Related docs
 

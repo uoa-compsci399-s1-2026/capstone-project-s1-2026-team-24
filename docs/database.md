@@ -79,6 +79,38 @@ npm run seed
 npm run catalog:media
 ```
 
+## Notable models
+
+The schema (`prisma/schema.prisma`) holds 17 models. Most are self-explanatory (`Study`, `TeamMember`, `Page`, `PageBlock`, `MediaAsset`, …) and carry inline comments. Two publication-sync models are worth calling out:
+
+### `PublicationFilterSetting`
+
+The admin-editable **relevance filter** the ORCID/OpenAlex sync applies to each work. Expected to be a **singleton** (one row, `id = 1`); list fields are newline/comma-separated text (SQLite has no array type) parsed by `parseLines()` in `src/lib/publication-filter.ts`. Besides the keyword/affiliation lists (`affiliationPhrases`, `institutionRors`, `strongKeywords`, `weakKeywords`, `exclusionKeywords`) and `minYear`, it holds **five route columns** that decide which bucket each kind of match lands in — each stores `"Approved" | "Pending" | "Rejected"`:
+
+| Column | Match it routes | Default |
+|--------|-----------------|---------|
+| `routeUnitAffiliation` | Affiliation literally names the unit (e.g. "Human Nutrition Unit") | `Approved` |
+| `routeInstitutionKeyword` | Accepted institution (ROR) **and** a strong keyword | `Pending` |
+| `routeStrongKeywords` | Two or more strong keywords, no affiliation | `Pending` |
+| `routeWeakMatch` | Faint signal (institution-only, single strong keyword, or weak keywords) | `Pending` |
+| `routeExclusion` | Off-topic / exclusion term with no strong signal | `Rejected` |
+
+The defaults encode an **affiliation-only auto-approval** policy: only a unit-name match auto-approves; every other positive signal waits in `Pending`. Admins edit these on `/admin/publications`. The hard year cutoff and the no-signal case are always `Rejected` (not routable).
+
+### `DeletedPublication` (tombstone)
+
+A tombstone written when an admin **hard-deletes** a publication (`DELETE /api/admin/publications/[id]`, in the same transaction as the delete). On its next run the ORCID/OpenAlex sync (`src/app/api/admin/publications/sync/route.ts`) consults these and **skips re-creating** any synced work that matches one — so a deletion survives the next sync instead of silently reappearing.
+
+| Field | Purpose |
+|-------|---------|
+| `sourceType`, `sourceId` | Composite source identity of the deleted row (e.g. `ORCID` + `"${orcidId}:${putCode}"`); `sourceId` may be null. |
+| `doi` | Normalized (trim + lowercase) DOI of the deleted row, if any. |
+| `titleYearKey` | `buildPublicationDedupKey(title, year)` — survives put-code/DOI drift across re-imports. |
+| `title`, `year` | Retained for admin auditing only. |
+| `deletedAt` | When the tombstone was written. |
+
+A synced work is skipped when **any** of three signals matches a tombstone: the composite `{sourceType, sourceId}`, the normalized DOI, or the `titleYearKey`. (The skip only applies when there is no live row to update — an admin re-adding the paper creates a live row, which legitimately wins.)
+
 ## Inspecting data
 
 ```bash
