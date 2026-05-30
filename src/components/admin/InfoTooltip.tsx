@@ -99,6 +99,9 @@ export default function InfoTooltip({
         type="button"
         aria-label={label}
         aria-describedby={open ? bubbleId : undefined}
+        // The trigger is hover/focus-driven; swallow clicks so the component is
+        // safe to place next to (or inside) other clickable elements.
+        onClick={(e) => e.stopPropagation()}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
         onFocus={() => setOpen(true)}

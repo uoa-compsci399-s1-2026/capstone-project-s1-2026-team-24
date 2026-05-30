@@ -305,4 +305,28 @@ describe("classifyPublicationRelevance — configurable routes", () => {
     expect(noSignal.status).toBe("Rejected");
     expect(noSignal.reasonCode).toBe("NO_SIGNAL");
   });
+
+  it("does not tag a re-routed weak match as 'needs review' in the reason", () => {
+    const config = {
+      ...DEFAULT_FILTER_CONFIG,
+      routes: { ...DEFAULT_ROUTES, weakMatch: "Approved" as const },
+    };
+    const result = classifyPublicationRelevance(
+      {
+        // Exactly one strong keyword, no affiliation -> SINGLE_STRONG_KEYWORD.
+        title: "A study of nutrition",
+        journal: null,
+        abstract: null,
+        pubType: "Journal Article",
+        year: 2022,
+        affiliationStrings: [],
+        rors: [],
+      },
+      config,
+    );
+    expect(result.reasonCode).toBe("SINGLE_STRONG_KEYWORD");
+    expect(result.status).toBe("Approved");
+    // The reason must not contradict an Approved/Rejected badge.
+    expect(result.reason).not.toContain("needs review");
+  });
 });

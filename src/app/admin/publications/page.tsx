@@ -151,14 +151,16 @@ const ROUTE_PILL_ACTIVE: Record<RouteTarget, string> = {
 
 // Status badge text + colour. A row the admin hasn't touched (reviewedManually =
 // false) was placed by the automatic sort, so we say "Auto-approved" /
-// "Auto-rejected" to distinguish it from a human decision.
+// "Auto-rejected" to distinguish it from a human decision. A manually-parked
+// Pending row reads "Pending (reviewed)" so it's distinguishable from an
+// untouched auto-Pending one.
 function statusDisplay(pub: Publication): { label: string; className: string } {
   const className = STATUS_COLOURS[pub.status] || STATUS_COLOURS.Rejected;
   if (pub.status === "Approved")
     return { label: pub.reviewedManually ? "Approved" : "Auto-approved", className };
   if (pub.status === "Rejected")
     return { label: pub.reviewedManually ? "Rejected" : "Auto-rejected", className };
-  return { label: "Pending", className };
+  return { label: pub.reviewedManually ? "Pending (reviewed)" : "Pending", className };
 }
 
 export default function AdminPublications() {
@@ -661,14 +663,20 @@ function FilterSettingsPanel() {
 
   return (
     <section className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] mb-6 overflow-hidden">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-6 py-4 text-left"
-        aria-expanded={open}
-      >
-        <span>
+      {/* Header. The toggle and the ⓘ are SEPARATE buttons (siblings) — never
+          nest the tooltip's button inside the toggle button (invalid HTML +
+          clicking ⓘ would collapse the panel). */}
+      <div className="w-full flex items-center justify-between px-6 py-4 gap-3">
+        <div className="min-w-0">
           <span className="font-semibold text-[#0c0c48] inline-flex items-center gap-1.5">
-            Automatic sorting
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-expanded={open}
+              className="text-left focus:outline-none focus-visible:underline"
+            >
+              Automatic sorting
+            </button>
             <InfoTooltip label="What automatic sorting does">
               When publications sync from ORCID, the system sorts each one for
               you. <strong>Approved</strong> papers appear on your public website
@@ -682,11 +690,16 @@ function FilterSettingsPanel() {
             Decide where new publications go when synced from ORCID. Changes apply
             on the next sync.
           </span>
-        </span>
-        <span className="text-[#0a4479] text-sm font-semibold ml-4 shrink-0">
+        </div>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className="text-[#0a4479] text-sm font-semibold ml-4 shrink-0 hover:underline"
+        >
           {open ? "Hide" : "Edit"}
-        </span>
-      </button>
+        </button>
+      </div>
 
       {open && (
         <div className="px-6 pb-6 border-t border-[#0a4479]/10 pt-4">
@@ -729,14 +742,16 @@ function FilterSettingsPanel() {
 
               {/* Block 2 — the word lists that power the rules above. */}
               <div className="rounded-xl border border-[#0a4479]/10 overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setAdvancedOpen((v) => !v)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left"
-                  aria-expanded={advancedOpen}
-                >
+                <div className="w-full flex items-center justify-between px-4 py-3 gap-3">
                   <span className="text-sm font-semibold text-[#0c0c48] inline-flex items-center gap-1.5">
-                    Advanced: the words these rules use
+                    <button
+                      type="button"
+                      onClick={() => setAdvancedOpen((v) => !v)}
+                      aria-expanded={advancedOpen}
+                      className="text-left focus:outline-none focus-visible:underline"
+                    >
+                      Advanced: the words these rules use
+                    </button>
                     <InfoTooltip label="What the advanced lists do">
                       These lists define what counts as a match in the rules
                       above. Edit them to teach the system which unit names,
@@ -744,10 +759,15 @@ function FilterSettingsPanel() {
                       need to change these.
                     </InfoTooltip>
                   </span>
-                  <span className="text-[#0a4479] text-sm font-semibold ml-4 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setAdvancedOpen((v) => !v)}
+                    aria-expanded={advancedOpen}
+                    className="text-[#0a4479] text-sm font-semibold ml-4 shrink-0 hover:underline"
+                  >
                     {advancedOpen ? "Hide" : "Show"}
-                  </span>
-                </button>
+                  </button>
+                </div>
 
                 {advancedOpen && (
                   <div className="px-4 pb-4 border-t border-[#0a4479]/10 pt-4 space-y-4">

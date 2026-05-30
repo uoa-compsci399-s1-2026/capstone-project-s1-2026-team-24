@@ -420,7 +420,7 @@ export function classifyPublicationRelevance(
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "INSTITUTION_ONLY",
-      reason: `institution affiliation only (no unit phrasing) — needs review`,
+      reason: `institution affiliation only (no unit phrasing)`,
     };
   }
   if (hasStrongKeyword) {
@@ -429,7 +429,7 @@ export function classifyPublicationRelevance(
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "SINGLE_STRONG_KEYWORD",
-      reason: `single strong keyword: ${matchedStrong.join(", ")} — needs review`,
+      reason: `single strong keyword: ${matchedStrong.join(", ")}`,
     };
   }
   if (matchedWeak.length >= 2) {
@@ -438,7 +438,7 @@ export function classifyPublicationRelevance(
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "WEAK_KEYWORDS",
-      reason: `weak keywords: ${matchedWeak.join(", ")} — needs review`,
+      reason: `weak keywords: ${matchedWeak.join(", ")}`,
     };
   }
   if (hasAnyKeywordSignal && normalizedAffiliations.length === 0) {
@@ -449,7 +449,7 @@ export function classifyPublicationRelevance(
       matchedKeywords,
       matchedAffiliation,
       reasonCode: "WEAK_KEYWORDS",
-      reason: `weak keyword: ${matchedWeak.join(", ")} — needs review`,
+      reason: `weak keyword: ${matchedWeak.join(", ")}`,
     };
   }
 
