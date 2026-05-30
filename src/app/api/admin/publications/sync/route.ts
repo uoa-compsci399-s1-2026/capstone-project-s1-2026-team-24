@@ -26,6 +26,8 @@ type SyncMemberResult = {
   skippedNotAffiliated: number;
   // Works skipped because we already saw the same paper for this member.
   skippedDuplicates: number;
+  // Works skipped because they match a tombstone (admin hard-deleted them).
+  skippedDeleted: number;
   syncedTitles: string[];
   skippedTitles: string[];
   error?: string;
@@ -70,6 +72,7 @@ async function syncPublicationsFromOrcid() {
       skippedBeforeYear: 0,
       skippedNotAffiliated: 0,
       skippedDuplicates: 0,
+      skippedDeleted: 0,
       libraryTotal: await prisma.publication.count(),
       results: [] as SyncMemberResult[],
       message:
@@ -104,6 +107,29 @@ async function syncPublicationsFromOrcid() {
     );
   }
 
+  // Tombstones of admin-hard-deleted publications. The sync must NOT re-create a
+  // work that matches one — by composite {sourceType, sourceId}, normalized DOI,
+  // or title+year key. Loaded once into in-memory sets, mirroring the
+  // existing-publication maps above. (DOIs are stored already-normalized by the
+  // delete route, but we re-normalize here to be defensive.)
+  const tombstones = await prisma.deletedPublication.findMany({
+    select: { sourceType: true, sourceId: true, doi: true, titleYearKey: true },
+  });
+  const tombstonedSourceKeys = new Set<string>();
+  const tombstonedDois = new Set<string>();
+  const tombstonedTitleYearKeys = new Set<string>();
+  for (const tombstone of tombstones) {
+    if (tombstone.sourceId) {
+      tombstonedSourceKeys.add(`${tombstone.sourceType}::${tombstone.sourceId}`);
+    }
+    if (tombstone.doi?.trim()) {
+      tombstonedDois.add(tombstone.doi.trim().toLowerCase());
+    }
+    if (tombstone.titleYearKey) {
+      tombstonedTitleYearKeys.add(tombstone.titleYearKey);
+    }
+  }
+
   let totalWorksFound = 0;
   let totalCreated = 0;
   let totalUpdated = 0;
@@ -111,6 +137,7 @@ async function syncPublicationsFromOrcid() {
   let totalSkippedBeforeYear = 0;
   let totalSkippedNotAffiliated = 0;
   let totalSkippedDuplicates = 0;
+  let totalSkippedDeleted = 0;
 
   const results: SyncMemberResult[] = [];
 
@@ -137,6 +164,7 @@ async function syncPublicationsFromOrcid() {
         skippedBeforeYear: 0,
         skippedNotAffiliated: 0,
         skippedDuplicates: 0,
+        skippedDeleted: 0,
         syncedTitles: [],
         skippedTitles: [],
       };
@@ -184,6 +212,24 @@ async function syncPublicationsFromOrcid() {
           doiKey && publicationByDoi.has(doiKey)
             ? publicationByDoi.get(doiKey) ?? null
             : publicationByTitleYear.get(titleYearKey) ?? null;
+
+        // Tombstone guard: a previously hard-deleted work must never be re-created
+        // by the sync. We only skip when there's NO live row to update — an admin
+        // re-adding the paper creates a live row, which legitimately wins. This
+        // leaves the cross-member dedup (publicationByDoi/publicationByTitleYear)
+        // untouched.
+        if (!existing) {
+          const candidateSourceKey = `${work.sourceType}::${orcidId}:${work.sourceId}`;
+          const isTombstoned =
+            tombstonedSourceKeys.has(candidateSourceKey) ||
+            (doiKey !== null && tombstonedDois.has(doiKey)) ||
+            tombstonedTitleYearKeys.has(titleYearKey);
+          if (isTombstoned) {
+            result.skippedDeleted += 1;
+            totalSkippedDeleted += 1;
+            continue;
+          }
+        }
 
         // For Rejected works that are NOT already in the library, only persist up
         // to the cap; the rest are summarised but not written, so the table stays
@@ -351,6 +397,7 @@ async function syncPublicationsFromOrcid() {
         skippedBeforeYear: 0,
         skippedNotAffiliated: 0,
         skippedDuplicates: 0,
+        skippedDeleted: 0,
         syncedTitles: [],
         skippedTitles: [],
         error: error instanceof Error ? error.message : "Unknown error",
@@ -367,6 +414,7 @@ async function syncPublicationsFromOrcid() {
     skippedBeforeYear: totalSkippedBeforeYear,
     skippedNotAffiliated: totalSkippedNotAffiliated,
     skippedDuplicates: totalSkippedDuplicates,
+    skippedDeleted: totalSkippedDeleted,
     libraryTotal: await prisma.publication.count(),
     results,
   };

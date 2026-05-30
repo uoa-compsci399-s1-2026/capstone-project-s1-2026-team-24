@@ -23,6 +23,9 @@ const mockPrisma = vi.hoisted(() => ({
     create: vi.fn(),
     update: vi.fn(),
   },
+  deletedPublication: {
+    findMany: vi.fn(),
+  },
   publicationAuthor: {
     upsert: vi.fn(),
   },
@@ -165,6 +168,8 @@ function setupHappyPath(opts: {
   });
 
   mockPrisma.publicationAuthor.upsert.mockResolvedValue({});
+  // No tombstones by default; tombstone tests override this.
+  mockPrisma.deletedPublication.findMany.mockResolvedValue([]);
 }
 
 beforeEach(() => {
@@ -330,6 +335,102 @@ describe("ORCID sync — relevance & review preservation", () => {
     const body = await res.json();
     expect(body.syncedMembers).toBe(0);
     expect(body.message).toContain("No visible team members");
+  });
+});
+
+describe("ORCID sync — tombstones (hard-delete permanence)", () => {
+  it("skips a work whose DOI matches a tombstone (no resurrection)", async () => {
+    mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
+      // Same paper, mixed-case DOI, brand-new put-code — would normally be created.
+      work({
+        title: "Deleted nutrition paper",
+        year: 2022,
+        doi: "10.1/DEAD",
+        sourceId: "w-new",
+      }),
+    ]);
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    setupHappyPath({
+      members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
+    });
+    mockPrisma.deletedPublication.findMany.mockResolvedValue([
+      {
+        sourceType: "ORCID",
+        sourceId: "0000-0001-0000-0001:w-old",
+        doi: "10.1/dead",
+        titleYearKey: null,
+      },
+    ]);
+
+    const res = await syncPost();
+    const body = await res.json();
+    expect(body.skippedDeleted).toBe(1);
+    expect(body.created).toBe(0);
+    expect(mockPrisma.publication.create).not.toHaveBeenCalled();
+  });
+
+  it("skips a DOI-less work matching a tombstone title+year key (put-code drift)", async () => {
+    mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
+      // No DOI and a different sourceId than the deleted row: only the title+year
+      // key can catch this — the case the user worried about.
+      work({
+        title: "Diet study without a DOI",
+        year: 2019,
+        doi: null,
+        sourceId: "w-brand-new",
+      }),
+    ]);
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    setupHappyPath({
+      members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
+    });
+    mockPrisma.deletedPublication.findMany.mockResolvedValue([
+      {
+        sourceType: "ORCID",
+        sourceId: "0000-0001-0000-0001:w-old",
+        doi: null,
+        titleYearKey: buildPublicationDedupKey({
+          title: "Diet study without a DOI",
+          year: 2019,
+        }),
+      },
+    ]);
+
+    const res = await syncPost();
+    const body = await res.json();
+    expect(body.skippedDeleted).toBe(1);
+    expect(mockPrisma.publication.create).not.toHaveBeenCalled();
+  });
+
+  it("still creates a non-tombstoned work when an unrelated tombstone exists", async () => {
+    mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
+      work({
+        title: "Fresh nutrition trial",
+        year: 2023,
+        doi: "10.1/fresh",
+        sourceId: "w-fresh",
+      }),
+    ]);
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    setupHappyPath({
+      members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
+    });
+    mockPrisma.deletedPublication.findMany.mockResolvedValue([
+      {
+        sourceType: "ORCID",
+        sourceId: "0000-0001-0000-0001:w-other",
+        doi: "10.1/other",
+        titleYearKey: "some other paper::2010",
+      },
+    ]);
+
+    const res = await syncPost();
+    const body = await res.json();
+    expect(body.skippedDeleted).toBe(0);
+    expect(body.created).toBe(1);
+    expect(
+      createdRows.find((r) => r.title === "Fresh nutrition trial"),
+    ).toBeDefined();
   });
 });
 
