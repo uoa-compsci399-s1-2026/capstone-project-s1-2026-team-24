@@ -49,7 +49,9 @@ export async function GET(request: Request) {
     const [items, total, grouped] = await Promise.all([
       prisma.publication.findMany({
         where,
-        orderBy: [{ year: "desc" }, { updatedAt: "desc" }],
+        // Most-recently-added first, in every tab (the status filter is applied
+        // via `where`). `id` breaks ties for rows created in the same tick.
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
         skip: (page - 1) * pageSize,
         take: pageSize,
         // Minimal projection: only what the list table renders. The nested

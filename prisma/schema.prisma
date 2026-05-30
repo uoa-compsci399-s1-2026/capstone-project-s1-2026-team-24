@@ -219,6 +219,15 @@ model PublicationFilterSetting {
   weakKeywords      String   @default("")
   // Off-topic keywords that push a work toward Rejected unless a strong signal exists.
   exclusionKeywords String   @default("")
+  // Where each kind of relevance match sends a synced work. Each holds one of
+  // "Approved" | "Pending" | "Rejected"; the admin edits these in /admin/publications.
+  // Defaults encode the affiliation-only auto-approval policy (only a unit-name
+  // match auto-approves; keyword-only matches wait in Pending).
+  routeUnitAffiliation    String @default("Approved")
+  routeInstitutionKeyword String @default("Pending")
+  routeStrongKeywords     String @default("Pending")
+  routeWeakMatch          String @default("Pending")
+  routeExclusion          String @default("Rejected")
   updatedAt         DateTime @updatedAt
 }
 
