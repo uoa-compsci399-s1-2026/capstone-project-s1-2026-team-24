@@ -35,3 +35,12 @@ Verification:
 - Homepage rendered at http://127.0.0.1:3000/
 - Browser title: `Home | Human Nutrition Unit`
 - Server returned `GET / 200`
+
+## 2026-05-30 - Feature notes (no new run)
+
+Capabilities landed on `main` since the run above, worth knowing when exercising the app locally:
+
+- **Site-wide search** — the navbar search box hits `GET /api/search`; it covers pages, studies, team members, approved publications, and page-builder block content.
+- **Publications auto-sorting** — `/admin/publications` has an "Automatic sorting" panel that routes each synced ORCID work to Approved/Pending/Rejected per admin-configurable rules (default: affiliation-only auto-approval).
+- **Durable publication deletes** — deleting a publication writes a `DeletedPublication` tombstone, so the ORCID sync no longer re-creates it on the next run.
+- **`npm run verify`** — quick pre-PR gate (`tsc --noEmit` + ESLint + the API Vitest project).
