@@ -25,6 +25,7 @@ const SINGLETON_DEFAULTS = {
   routeStrongKeywords: DEFAULT_ROUTES.strongKeywords,
   routeWeakMatch: DEFAULT_ROUTES.weakMatch,
   routeExclusion: DEFAULT_ROUTES.exclusion,
+  routeNoSignal: DEFAULT_ROUTES.noSignal,
 };
 
 export type PublicationFilterSettingRow = {
@@ -40,6 +41,7 @@ export type PublicationFilterSettingRow = {
   routeStrongKeywords: string;
   routeWeakMatch: string;
   routeExclusion: string;
+  routeNoSignal: string;
   updatedAt: Date;
 };
 

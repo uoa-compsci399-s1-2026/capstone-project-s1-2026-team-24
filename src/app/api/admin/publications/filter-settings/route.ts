@@ -20,6 +20,8 @@ const ROUTE_FIELDS = [
   ["routeStrongKeywords", ALL_TARGETS],
   ["routeWeakMatch", ALL_TARGETS],
   ["routeExclusion", NON_APPROVE_TARGETS],
+  // No-signal works should never auto-approve either, so Pending/Rejected only.
+  ["routeNoSignal", NON_APPROVE_TARGETS],
 ] as const satisfies ReadonlyArray<readonly [string, readonly RouteTarget[]]>;
 
 // Reads/writes the singleton PublicationFilterSetting that drives the ORCID
@@ -77,6 +79,7 @@ export async function PUT(request: Request) {
       routeStrongKeywords: string;
       routeWeakMatch: string;
       routeExclusion: string;
+      routeNoSignal: string;
     } = {
       minYear: current.minYear,
       affiliationPhrases: current.affiliationPhrases,
@@ -89,6 +92,7 @@ export async function PUT(request: Request) {
       routeStrongKeywords: current.routeStrongKeywords,
       routeWeakMatch: current.routeWeakMatch,
       routeExclusion: current.routeExclusion,
+      routeNoSignal: current.routeNoSignal,
     };
 
     if ("minYear" in body) {

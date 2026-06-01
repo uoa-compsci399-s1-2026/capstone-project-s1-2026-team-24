@@ -228,6 +228,10 @@ model PublicationFilterSetting {
   routeStrongKeywords     String @default("Pending")
   routeWeakMatch          String @default("Pending")
   routeExclusion          String @default("Rejected")
+  // A work with NO signal at all (no unit affiliation, no accepted institution,
+  // no keywords, no exclusion term). Defaults to Pending so genuinely ambiguous
+  // works are surfaced for human review rather than silently auto-rejected.
+  routeNoSignal           String @default("Pending")
   updatedAt         DateTime @updatedAt
 }
 

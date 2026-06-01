@@ -430,6 +430,7 @@ async function main() {
       routeStrongKeywords: DEFAULT_ROUTES.strongKeywords,
       routeWeakMatch: DEFAULT_ROUTES.weakMatch,
       routeExclusion: DEFAULT_ROUTES.exclusion,
+      routeNoSignal: DEFAULT_ROUTES.noSignal,
     },
   });
 

@@ -67,7 +67,7 @@ describe("classifyPublicationRelevance", () => {
     expect(result.matchedAffiliation).toContain("03b94tp07");
   });
 
-  it("rejects off-field works with no affiliation and no keywords", () => {
+  it("sends a no-signal work to Pending by default (review, not auto-reject)", () => {
     const result = classifyPublicationRelevance(
       {
         title: "Breeding ecology of grey-faced petrels",
@@ -80,7 +80,10 @@ describe("classifyPublicationRelevance", () => {
       },
       DEFAULT_FILTER_CONFIG,
     );
-    expect(result.status).toBe("Rejected");
+    expect(result.reasonCode).toBe("NO_SIGNAL");
+    // Default policy now routes a no-signal work to Pending for human review
+    // rather than auto-rejecting it.
+    expect(result.status).toBe("Pending");
   });
 
   it("sends an institution + strong-keyword work to Pending under the default policy", () => {
@@ -163,7 +166,7 @@ describe("parseLines / configFromRow", () => {
     expect(parseLines(null)).toEqual([]);
   });
 
-  it("falls back to defaults for empty list fields", () => {
+  it("treats empty list fields as 'none' (no fallback to defaults)", () => {
     const config = configFromRow({
       minYear: 2000,
       affiliationPhrases: "",
@@ -174,9 +177,12 @@ describe("parseLines / configFromRow", () => {
     });
     expect(config.minYear).toBe(2000);
     expect(config.strongKeywords).toEqual(["custom keyword"]);
-    // Empty fields fall back to the shared defaults.
-    expect(config.affiliationPhrases).toContain("Human Nutrition Unit");
-    expect(config.institutionRors).toContain("03b94tp07");
+    // An admin-cleared list stays empty — it must NOT revert to the built-in
+    // defaults (that was the bug where "no off-topic words" had no effect).
+    expect(config.affiliationPhrases).toEqual([]);
+    expect(config.institutionRors).toEqual([]);
+    expect(config.weakKeywords).toEqual([]);
+    expect(config.exclusionKeywords).toEqual([]);
   });
 
   it("ignores a non-positive minYear and uses the default", () => {
@@ -263,16 +269,13 @@ describe("classifyPublicationRelevance — configurable routes", () => {
     expect(result.status).toBe("Pending");
   });
 
-  it("still rejects pre-cutoff and no-signal works regardless of routes", () => {
+  it("keeps the year cutoff hard-Rejected, but routes no-signal per config", () => {
     const config = {
       ...DEFAULT_FILTER_CONFIG,
-      // Even with everything pointed at Approved, the hard cases stay Rejected.
       routes: {
-        unitAffiliation: "Approved" as const,
-        institutionKeyword: "Approved" as const,
-        strongKeywords: "Approved" as const,
-        weakMatch: "Approved" as const,
-        exclusion: "Approved" as const,
+        ...DEFAULT_ROUTES,
+        // No-signal is routable now; pin it to Rejected to prove it's honoured.
+        noSignal: "Rejected" as const,
       },
     };
     const beforeYear = classifyPublicationRelevance(
@@ -287,6 +290,7 @@ describe("classifyPublicationRelevance — configurable routes", () => {
       },
       config,
     );
+    // The year cutoff is the one non-routable case — always Rejected.
     expect(beforeYear.status).toBe("Rejected");
     expect(beforeYear.reasonCode).toBe("BEFORE_MIN_YEAR");
 
@@ -302,8 +306,8 @@ describe("classifyPublicationRelevance — configurable routes", () => {
       },
       config,
     );
-    expect(noSignal.status).toBe("Rejected");
     expect(noSignal.reasonCode).toBe("NO_SIGNAL");
+    expect(noSignal.status).toBe("Rejected");
   });
 
   it("does not tag a re-routed weak match as 'needs review' in the reason", () => {
