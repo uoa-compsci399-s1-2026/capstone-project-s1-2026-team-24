@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Update {
   title: string;
@@ -15,15 +15,22 @@ interface UpdatesProps {
 export default function Updates({ updates }: UpdatesProps) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("left");
-  const [animating, setAnimating] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
-  const prev = () => setCurrent((i) => (i === 0 ? updates.length - 1 : i - 1));
-  const next = () => setCurrent((i) => (i === updates.length - 1 ? 0 : i + 1));
+  const prev = () => {
+    setDirection("right");
+    setCurrent((i) => (i === 0 ? updates.length - 1 : i - 1));
+  };
+
+  const next = () => {
+    setDirection("left");
+    setCurrent((i) => (i === updates.length - 1 ? 0 : i + 1));
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
+      setDirection("left");
       setCurrent((i) => (i === updates.length - 1 ? 0 : i + 1));
     }, 5000);
     return () => clearInterval(timer);
@@ -43,8 +50,6 @@ export default function Updates({ updates }: UpdatesProps) {
   };
 
   const update = updates[current];
-
-  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <section className="w-full bg-white py-10 px-6 sm:px-12">
@@ -72,7 +77,7 @@ export default function Updates({ updates }: UpdatesProps) {
               userSelect: "none",
             }}
           >
-            {/* Prev button — desktop only */}
+            {/* Prev button */}
             <button
               onClick={prev}
               aria-label="Previous update"
@@ -92,15 +97,12 @@ export default function Updates({ updates }: UpdatesProps) {
                 pointerEvents: isHovered ? "auto" : "none",
                 transition: "opacity 0.2s ease",
                 zIndex: 2,
-                display: "var(--arrow-display, block)" as any,
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
             >
               ←
             </button>
 
-            {/* Next button — desktop only */}
+            {/* Next button */}
             <button
               onClick={next}
               aria-label="Next update"
@@ -120,8 +122,6 @@ export default function Updates({ updates }: UpdatesProps) {
                 pointerEvents: isHovered ? "auto" : "none",
                 transition: "opacity 0.2s ease",
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
             >
               →
             </button>
@@ -161,17 +161,10 @@ export default function Updates({ updates }: UpdatesProps) {
                   margin: 0,
                 }}
               >
-                {update.date}
-              </span>
-            )}
+                {update.title}
+              </h3>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {update.paragraphs.map((para, i) => (
                   <p
                     key={i}
@@ -190,43 +183,37 @@ export default function Updates({ updates }: UpdatesProps) {
             </div>
           </div>
 
-          {/* Dots + arrows row */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              marginTop: "20px",
-            }}
-          >
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              {updates.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrent(i)}
-                  aria-label={`Go to update ${i + 1}`}
-                  style={{
-                    width: i === current ? "24px" : "8px",
-                    height: "8px",
-                    borderRadius: "9999px",
-                    backgroundColor: i === current ? "#0c0c48" : "#d1d5db",
-                    border: "none",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    padding: 0,
-                  }}
-                />
-              ))}
-            </div>
+          {/* Dots */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "20px" }}>
+            {updates.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrent(i)}
+                aria-label={`Go to update ${i + 1}`}
+                style={{
+                  width: i === current ? "24px" : "8px",
+                  height: "8px",
+                  borderRadius: "9999px",
+                  backgroundColor: i === current ? "#0c0c48" : "#d1d5db",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  padding: 0,
+                }}
+              />
+            ))}
           </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
+        @keyframes slideInLeft {
+          from { opacity: 0; transform: translateX(30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideInRight {
+          from { opacity: 0; transform: translateX(-30px); }
+          to { opacity: 1; transform: translateX(0); }
         }
         @media (max-width: 640px) {
           button[aria-label="Previous update"],
