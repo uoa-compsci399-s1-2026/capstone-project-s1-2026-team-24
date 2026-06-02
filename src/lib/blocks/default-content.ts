@@ -24,17 +24,3 @@ export const TRIAL_DESIGN_DEFAULTS = {
     "<p><strong>Long term (3-6 months) community studies</strong> which require visits to the Human Nutrition Unit research clinic for blood tests and other measurements – study participants continue their usual home life attending clinical visits to collect dietary test components and for study measurements. Long term studies allow the testing of products such as putative weight loss agents to be trialed.</p><p>Many of these studies are of a 'parallel' design, where participants are randomised into either the treatment or the control arm of the trial.</p>",
 } as const;
 
-export const CONTACT_DETAILS_DEFAULTS = {
-  cardOneTitle: "MSc/PhD Opportunities",
-  cardOneBody:
-    "From time to time, opportunities for MSc or PhD studentship may become available. Feel free to contact us with your expression of interest through the contact form.",
-  cardTwoTitle: "Internship Opportunities",
-  cardTwoBody:
-    "We do have plenty opportunities for voluntary internship opportunities for both local and international students. Many international students from overseas completed their internship with us as a part of their Bachelor's program. Use the contact form if you are interested in gaining practical experience in human clinical studies.",
-  cardThreeTitle: "Volunteering for Clinical Trial as a Study Participant",
-  cardThreeBody:
-    "See our current studies or express your interest to participate in a future study through the contact form.",
-  phone: "09 923 4567",
-  phoneHref: "tel:+6492345678",
-  address: "18 Carrick Place, Mt Eden, Auckland 1024, New Zealand",
-} as const;

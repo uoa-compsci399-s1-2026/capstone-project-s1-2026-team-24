@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useRef, useState } from "react";
 
 type Benefit = {
   icon: React.ReactNode;
@@ -86,16 +88,18 @@ function BenefitGrid({ benefits }: { benefits: Benefit[] }) {
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "32px" }}>
       {benefits.map((benefit) => (
         <div key={benefit.title} style={{ textAlign: "center" }}>
-          <div style={{
-            width: "64px",
-            height: "64px",
-            borderRadius: "50%",
-            backgroundColor: "#0a4379",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 16px",
-          }}>
+          <div
+            style={{
+              width: "64px",
+              height: "64px",
+              borderRadius: "50%",
+              backgroundColor: "#0c0c48",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
             {benefit.icon}
           </div>
           <h3 style={{
@@ -122,11 +126,140 @@ function BenefitGrid({ benefits }: { benefits: Benefit[] }) {
   );
 }
 
+function BenefitCarousel({ benefits }: { benefits: Benefit[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  function scrollTo(i: number) {
+    const container = scrollRef.current;
+    if (!container) return;
+    const card = container.children[i] as HTMLElement;
+    card.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+    setActiveIndex(i);
+  }
+
+  function handleScroll() {
+    const container = scrollRef.current;
+    if (!container) return;
+    const center = container.scrollLeft + container.offsetWidth / 2;
+    let closest = 0;
+    let closestDist = Infinity;
+    Array.from(container.children).forEach((child, i) => {
+      const el = child as HTMLElement;
+      const cardCenter = el.offsetLeft + el.offsetWidth / 2;
+      const dist = Math.abs(center - cardCenter);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = i;
+      }
+    });
+    setActiveIndex(closest);
+  }
+
+  return (
+    <div>
+      <div
+        ref={scrollRef}
+        onScroll={handleScroll}
+        style={{
+          display: "flex",
+          overflowX: "auto",
+          gap: "16px",
+          scrollSnapType: "x mandatory",
+          WebkitOverflowScrolling: "touch",
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+          paddingBottom: "4px",
+        }}
+        className="[&::-webkit-scrollbar]:hidden"
+      >
+        {benefits.map((benefit) => (
+          <div
+            key={benefit.title}
+            style={{
+              flex: "0 0 75%",
+              scrollSnapAlign: "center",
+              textAlign: "center",
+              backgroundColor: "f0f0f0",
+              borderRadius: "20px",
+              padding: "28px 20px",
+            }}
+          >
+            <div
+              style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                backgroundColor: "#0c0c48",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 16px",
+              }}
+            >
+              {benefit.icon}
+            </div>
+            <h3
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "17px",
+                fontWeight: 700,
+                color: "#0c0c48",
+                marginBottom: "8px",
+              }}
+            >
+              {benefit.title}
+            </h3>
+            <p
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "14px",
+                color: "#4b5563",
+                lineHeight: 1.6,
+                margin: 0,
+              }}
+            >
+              {benefit.description}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Dots */}
+      <div className="flex items-center justify-center gap-2 mt-4">
+        {benefits.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => scrollTo(i)}
+            aria-label={`Go to card ${i + 1}`}
+            style={{
+              width: i === activeIndex ? "24px" : "8px",
+              height: "8px",
+              borderRadius: "9999px",
+              backgroundColor: i === activeIndex ? "#0c0c48" : "#d1d5db",
+              border: "none",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              padding: 0,
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
   return (
-    <section style={{ backgroundColor: "#f0f0f0", padding: "60px 45px" }}>
-      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-
+    <section style={{ backgroundColor: "#f0f0f0", padding: "60px 0" }}>
+      <div
+        style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 45px" }}
+        className="hidden lg:block"
+      >
         {title && (
           <h2 style={{
             fontFamily: "Inter, sans-serif",
@@ -139,10 +272,8 @@ export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
             {title}
           </h2>
         )}
-
         {variant === "academic" && <BenefitGrid benefits={ACADEMIC_BENEFITS} />}
         {variant === "industry" && <BenefitGrid benefits={INDUSTRY_BENEFITS} />}
-
         {variant === "both" && (
           <>
             <h2 style={{
@@ -156,20 +287,75 @@ export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
               Academic Benefits
             </h2>
             <BenefitGrid benefits={ACADEMIC_BENEFITS} />
-
             <div style={{ height: "48px" }} />
-
-            <h2 style={{
-              fontFamily: "Inter, sans-serif",
-              fontSize: "28px",
-              fontWeight: 700,
-              color: "#0c0c48",
-              textAlign: "center",
-              marginBottom: "32px",
-            }}>
+            <h2
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "28px",
+                fontWeight: 700,
+                color: "#0c0c48",
+                textAlign: "center",
+                marginBottom: "32px",
+              }}
+            >
               Industry Benefits
             </h2>
             <BenefitGrid benefits={INDUSTRY_BENEFITS} />
+          </>
+        )}
+      </div>
+
+      {/* ── Mobile layout ── */}
+      <div className="lg:hidden px-6">
+        {title && (
+          <h2
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontSize: "26px",
+              fontWeight: 800,
+              color: "#0c0c48",
+              textAlign: "center",
+              marginBottom: "24px",
+            }}
+          >
+            {title}
+          </h2>
+        )}
+        {variant === "academic" && (
+          <BenefitCarousel benefits={ACADEMIC_BENEFITS} />
+        )}
+        {variant === "industry" && (
+          <BenefitCarousel benefits={INDUSTRY_BENEFITS} />
+        )}
+        {variant === "both" && (
+          <>
+            <h2
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "22px",
+                fontWeight: 700,
+                color: "#0c0c48",
+                textAlign: "center",
+                marginBottom: "20px",
+              }}
+            >
+              Academic Benefits
+            </h2>
+            <BenefitCarousel benefits={ACADEMIC_BENEFITS} />
+            <div style={{ height: "36px" }} />
+            <h2
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontSize: "22px",
+                fontWeight: 700,
+                color: "#0c0c48",
+                textAlign: "center",
+                marginBottom: "20px",
+              }}
+            >
+              Industry Benefits
+            </h2>
+            <BenefitCarousel benefits={INDUSTRY_BENEFITS} />
           </>
         )}
       </div>

@@ -66,6 +66,7 @@ export default function DiscoverVideo({
       ref={sectionRef}
       className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden"
     >
+      
       <div className="max-w-[1100px] mx-auto">
         <div className="relative flex flex-col lg:flex-row items-center gap-0 z-5">
           {/* Video */}

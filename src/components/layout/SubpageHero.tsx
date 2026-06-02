@@ -1,23 +1,14 @@
 import type { CSSProperties, ReactNode } from "react";
 
-// Full navbar height = 40px white utility bar + 140px main nav row.
-// Heroes use a negative margin-top equal to this height so the hero gradient
-// sits behind the (partially transparent) main nav, letting both gradients
-// blend smoothly per the Figma combined design.
 export const NAVBAR_HEIGHT = 180;
 
-// Diagonal subpage hero gradient sampled from the Figma "Team page hero"
-// component (node 2008:275 / 146:6446). #092d65 at the top-left through to
-// #02a8d0 at the bottom-right; 112deg matches the home hero's gradient angle.
 export const SUBPAGE_HERO_GRADIENT =
   "linear-gradient(112deg, #092d65 0%, #06699b 50%, #02a8d0 100%)";
 
 type SubpageHeroProps = {
   title: string;
   subtitle: ReactNode;
-  /** Optional override for the subtitle max-width in px (applied at all breakpoints). */
   subtitleMaxWidth?: number;
-  /** Optional inline style override on the section (used sparingly). */
   style?: CSSProperties;
 };
 
@@ -29,19 +20,18 @@ export default function SubpageHero({
 }: SubpageHeroProps) {
   return (
     <section
-      className="relative w-full bg-white py-16 px-6 sm:px-12 overflow-hidden"
+      className="relative w-full bg-white overflow-hidden px-6 sm:px-12"
       style={{
-        marginTop: `0`,
-        paddingTop: 250,
+        marginTop: 0,
+        paddingTop: "clamp(100px, 20vw, 250px)",
+        paddingBottom: "clamp(40px, 6vw, 80px)",
         backgroundImage: SUBPAGE_HERO_GRADIENT,
         backgroundColor: "#ffffff",
-        height: 600,
+        minHeight: "clamp(280px, 50vw, 600px)",
+        ...style,
       }}
     >
-      {/* Diagonal Māori pattern overlay — matches Figma (rotate -12.38deg,
-          opacity 0.25, centred at the bottom of the hero so the cluster sits
-          across the lower-right). The brightness(0) invert(1) filter renders
-          the pattern in white at low opacity, matching the Discover HNU page. */}
+      {/* Māori pattern overlay */}
       <div
         className="absolute inset-0 overflow-hidden pointer-events-none"
         aria-hidden="true"
@@ -50,11 +40,11 @@ export default function SubpageHero({
           style={{
             position: "absolute",
             width: "4000px",
-            height: "250px",
+            height: "clamp(120px, 15vw, 250px)",
             top: "100%",
             left: "50%",
             transform: "translate(-50%, -50%) rotate(-12.38deg)",
-            opacity: 0.25,
+            opacity: "clamp(0.05, 0.25, 1)",
             backgroundImage: "url(/maori-pattern.svg)",
             backgroundRepeat: "repeat-x",
             backgroundSize: "auto 100%",
@@ -65,16 +55,20 @@ export default function SubpageHero({
 
       {/* Content */}
       <div className="max-w-[1200px] mx-auto">
-        <h1 className="text-4xl sm:text-5xl lg:text-[76px] font-extrabold text-white/75 tracking-[1.52px] leading-normal">
+        <h1
+          className="font-extrabold text-white/75 tracking-[1.52px] leading-normal"
+          style={{ fontSize: "clamp(28px, 7vw, 76px)" }}
+        >
           {title}
         </h1>
         <p
-          className="text-lg sm:text-2xl lg:text-[32px] font-normal text-white/75 tracking-[0.64px] leading-tight mt-4"
-          style={
-            subtitleMaxWidth !== undefined
+          className="font-normal text-white/75 tracking-[0.64px] leading-tight mt-3 sm:mt-4"
+          style={{
+            fontSize: "clamp(14px, 3.5vw, 32px)",
+            ...(subtitleMaxWidth !== undefined
               ? { maxWidth: `${subtitleMaxWidth}px` }
-              : undefined
-          }
+              : undefined),
+          }}
         >
           {subtitle}
         </p>

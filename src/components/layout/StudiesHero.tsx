@@ -20,8 +20,7 @@ export default function StudyHero({
       style={{
         position: "relative",
         width: "100%",
-        height: "550px",
-        marginTop: "-180px",
+        minHeight: "clamp(220px, 20vw, 550px)",
         overflow: "hidden",
       }}
     >
@@ -52,13 +51,13 @@ export default function StudyHero({
           zIndex: 2,
           display: "flex",
           alignItems: "flex-end",
-          paddingBottom: "50px",
+          paddingBottom: "clamp(24px, 4vw, 50px)",
         }}
       >
         <h1
           style={{
             fontFamily: "Inter, sans-serif",
-            fontSize: "clamp(40px, 6vw, 76px)",
+            fontSize: "clamp(28px, 6vw, 76px)",
             fontWeight: 800,
             color: "rgba(255,255,255,0.75)",
             letterSpacing: "1.52px",

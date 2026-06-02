@@ -5,7 +5,6 @@
 
 import type { BlockDefinition, BlockField } from "./types";
 import {
-  CONTACT_DETAILS_DEFAULTS,
   DISCOVER_VIDEO_DEFAULTS,
   TRIAL_DESIGN_DEFAULTS,
 } from "./default-content";
@@ -441,29 +440,6 @@ const DEFINITIONS: BlockDefinition[] = [
       mapUrl:
         "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3191.62085243865!2d174.74999331301763!3d-36.87549318088687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d0d4771e23b727d%3A0x90ba816391e739dc!2sHuman%20Nutrition%20Unit!5e0!3m2!1sen!2snz!4v1777374580042!5m2!1sen!2snz",
     },
-  },
-  {
-    type: "contactDetails",
-    label: "Contact details",
-    category: "Content",
-    editable: true,
-    fields: [
-      { key: "cardOneTitle", label: "Card 1 title", type: "text" },
-      { key: "cardOneBody", label: "Card 1 body", type: "textarea" },
-      { key: "cardTwoTitle", label: "Card 2 title", type: "text" },
-      { key: "cardTwoBody", label: "Card 2 body", type: "textarea" },
-      { key: "cardThreeTitle", label: "Card 3 title", type: "text" },
-      { key: "cardThreeBody", label: "Card 3 body", type: "textarea" },
-      { key: "phone", label: "Phone (display)", type: "text" },
-      {
-        key: "phoneHref",
-        label: "Phone link",
-        type: "text",
-        help: "e.g. tel:+6492345678",
-      },
-      { key: "address", label: "Address", type: "textarea" },
-    ],
-    defaultContent: { ...CONTACT_DETAILS_DEFAULTS },
   },
 
   // ---- Dynamic (pull live data from existing admin sections) ----

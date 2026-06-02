@@ -14,6 +14,10 @@ interface UpdatesProps {
 
 export default function Updates({ updates }: UpdatesProps) {
   const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState<"left" | "right">("left");
+  const [animating, setAnimating] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
   const prev = () => setCurrent((i) => (i === 0 ? updates.length - 1 : i - 1));
   const next = () => setCurrent((i) => (i === updates.length - 1 ? 0 : i + 1));
@@ -25,17 +29,26 @@ export default function Updates({ updates }: UpdatesProps) {
     return () => clearInterval(timer);
   }, [updates.length]);
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(delta) > 40) {
+      delta < 0 ? next() : prev();
+    }
+    touchStartX.current = null;
+  };
+
   const update = updates[current];
 
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <section
-      className=" w-full bg-white py-16 overflow-visible"
-      data-testid="updates-carousel"
-    >
-      {/* 1400px container, card sits on the right */}
-      <div className="max-w-[1200px] mx-auto px-6 sm:px-12 flex justify-end">
+    <section className="w-full bg-white py-10 px-6 sm:px-12">
+      <div className="max-w-[1200px] mx-auto sm:px-12 flex justify-end">
         <div
           className="w-full max-w-[750px]"
           onMouseEnter={() => setIsHovered(true)}
@@ -43,20 +56,23 @@ export default function Updates({ updates }: UpdatesProps) {
         >
           {/* Card */}
           <div
-            key={current}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             style={{
               backgroundColor: "#0c0c48f2",
-              borderRadius: "80px 0 80px 0",
-              padding: "50px 80px",
+              borderRadius: "clamp(40px, 8vw, 80px) 0 clamp(40px, 8vw, 80px) 0",
+              padding: "clamp(28px, 5vw, 50px) clamp(24px, 6vw, 80px)",
               display: "flex",
               flexDirection: "column",
               gap: "16px",
-              animation: "fadeIn 0.3s ease",
-              minHeight: "300px",
+              minHeight: "260px",
               position: "relative",
-              overflow: "visible",
+              overflow: "hidden",
+              touchAction: "pan-y",
+              userSelect: "none",
             }}
           >
+            {/* Prev button — desktop only */}
             <button
               onClick={prev}
               aria-label="Previous update"
@@ -75,6 +91,8 @@ export default function Updates({ updates }: UpdatesProps) {
                 opacity: isHovered ? 1 : 0,
                 pointerEvents: isHovered ? "auto" : "none",
                 transition: "opacity 0.2s ease",
+                zIndex: 2,
+                display: "var(--arrow-display, block)" as any,
               }}
               onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
               onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.7")}
@@ -82,6 +100,7 @@ export default function Updates({ updates }: UpdatesProps) {
               ←
             </button>
 
+            {/* Next button — desktop only */}
             <button
               onClick={next}
               aria-label="Next update"
@@ -107,51 +126,67 @@ export default function Updates({ updates }: UpdatesProps) {
               →
             </button>
 
-            {update.date && (
-              <span
+            {/* Animated content */}
+            <div
+              key={current}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+                animation: `${direction === "left" ? "slideInLeft" : "slideInRight"} 0.3s ease`,
+              }}
+            >
+              {update.date && (
+                <span
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "rgba(255,255,255,0.5)",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {update.date}
+                </span>
+              )}
+
+              <h3
                 style={{
                   fontFamily: "Inter, sans-serif",
-                  fontSize: "12px",
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.5)",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
+                  fontSize: "clamp(18px, 4vw, 22px)",
+                  fontWeight: 700,
+                  color: "white",
+                  lineHeight: 1.25,
+                  margin: 0,
                 }}
               >
                 {update.date}
               </span>
             )}
 
-            <h3
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontSize: "22px",
-                fontWeight: 700,
-                color: "white",
-                lineHeight: 1.25,
-                margin: 0,
-              }}
-            >
-              {update.title}
-            </h3>
-
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "10px" }}
-            >
-              {update.paragraphs.map((para, i) => (
-                <p
-                  key={i}
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: "15px",
-                    color: "rgba(255,255,255,0.75)",
-                    lineHeight: 1.7,
-                    margin: 0,
-                  }}
-                >
-                  {para}
-                </p>
-              ))}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                {update.paragraphs.map((para, i) => (
+                  <p
+                    key={i}
+                    style={{
+                      fontFamily: "Inter, sans-serif",
+                      fontSize: "clamp(13px, 3.5vw, 15px)",
+                      color: "rgba(255,255,255,0.75)",
+                      lineHeight: 1.7,
+                      margin: 0,
+                    }}
+                  >
+                    {para}
+                  </p>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -161,8 +196,8 @@ export default function Updates({ updates }: UpdatesProps) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "16px",
-              marginTop: "24px",
+              gap: "8px",
+              marginTop: "20px",
             }}
           >
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -192,6 +227,12 @@ export default function Updates({ updates }: UpdatesProps) {
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 640px) {
+          button[aria-label="Previous update"],
+          button[aria-label="Next update"] {
+            display: none !important;
+          }
         }
       `}</style>
     </section>
