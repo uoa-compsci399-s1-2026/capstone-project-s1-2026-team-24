@@ -29,12 +29,13 @@ export default function Updates({ updates }: UpdatesProps) {
   };
 
   useEffect(() => {
+    if (isHovered) return;
     const timer = setInterval(() => {
       setDirection("left");
       setCurrent((i) => (i === updates.length - 1 ? 0 : i + 1));
     }, 5000);
     return () => clearInterval(timer);
-  }, [updates.length]);
+  }, [updates.length, isHovered]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -164,7 +165,13 @@ export default function Updates({ updates }: UpdatesProps) {
                 {update.title}
               </h3>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
                 {update.paragraphs.map((para, i) => (
                   <p
                     key={i}
@@ -184,7 +191,15 @@ export default function Updates({ updates }: UpdatesProps) {
           </div>
 
           {/* Dots */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "20px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              marginTop: "20px",
+            }}
+          >
             {updates.map((_, i) => (
               <button
                 key={i}
