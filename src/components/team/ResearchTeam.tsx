@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { TeamMemberRecord } from "@/lib/fetch-api";
+import type { TeamMemberRecord } from "@/lib/data/team";
 import { getSafeHttpUrl } from "@/lib/safe-url";
 import { useLanguage } from "@/contexts/LanguageContext";
 import en from "@/messages/en";
