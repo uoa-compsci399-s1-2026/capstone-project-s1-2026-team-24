@@ -25,7 +25,6 @@ In practice: put `DATABASE_URL`, `ADMIN_PASSWORD`, and `ADMIN_SESSION_SECRET` in
 | `ADMIN_PASSWORD` | **Yes (for admin)** | — | `src/app/api/admin/auth/login/route.ts` | Plain-string password for the admin console login. |
 | `ADMIN_SESSION_SECRET` | **Yes (for admin)** | — | `src/lib/admin-session.ts` | Secret used to sign the admin session cookie (JWT). Use a long random string. |
 | `NEXT_PUBLIC_SITE_URL` | No | `http://localhost:3000` | `src/lib/constants.ts` (metadata/SEO) | Canonical public site URL. Leave blank locally. |
-| `NEXT_PUBLIC_BASE_URL` | No | `http://localhost:3000` | `src/lib/fetch-api.ts` | Base URL for server-side self-fetch of internal APIs. Set to the deployed origin in production/preview. |
 | `ORCID_API_BASE_URL` | No | `https://pub.orcid.org/v3.0` (production) | `src/lib/orcid.ts` | Public ORCID API base — **no auth required**. Override to the sandbox for testing. |
 | `OPENALEX_API_BASE_URL` | No | `https://api.openalex.org` | `src/lib/openalex.ts` | OpenAlex API base (per-paper affiliation data). Override for tests/proxies. |
 | `OPENALEX_MAILTO` | No | unset | `src/lib/openalex.ts` | Contact email sent to OpenAlex to opt into its faster "polite pool". |

@@ -62,7 +62,7 @@ Secrets & config (platform env — never commit real values; see [environment.md
 - [ ] **`ADMIN_PASSWORD`** — strong, not the `change-me` placeholder.
 - [ ] **`ADMIN_SESSION_SECRET`** — long random string (signs the admin JWT).
 - [ ] **`DATABASE_URL`** — absolute `file:` path on the persistent volume.
-- [ ] **`NEXT_PUBLIC_SITE_URL`** and **`NEXT_PUBLIC_BASE_URL`** — set to the deployed origin (the latter lets server components self-fetch the internal API; default `http://localhost:3000` is wrong in prod).
+- [ ] **`NEXT_PUBLIC_SITE_URL`** — set to the deployed origin for canonical metadata/SEO (default `http://localhost:3000` is wrong in prod).
 - [ ] **`TRANSLATE_API_KEY`** (+ `TRANSLATE_REGION` for Azure) — only if 中文 machine translation of page copy is wanted; otherwise ZH falls back to English. Run `npm run warm:translations` after deploy to populate the cache.
 - [ ] **`RESEND_API_KEY`** + **`EMAIL_FROM`** (on a domain **verified in Resend**) — for contact-form email delivery. Without them, submissions are still saved; email is skipped.
 

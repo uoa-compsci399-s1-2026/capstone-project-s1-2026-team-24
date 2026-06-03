@@ -32,7 +32,7 @@ export default async function StudyPage({ params }: Props) {
 
 The same applies to dynamic **route handlers** (e.g. `src/app/api/admin/pages/[slug]/route.ts` types `params` as `Promise<{ slug: string }>`).
 
-**`force-dynamic` where a render reads the DB or self-fetches.** Pages whose server tree reads live data carry `export const dynamic = "force-dynamic"` so they render per-request instead of being statically cached (e.g. `src/app/page.tsx`, `src/app/studies/[slug]/page.tsx`, `src/app/team/page.tsx`). Some sections fetch the internal API server-side via `getApiBaseUrl()` in `src/lib/fetch-api.ts` (driven by `NEXT_PUBLIC_BASE_URL`) — see [environment.md](./environment.md).
+**`force-dynamic` where a render reads the DB.** Pages whose server tree reads live data carry `export const dynamic = "force-dynamic"` so they render per-request instead of being statically cached (e.g. `src/app/page.tsx`, `src/app/studies/[slug]/page.tsx`, `src/app/team/page.tsx`). Server components read the database directly through the data layer (`src/lib/data/*`) rather than self-fetching the internal API.
 
 ## How a page renders (the block pipeline)
 
@@ -129,7 +129,7 @@ public/                       # static assets; runtime uploads land in public/up
 |------------|----------------|
 | `prisma.ts` | The shared Prisma client (better-sqlite3 adapter; reused across hot reloads). |
 | `admin-session.ts` | Signs/verifies the `admin_session` JWT (jose, HS256). See **Auth** below. |
-| `fetch-api.ts`, `constants.ts` | Server self-fetch base URL; site identity + brand colour constants. |
+| `data/*`, `constants.ts` | Direct DB reads for server components (e.g. team, partner logos); site identity + brand colour constants. |
 | `blocks/*` | The block system: `registry.ts`, `types.ts`, `default-content.ts`, `collaborations-content.ts`, `validate.ts`, `row.ts`, `page-paths.ts`. |
 | `media-resolve.ts`, `media-refs.ts`, `media-upload.ts` | Resolve `media:{id}` refs to paths; find where an asset is used; handle uploads. |
 | `translate/*` | Block-aware machine translation with a DB-backed cache (`blocks.ts`, `provider.ts`, `local-fallbacks.ts`). |
