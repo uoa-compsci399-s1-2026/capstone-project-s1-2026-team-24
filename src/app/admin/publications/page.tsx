@@ -82,7 +82,8 @@ type RouteSettingKey =
   | "routeInstitutionKeyword"
   | "routeStrongKeywords"
   | "routeWeakMatch"
-  | "routeExclusion";
+  | "routeExclusion"
+  | "routeNoSignal";
 
 type FilterSettings = {
   minYear: number | "";
@@ -138,6 +139,13 @@ const ROUTE_RULES: ReadonlyArray<{
     title: "It contains an off-topic word",
     info: 'The paper mentions a word from your off-topic list (e.g. "veterinary") with no strong sign it belongs to you.',
     // Auto-approving an off-topic paper makes no sense, so it's not offered.
+    allowed: ["Pending", "Rejected"],
+  },
+  {
+    key: "routeNoSignal",
+    title: "It matched nothing at all",
+    info: "No unit affiliation, no institution, no on-topic keyword, and no off-topic word — the filter has no signal either way. Defaults to Pending so you can decide.",
+    // Auto-approving a paper with zero signal makes no sense, so it's not offered.
     allowed: ["Pending", "Rejected"],
   },
 ];
@@ -389,7 +397,30 @@ export default function AdminPublications() {
                   {publications.map((pub) => (
                     <tr key={pub.id} className="hover:bg-[#f5f5f7]">
                       <td className="px-4 py-3 font-semibold text-[#0c0c48] max-w-[340px] break-words">
-                        {pub.title}
+                        {(() => {
+                          // Only treat http(s) URLs as clickable — a stored
+                          // value like "javascript:..." must never become an href.
+                          const safeUrl =
+                            pub.url && /^https?:\/\//i.test(pub.url.trim())
+                              ? pub.url.trim()
+                              : null;
+                          const href =
+                            safeUrl ||
+                            (pub.doi ? `https://doi.org/${pub.doi}` : null);
+                          return href ? (
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="hover:underline focus:underline focus:outline-none"
+                              title="Open publication in a new tab"
+                            >
+                              {pub.title}
+                            </a>
+                          ) : (
+                            pub.title
+                          );
+                        })()}
                         <p className="text-xs font-normal text-[#0a4479]/70 mt-0.5 truncate">
                           {pub.authorsRaw ||
                             pub.authors
@@ -583,6 +614,7 @@ function FilterSettingsPanel() {
     routeStrongKeywords: DEFAULT_ROUTES.strongKeywords,
     routeWeakMatch: DEFAULT_ROUTES.weakMatch,
     routeExclusion: DEFAULT_ROUTES.exclusion,
+    routeNoSignal: DEFAULT_ROUTES.noSignal,
   });
   const requestedRef = useRef(false);
 
@@ -611,6 +643,7 @@ function FilterSettingsPanel() {
             data.routeStrongKeywords ?? DEFAULT_ROUTES.strongKeywords,
           routeWeakMatch: data.routeWeakMatch ?? DEFAULT_ROUTES.weakMatch,
           routeExclusion: data.routeExclusion ?? DEFAULT_ROUTES.exclusion,
+          routeNoSignal: data.routeNoSignal ?? DEFAULT_ROUTES.noSignal,
         });
         setLoaded(true);
         setError(null);
@@ -642,6 +675,7 @@ function FilterSettingsPanel() {
           routeStrongKeywords: settings.routeStrongKeywords,
           routeWeakMatch: settings.routeWeakMatch,
           routeExclusion: settings.routeExclusion,
+          routeNoSignal: settings.routeNoSignal,
         }),
       });
       if (!res.ok) {
@@ -735,8 +769,10 @@ function FilterSettingsPanel() {
                   ))}
                 </div>
                 <p className="text-xs text-[#0a4479]/60 mt-2">
-                  Papers published before the minimum year, or with no match at
-                  all, are always rejected automatically.
+                  Papers published before the minimum year are always rejected
+                  automatically. Everything else follows the rules above —
+                  including papers that match nothing, which use the “It matched
+                  nothing at all” rule.
                 </p>
               </div>
 

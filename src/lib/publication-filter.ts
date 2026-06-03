@@ -149,9 +149,9 @@ export type RouteTarget = "Approved" | "Pending" | "Rejected";
 
 const ROUTE_TARGETS: readonly RouteTarget[] = ["Approved", "Pending", "Rejected"];
 
-// The five admin-configurable routing rules. Each names the kind of match and
-// chooses which bucket it lands in. (The hard year cutoff and the no-signal case
-// are always Rejected and are NOT configurable.)
+// The admin-configurable routing rules. Each names the kind of match and chooses
+// which bucket it lands in. (Only the hard year cutoff is non-routable — it is
+// always Rejected.)
 export type PublicationRoutes = {
   // The paper's affiliation literally names the unit (e.g. "Human Nutrition Unit").
   unitAffiliation: RouteTarget;
@@ -166,6 +166,10 @@ export type PublicationRoutes = {
   // off-topic paper is nonsensical); the type stays RouteTarget so a hand-edited
   // DB value still classifies safely.
   exclusion: RouteTarget;
+  // No signal at all: no unit affiliation, no accepted institution, no keyword,
+  // no exclusion term. Defaults to Pending (surface for review) rather than an
+  // automatic Rejected.
+  noSignal: RouteTarget;
 };
 
 // Default routing = the affiliation-only auto-approval policy: only a unit-name
@@ -177,6 +181,7 @@ export const DEFAULT_ROUTES: PublicationRoutes = {
   strongKeywords: "Pending",
   weakMatch: "Pending",
   exclusion: "Rejected",
+  noSignal: "Pending",
 };
 
 // Coerce a stored/posted route value to a valid RouteTarget, falling back when
@@ -211,8 +216,10 @@ export const DEFAULT_FILTER_CONFIG: PublicationFilterConfig = {
   routes: DEFAULT_ROUTES,
 };
 
-// Build a config from a persisted singleton row (text fields → arrays), falling
-// back to the defaults for any list that's empty.
+// Build a config from a persisted singleton row (text fields → arrays). An
+// admin-cleared list is honoured as "none" — we do NOT fall back to the built-in
+// defaults for an empty field. (The defaults only seed a brand-new install and
+// back DEFAULT_FILTER_CONFIG, used when no settings row exists at all.)
 export function configFromRow(row: {
   minYear: number;
   affiliationPhrases: string;
@@ -227,31 +234,18 @@ export function configFromRow(row: {
   routeStrongKeywords?: string | null;
   routeWeakMatch?: string | null;
   routeExclusion?: string | null;
+  routeNoSignal?: string | null;
 }): PublicationFilterConfig {
-  const affiliationPhrases = parseLines(row.affiliationPhrases);
-  const institutionRors = parseLines(row.institutionRors);
-  const strongKeywords = parseLines(row.strongKeywords);
-  const weakKeywords = parseLines(row.weakKeywords);
-  const exclusionKeywords = parseLines(row.exclusionKeywords);
-
   return {
     minYear:
       Number.isInteger(row.minYear) && row.minYear > 0
         ? row.minYear
         : DEFAULT_MIN_YEAR,
-    affiliationPhrases: affiliationPhrases.length
-      ? affiliationPhrases
-      : DEFAULT_AFFILIATION_PHRASES,
-    institutionRors: institutionRors.length
-      ? institutionRors
-      : DEFAULT_INSTITUTION_RORS,
-    strongKeywords: strongKeywords.length
-      ? strongKeywords
-      : DEFAULT_STRONG_KEYWORDS,
-    weakKeywords: weakKeywords.length ? weakKeywords : DEFAULT_WEAK_KEYWORDS,
-    exclusionKeywords: exclusionKeywords.length
-      ? exclusionKeywords
-      : DEFAULT_EXCLUSION_KEYWORDS,
+    affiliationPhrases: parseLines(row.affiliationPhrases),
+    institutionRors: parseLines(row.institutionRors),
+    strongKeywords: parseLines(row.strongKeywords),
+    weakKeywords: parseLines(row.weakKeywords),
+    exclusionKeywords: parseLines(row.exclusionKeywords),
     routes: {
       unitAffiliation: parseRoute(
         row.routeUnitAffiliation,
@@ -267,6 +261,7 @@ export function configFromRow(row: {
       ),
       weakMatch: parseRoute(row.routeWeakMatch, DEFAULT_ROUTES.weakMatch),
       exclusion: parseRoute(row.routeExclusion, DEFAULT_ROUTES.exclusion),
+      noSignal: parseRoute(row.routeNoSignal, DEFAULT_ROUTES.noSignal),
     },
   };
 }
@@ -303,7 +298,8 @@ export type PublicationRelevanceInput = {
  *  - faint signal (institution-only, single strong
  *    keyword, >=2 weak keywords, weak+no-affiliation)→ routes.weakMatch (default Pending)
  *  - exclusion-only with no strong signal            → routes.exclusion (default Rejected)
- * The hard year cutoff and the no-signal case are ALWAYS Rejected (not routable).
+ *  - no signal at all                                → routes.noSignal (default Pending)
+ * Only the hard year cutoff is non-routable — it is ALWAYS Rejected.
  */
 export function classifyPublicationRelevance(
   input: PublicationRelevanceInput,
@@ -453,9 +449,9 @@ export function classifyPublicationRelevance(
     };
   }
 
-  // --- Reject (no signal) ---
+  // --- No signal (ambiguous → routes.noSignal, default Pending for review) ---
   return {
-    status: "Rejected",
+    status: config.routes.noSignal,
     matchedKeywords,
     matchedAffiliation,
     reasonCode: "NO_SIGNAL",
