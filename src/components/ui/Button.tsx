@@ -33,26 +33,28 @@ export default function Button({
   const [hovered, setHovered] = useState(false);
 
   const base =
-    "inline-flex items-center justify-center font-semibold rounded-full text-[16px] transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 w-fit";
+    "inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 w-fit text-[13px] sm:text-[16px]";
 
   const blueStyle = {
     backgroundColor: blueColors[color],
     color: "white",
-    padding: "1em 3em",
+    padding: "0.75em 2em",
     textDecoration: hovered ? "underline" : "none",
   };
+
+  const blueStyleDesktop = `sm:py-[1em] sm:px-[3em]`;
 
   const whiteStyle = {
     backgroundColor: hovered ? "transparent" : "white",
     color: hovered ? "white" : "#0c0c48",
-    padding: "1em 3em",
+    padding: "0.75em 2em",
     border: `1px solid white`,
   };
 
   const style = variant === "blue" ? blueStyle : whiteStyle;
 
   const props = {
-    className: `${base} ${className}`,
+    className: `${base} ${variant === "blue" ? blueStyleDesktop : "sm:py-[1em] sm:px-[3em]"} ${className}`,
     style,
     onMouseEnter: () => setHovered(true),
     onMouseLeave: () => setHovered(false),

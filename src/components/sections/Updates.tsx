@@ -15,35 +15,46 @@ interface UpdatesProps {
 export default function Updates({ updates }: UpdatesProps) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("left");
-  const [animating, setAnimating] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const touchStartX = useRef<number | null>(null);
 
-  const go = (index: number, dir: "left" | "right") => {
-    if (animating) return;
-    setDirection(dir);
-    setAnimating(true);
-    setTimeout(() => {
-      setCurrent(index);
-      setAnimating(false);
-    }, 300);
+  const prev = () => {
+    setDirection("right");
+    setCurrent((i) => (i === 0 ? updates.length - 1 : i - 1));
   };
 
-  const prev = () =>
-    go(current === 0 ? updates.length - 1 : current - 1, "right");
-  const next = () =>
-    go(current === updates.length - 1 ? 0 : current + 1, "left");
+  const next = () => {
+    setDirection("left");
+    setCurrent((i) => (i === updates.length - 1 ? 0 : i + 1));
+  };
 
   useEffect(() => {
     if (isHovered) return;
-    const timer = setInterval(() => next(), 5000);
+    const timer = setInterval(() => {
+      setDirection("left");
+      setCurrent((i) => (i === updates.length - 1 ? 0 : i + 1));
+    }, 5000);
     return () => clearInterval(timer);
   }, [updates.length, current, isHovered]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(delta) > 40) {
+      delta < 0 ? next() : prev();
+    }
+    touchStartX.current = null;
+  };
 
   const update = updates[current];
 
   return (
-    <section className="w-full bg-white py-16 overflow-hidden">
-      <div className="max-w-[1200px] mx-auto px-6 sm:px-12 flex justify-end">
+    <section className="w-full bg-white py-10 px-6 sm:px-12">
+      <div className="max-w-[1200px] mx-auto sm:px-12 flex justify-end">
         <div
           className="w-full max-w-[750px]"
           onMouseEnter={() => setIsHovered(true)}
@@ -51,16 +62,20 @@ export default function Updates({ updates }: UpdatesProps) {
         >
           {/* Card */}
           <div
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             style={{
               backgroundColor: "#0c0c48f2",
-              borderRadius: "80px 0 80px 0",
-              padding: "50px 80px",
+              borderRadius: "clamp(40px, 8vw, 80px) 0 clamp(40px, 8vw, 80px) 0",
+              padding: "clamp(28px, 5vw, 50px) clamp(24px, 6vw, 80px)",
               display: "flex",
               flexDirection: "column",
               gap: "16px",
-              minHeight: "300px",
+              minHeight: "260px",
               position: "relative",
               overflow: "hidden",
+              touchAction: "pan-y",
+              userSelect: "none",
             }}
           >
             {/* Prev button */}
@@ -80,6 +95,7 @@ export default function Updates({ updates }: UpdatesProps) {
                 cursor: "pointer",
                 lineHeight: 1,
                 opacity: isHovered ? 1 : 0,
+                pointerEvents: isHovered ? "auto" : "none",
                 transition: "opacity 0.2s ease",
                 zIndex: 2,
               }}
@@ -104,8 +120,8 @@ export default function Updates({ updates }: UpdatesProps) {
                 cursor: "pointer",
                 lineHeight: 1,
                 opacity: isHovered ? 1 : 0,
+                pointerEvents: isHovered ? "auto" : "none",
                 transition: "opacity 0.2s ease",
-                zIndex: 2,
               }}
             >
               →
@@ -117,7 +133,7 @@ export default function Updates({ updates }: UpdatesProps) {
               style={{
                 display: "flex",
                 flexDirection: "column",
-                gap: "16px",
+                gap: "12px",
                 animation: `${direction === "left" ? "slideInLeft" : "slideInRight"} 0.3s ease`,
               }}
             >
@@ -139,7 +155,7 @@ export default function Updates({ updates }: UpdatesProps) {
               <h3
                 style={{
                   fontFamily: "Inter, sans-serif",
-                  fontSize: "22px",
+                  fontSize: "clamp(18px, 4vw, 22px)",
                   fontWeight: 700,
                   color: "white",
                   lineHeight: 1.25,
@@ -161,7 +177,7 @@ export default function Updates({ updates }: UpdatesProps) {
                     key={i}
                     style={{
                       fontFamily: "Inter, sans-serif",
-                      fontSize: "15px",
+                      fontSize: "clamp(13px, 3.5vw, 15px)",
                       color: "rgba(255,255,255,0.75)",
                       lineHeight: 1.7,
                       margin: 0,
@@ -181,13 +197,13 @@ export default function Updates({ updates }: UpdatesProps) {
               alignItems: "center",
               justifyContent: "center",
               gap: "8px",
-              marginTop: "24px",
+              marginTop: "20px",
             }}
           >
             {updates.map((_, i) => (
               <button
                 key={i}
-                onClick={() => go(i, i > current ? "left" : "right")}
+                onClick={() => setCurrent(i)}
                 aria-label={`Go to update ${i + 1}`}
                 style={{
                   width: i === current ? "24px" : "8px",
@@ -207,12 +223,18 @@ export default function Updates({ updates }: UpdatesProps) {
 
       <style>{`
         @keyframes slideInLeft {
-          from { opacity: 0; transform: translateX(60px); }
-          to   { opacity: 1; transform: translateX(0); }
+          from { opacity: 0; transform: translateX(30px); }
+          to { opacity: 1; transform: translateX(0); }
         }
         @keyframes slideInRight {
-          from { opacity: 0; transform: translateX(-60px); }
-          to   { opacity: 1; transform: translateX(0); }
+          from { opacity: 0; transform: translateX(-30px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+        @media (max-width: 640px) {
+          button[aria-label="Previous update"],
+          button[aria-label="Next update"] {
+            display: none !important;
+          }
         }
       `}</style>
     </section>

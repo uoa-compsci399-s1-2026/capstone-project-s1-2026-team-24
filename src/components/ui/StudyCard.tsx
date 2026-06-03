@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import Button from "./Button";
 
 interface StudyCardProps {
   title: string;
@@ -25,7 +26,7 @@ export default function StudyCard({
   imagePosition = "center",
 }: StudyCardProps) {
   const cardStyle = { boxShadow: "0 0 10px 10px rgba(0,0,0,0.05)" };
-  const cardClass = "bg-white rounded-[20px] overflow-hidden flex flex-col transition-all duration-200";
+  const cardClass = "bg-white rounded-[30px] overflow-hidden flex flex-col transition-all duration-200";
   const hoverHandlers = buttonHref ? {
     onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
       (e.currentTarget as HTMLElement).style.outline = "2px solid #0c0c48";
@@ -37,9 +38,9 @@ export default function StudyCard({
     },
   } : {};
 
-  const inner = (
+  const content = (
     <>
-      <div className="relative w-full h-[280px] flex-shrink-0">
+      <div className="relative w-full h-[180px] sm:h-[280px] flex-shrink-0">
         <Image
           src={imageSrc}
           alt={imageAlt}
@@ -48,27 +49,52 @@ export default function StudyCard({
           sizes="(max-width: 768px) 100vw, 50vw"
         />
       </div>
-      <div className="flex flex-col gap-4 px-[45px] py-8 flex-1">
-        <h2 className="text-[#0c0c48] font-bold" style={{ fontSize: "32px", lineHeight: 1.2 }}>
+      <div className="flex flex-col gap-3 sm:gap-4 px-6 py-5 sm:px-[45px] sm:py-8 flex-1">
+        <h2
+          className="text-[#0c0c48] font-bold"
+          style={{ fontSize: "clamp(20px, 5vw, 32px)", lineHeight: 1.2 }}
+        >
           {title}
         </h2>
-        {subtitle && <p className="text-[#0c0c48] text-[16px]">{subtitle}</p>}
-        <p className="text-[#0c0c48] text-[16px] leading-relaxed">{description}</p>
+        {subtitle && (
+          <p className="text-[#0c0c48] text-[13px] sm:text-[16px]">{subtitle}</p>
+        )}
+        <p className="text-[#0c0c48] text-[13px] sm:text-[16px] leading-relaxed">
+          {description}
+        </p>
       </div>
     </>
   );
 
   if (buttonHref) {
     return (
-      <Link href={buttonHref} className={`${cardClass} hover:-translate-y-1`} style={cardStyle} {...hoverHandlers}>
-        {inner}
-      </Link>
+      <>
+        {/* Desktop: entire card is clickable */}
+        <Link
+          href={buttonHref}
+          className={`${cardClass} hover:-translate-y-1 hidden sm:flex`}
+          style={cardStyle}
+          {...hoverHandlers}
+        >
+          {content}
+        </Link>
+
+        {/* Mobile: plain card with Button at the bottom */}
+        <div className={`${cardClass} flex sm:hidden`} style={cardStyle}>
+          {content}
+          <div className="px-6 pb-6 pt-1">
+            <Button href={buttonHref} variant="blue" color="dark" className="w-full">
+              {buttonLabel}
+            </Button>
+          </div>
+        </div>
+      </>
     );
   }
 
   return (
     <div className={cardClass} style={cardStyle}>
-      {inner}
+      {content}
     </div>
   );
 }

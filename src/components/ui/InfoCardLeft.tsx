@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import Button from "./Button";
 import RichText from "@/components/blocks/RichText";
 
@@ -13,9 +12,7 @@ const bgColors: Record<BgVariant, string> = {
 
 interface InfoCardProps {
   title: string;
-  /** Legacy plain-text paragraphs. Rendered only when `body` is empty. */
   paragraphs: string[];
-  /** Rich-text HTML body (preferred). Sanitized on render by <RichText/>. */
   body?: string;
   buttonLabel?: string;
   buttonHref?: string;
@@ -39,97 +36,172 @@ export default function InfoCard({
   showButton = false,
 }: InfoCardProps) {
   return (
-    <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
-      <div className="max-w-[1100px] mx-auto">
-        <div className="relative flex flex-col lg:flex-row items-center gap-0">
-          {/* Blue text card — overlaps the image on the left */}
-          <div
-            className="relative z-10 flex-shrink-0 w-[340px] sm:w-[400px] lg:w-[550px] p-15 pr-20 flex flex-col gap-6"
+    <section className="relative w-full bg-white overflow-hidden py-6">
+
+      {/* ── Mobile layout ── */}
+      <div className="lg:hidden relative flex flex-col">
+
+        {/* Image fills top portion */}
+        <div className="relative w-full h-[280px] sm:h-[340px]">
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            className={`object-cover object-${imagePosition}`}
+            sizes="100vw"
+          />
+        </div>
+
+        {/* Card slides up over the image with big top-left radius */}
+        <div className="relative -mt-16 px-6">
+        <div
+          className="flex flex-col gap-5 p-6"
+          style={{
+            backgroundColor: bgColors[cardBg],
+            borderRadius: "0 40px",
+          }}
+        >
+          <h2
+            className="text-white font-bold"
             style={{
-              backgroundColor: bgColors[cardBg],
-              borderRadius: "0 80px 0 80px",
-              zIndex: 10,
+              fontFamily: "Inter, sans-serif",
+              fontSize: "28px",
+              lineHeight: 1.2,
             }}
           >
-            <h2
-              className="text-white font-bold"
+            {title}
+          </h2>
+
+          {body ? (
+            <RichText
+              html={body}
+              className="flex flex-col gap-3 text-white/85 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
               style={{
                 fontFamily: "Inter, sans-serif",
-                fontSize: "32px",
-                lineHeight: 1.2,
+                fontSize: "15px",
+                lineHeight: 1.6,
               }}
-            >
-              {title}
-            </h2>
+            />
+          ) : (
+            <div className="flex flex-col gap-3">
+              {paragraphs.map((para, i) => (
+                <p
+                  key={i}
+                  className="text-white/85"
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: "15px",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {para}
+                </p>
+              ))}
+            </div>
+          )}
 
-            {body ? (
-              <RichText
-                html={body}
-                className="flex flex-col gap-4 text-white/85 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  fontSize: "16px",
-                  lineHeight: 1.6,
-                }}
-              />
-            ) : (
-              <div className="flex flex-col gap-4">
-                {paragraphs.map((para, i) => (
-                  <p
-                    key={i}
-                    className="text-white/85"
-                    style={{
-                      fontFamily: "Inter, sans-serif",
-                      fontSize: "16px",
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    {para}
-                  </p>
-                ))}
-              </div>
-            )}
-            {showButton && (
+          {showButton && (
+            <div className="mt-2">
               <Button href={buttonHref} variant="white">
                 {buttonLabel}
               </Button>
-            )}
-          </div>
-
-          {/* Image — overlaps behind the card on the left, extends right */}
-          <div
-            className="relative rounded-[28px] overflow-hidden flex-1 -ml-65"
-            style={{
-              height: "550px",
-              zIndex: 9,
-            }}
-          >
-            <Image
-              src={imageSrc}
-              alt={imageAlt}
-              fill
-              className={`object-cover object-${imagePosition}`}
-              sizes="(max-width: 768px) 100vw, 70vw"
-            />
-          </div>
+            </div>
+          )}
+        </div>
         </div>
       </div>
-      <div
-        className="absolute inset-0 overflow-hidden pointer-events-none flex items-center"
-        aria-hidden="true"
-      >
+
+      {/* ── Desktop layout: original overlapping design ── */}
+      <div className="hidden lg:block py-10 px-12 lg:px-45">
+        <div className="max-w-[1100px] mx-auto">
+          <div className="relative flex flex-row items-center gap-0">
+            <div
+              className="relative z-10 flex-shrink-0 w-[550px] p-15 pr-20 flex flex-col gap-6"
+              style={{
+                backgroundColor: bgColors[cardBg],
+                borderRadius: "0 80px 0 80px",
+                zIndex: 10,
+              }}
+            >
+              <h2
+                className="text-white font-bold"
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  fontSize: "32px",
+                  lineHeight: 1.2,
+                }}
+              >
+                {title}
+              </h2>
+
+              {body ? (
+                <RichText
+                  html={body}
+                  className="flex flex-col gap-4 text-white/85 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                  style={{
+                    fontFamily: "Inter, sans-serif",
+                    fontSize: "16px",
+                    lineHeight: 1.6,
+                  }}
+                />
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {paragraphs.map((para, i) => (
+                    <p
+                      key={i}
+                      className="text-white/85"
+                      style={{
+                        fontFamily: "Inter, sans-serif",
+                        fontSize: "16px",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {para}
+                    </p>
+                  ))}
+                </div>
+              )}
+
+              {showButton && (
+                <Button href={buttonHref} variant="white">
+                  {buttonLabel}
+                </Button>
+              )}
+            </div>
+
+            <div
+              className="relative rounded-[28px] overflow-hidden flex-1 -ml-65"
+              style={{ height: "550px", zIndex: 9 }}
+            >
+              <Image
+                src={imageSrc}
+                alt={imageAlt}
+                fill
+                className={`object-cover object-${imagePosition}`}
+                sizes="70vw"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Background pattern */}
         <div
-        className="w-full h-[200px]"
-        style={{
-          backgroundImage: "url(/maori-pattern.svg)",
-          backgroundRepeat: "repeat-x",
-          backgroundSize: "auto 100%",
-          filter: "brightness(3) invert(0)",
-          opacity: 0.25,
-        }}
-        aria-hidden="true"
-      />
+          className="hidden lg:flex absolute inset-0 overflow-hidden pointer-events-none items-center"
+          aria-hidden="true"
+        >
+          <div
+            className="w-full h-[200px]"
+            style={{
+              backgroundImage: "url(/maori-pattern.svg)",
+              backgroundRepeat: "repeat-x",
+              backgroundSize: "auto 100%",
+              filter: "brightness(3) invert(0)",
+              opacity: 0.25,
+            }}
+          />
+        </div>
       </div>
+
     </section>
   );
 }
