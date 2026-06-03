@@ -1,20 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { getPartnerLogos } from "@/lib/data/partner-logos";
 
 export async function GET() {
   try {
-    const partnerLogos = await prisma.partnerLogo.findMany({
-      orderBy: [{ group: "asc" }, { order: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        logoPath: true,
-        websiteUrl: true,
-        isPlaceholder: true,
-        group: true,
-      },
-    });
-
+    const partnerLogos = await getPartnerLogos();
     return NextResponse.json(partnerLogos, { status: 200 });
   } catch (error) {
     console.error("GET /api/partner-logos failed:", error);

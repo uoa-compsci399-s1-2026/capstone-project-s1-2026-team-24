@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { getSafeHttpUrl } from "@/lib/safe-url";
-import type { TeamMemberRecord } from "@/lib/fetch-api";
+import type { TeamMemberRecord } from "@/lib/data/team";
 import { useLanguage } from "@/contexts/LanguageContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";

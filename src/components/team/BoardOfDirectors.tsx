@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import DirectorCard from "@/components/team/DirectorCard";
-import type { TeamMemberRecord } from "@/lib/fetch-api";
+import type { TeamMemberRecord } from "@/lib/data/team";
 import { useLanguage } from "@/contexts/LanguageContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";

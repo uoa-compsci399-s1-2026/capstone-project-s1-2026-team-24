@@ -1,4 +1,4 @@
-import { fetchPartnerLogos, type PartnerLogoRecord } from "@/lib/fetch-api";
+import { getPartnerLogos, type PartnerLogoRecord } from "@/lib/data/partner-logos";
 import PartnerSectionTitle from "./PartnerSectionTitle";
 
 function PartnerMarquee({
@@ -56,7 +56,7 @@ export default async function OurPartners({
   let partnerLogos: PartnerLogoRecord[] = [];
 
   try {
-    partnerLogos = await fetchPartnerLogos();
+    partnerLogos = await getPartnerLogos();
   } catch (error) {
     console.error("Partner logos fetch failed:", error);
   }
