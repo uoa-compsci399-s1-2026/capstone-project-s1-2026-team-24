@@ -1,12 +1,5 @@
 import { fetchPartnerLogos, type PartnerLogoRecord } from "@/lib/fetch-api";
-import { cookies } from "next/headers";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 import PartnerSectionTitle from "./PartnerSectionTitle";
-
-const cookieStore = await cookies();
-const lang = cookieStore.get("lang")?.value === "ZH" ? "ZH" : "EN";
-const t = lang === "EN" ? en : zh;
 
 function PartnerMarquee({
   partners,

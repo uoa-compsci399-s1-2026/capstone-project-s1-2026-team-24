@@ -1,4 +1,9 @@
+"use client";
+
 import React from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
+import en from "@/messages/en";
+import zh from "@/messages/zh";
 
 type Benefit = {
   icon: React.ReactNode;
@@ -6,7 +11,7 @@ type Benefit = {
   description: string;
 };
 
-export const ACADEMIC_BENEFITS: Benefit[] = [
+const getAcademicBenefits = (t: typeof en): Benefit[] => [
   {
     icon: (
       <svg
@@ -25,8 +30,8 @@ export const ACADEMIC_BENEFITS: Benefit[] = [
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
-    title: "Knowledge Exchange",
-    description: "Access to cutting-edge research and expertise",
+    title: t.collaborations.knowledgeExchangeTitle,
+    description: t.collaborations.knowledgeExchangeDescription,
   },
   {
     icon: (
@@ -44,8 +49,8 @@ export const ACADEMIC_BENEFITS: Benefit[] = [
         <path d="M6 12v5c3 3 9 3 12 0v-5" />
       </svg>
     ),
-    title: "Student Training",
-    description: "Opportunities for postgraduate research projects",
+    title: t.collaborations.studentTrainingTitle,
+    description: t.collaborations.studentTrainingDescription,
   },
   {
     icon: (
@@ -65,12 +70,12 @@ export const ACADEMIC_BENEFITS: Benefit[] = [
         <line x1="16" y1="17" x2="8" y2="17" />
       </svg>
     ),
-    title: "Joint Publications",
-    description: "Co-authored research in leading journals",
+    title: t.collaborations.jointPublicationsTitle,
+    description: t.collaborations.jointPublicationsDescription,
   },
 ];
 
-export const INDUSTRY_BENEFITS: Benefit[] = [
+const getIndustryBenefits = (t: typeof en): Benefit[] => [
   {
     icon: (
       <svg
@@ -87,8 +92,8 @@ export const INDUSTRY_BENEFITS: Benefit[] = [
         <path d="M12 8v4l3 3" />
       </svg>
     ),
-    title: "Independent Expertise",
-    description: "Rigorous, unbiased research you can trust",
+    title: t.collaborations.independentExpertiseTitle,
+    description: t.collaborations.independentExpertiseDescription,
   },
   {
     icon: (
@@ -106,8 +111,8 @@ export const INDUSTRY_BENEFITS: Benefit[] = [
         <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
       </svg>
     ),
-    title: "Regulatory Compliance",
-    description: "Full GCP compliance and ethics approval support",
+    title: t.collaborations.regulatoryComplianceTitle,
+    description: t.collaborations.regulatoryComplianceDescription,
   },
   {
     icon: (
@@ -125,8 +130,8 @@ export const INDUSTRY_BENEFITS: Benefit[] = [
         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
       </svg>
     ),
-    title: "Commercial Value",
-    description: "Evidence-based results that drive product innovation",
+    title: t.collaborations.commercialValueTitle,
+    description: t.collaborations.commercialValueDescription,
   },
 ];
 
@@ -189,6 +194,12 @@ function BenefitGrid({ benefits }: { benefits: Benefit[] }) {
 }
 
 export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
+  const { lang } = useLanguage();
+  const t = lang === "EN" ? en : zh;
+
+  const academicBenefits = getAcademicBenefits(t);
+  const industryBenefits = getIndustryBenefits(t);
+
   return (
     <section style={{ backgroundColor: "#f0f0f0", padding: "60px 45px" }}>
       <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
@@ -207,8 +218,8 @@ export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
           </h2>
         )}
 
-        {variant === "academic" && <BenefitGrid benefits={ACADEMIC_BENEFITS} />}
-        {variant === "industry" && <BenefitGrid benefits={INDUSTRY_BENEFITS} />}
+        {variant === "academic" && <BenefitGrid benefits={academicBenefits} />}
+        {variant === "industry" && <BenefitGrid benefits={industryBenefits} />}
 
         {variant === "both" && (
           <>
@@ -222,9 +233,9 @@ export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
                 marginBottom: "32px",
               }}
             >
-              Academic Benefits
+              {t.collaborations.academicBenefitsTitle}
             </h2>
-            <BenefitGrid benefits={ACADEMIC_BENEFITS} />
+            <BenefitGrid benefits={academicBenefits} />
 
             <div style={{ height: "48px" }} />
 
@@ -238,9 +249,9 @@ export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
                 marginBottom: "32px",
               }}
             >
-              Industry Benefits
+              {t.collaborations.industryBenefitsTitle}
             </h2>
-            <BenefitGrid benefits={INDUSTRY_BENEFITS} />
+            <BenefitGrid benefits={industryBenefits} />
           </>
         )}
       </div>

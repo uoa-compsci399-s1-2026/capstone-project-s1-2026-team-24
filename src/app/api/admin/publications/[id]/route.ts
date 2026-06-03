@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { buildPublicationDedupKey } from "@/lib/publication-filter";
 
 const ALLOWED_STATUSES = new Set(["Pending", "Approved", "Rejected"]);
 
@@ -157,7 +158,27 @@ export async function DELETE(
         { status: 404 },
       );
     }
-    await prisma.publication.delete({ where: { id } });
+    // Hard delete, but first write a tombstone so the ORCID/OpenAlex sync won't
+    // re-create this work on its next run. We record three identity signals — the
+    // composite source id, the normalized DOI, and the title+year dedup key — and
+    // the sync skips any incoming work that matches any of them. Wrapped in a
+    // transaction so a row is never deleted without its tombstone.
+    await prisma.$transaction([
+      prisma.deletedPublication.create({
+        data: {
+          sourceType: existing.sourceType,
+          sourceId: existing.sourceId,
+          doi: existing.doi?.trim().toLowerCase() || null,
+          titleYearKey: buildPublicationDedupKey({
+            title: existing.title,
+            year: existing.year,
+          }),
+          title: existing.title,
+          year: existing.year,
+        },
+      }),
+      prisma.publication.delete({ where: { id } }),
+    ]);
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("DELETE /api/admin/publications/[id] failed:", error);
