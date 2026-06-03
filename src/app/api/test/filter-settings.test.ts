@@ -27,6 +27,7 @@ const currentRow = {
   routeStrongKeywords: "Pending",
   routeWeakMatch: "Pending",
   routeExclusion: "Rejected",
+  routeNoSignal: "Pending",
   updatedAt: new Date(),
 };
 
@@ -74,5 +75,18 @@ describe("PUT /api/admin/publications/filter-settings — route validation", () 
     expect(res.status).toBe(200);
     const arg = mockPrisma.publicationFilterSetting.update.mock.calls[0][0];
     expect(arg.data.routeExclusion).toBe("Pending");
+  });
+
+  it("rejects Approved for the no-signal rule (zero-signal must not auto-approve)", async () => {
+    const res = await PUT(putReq({ routeNoSignal: "Approved" }));
+    expect(res.status).toBe(400);
+    expect(mockPrisma.publicationFilterSetting.update).not.toHaveBeenCalled();
+  });
+
+  it("allows Rejected for the no-signal rule", async () => {
+    const res = await PUT(putReq({ routeNoSignal: "Rejected" }));
+    expect(res.status).toBe(200);
+    const arg = mockPrisma.publicationFilterSetting.update.mock.calls[0][0];
+    expect(arg.data.routeNoSignal).toBe("Rejected");
   });
 });

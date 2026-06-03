@@ -398,8 +398,14 @@ export default function AdminPublications() {
                     <tr key={pub.id} className="hover:bg-[#f5f5f7]">
                       <td className="px-4 py-3 font-semibold text-[#0c0c48] max-w-[340px] break-words">
                         {(() => {
+                          // Only treat http(s) URLs as clickable — a stored
+                          // value like "javascript:..." must never become an href.
+                          const safeUrl =
+                            pub.url && /^https?:\/\//i.test(pub.url.trim())
+                              ? pub.url.trim()
+                              : null;
                           const href =
-                            pub.url ||
+                            safeUrl ||
                             (pub.doi ? `https://doi.org/${pub.doi}` : null);
                           return href ? (
                             <a
@@ -763,8 +769,10 @@ function FilterSettingsPanel() {
                   ))}
                 </div>
                 <p className="text-xs text-[#0a4479]/60 mt-2">
-                  Papers published before the minimum year, or with no match at
-                  all, are always rejected automatically.
+                  Papers published before the minimum year are always rejected
+                  automatically. Everything else follows the rules above —
+                  including papers that match nothing, which use the “It matched
+                  nothing at all” rule.
                 </p>
               </div>
 
