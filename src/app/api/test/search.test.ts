@@ -10,6 +10,13 @@ const mockPrisma = vi.hoisted(() => ({
 
 vi.mock("@/lib/prisma", () => ({ prisma: mockPrisma }));
 
+// Controllable rate-limit mock: allows by default so existing behaviour tests
+// are unaffected; individual tests can force a 429.
+const mockCheckRateLimit = vi.hoisted(() =>
+  vi.fn(() => ({ allowed: true }) as { allowed: boolean; retryAfterSeconds?: number }),
+);
+vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: mockCheckRateLimit }));
+
 import { GET as search, type SearchResult } from "@/app/api/search/route";
 
 const req = (q: string) =>
@@ -26,6 +33,7 @@ function mockEmpty() {
 describe("GET /api/search", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCheckRateLimit.mockReturnValue({ allowed: true });
   });
 
   it("returns an empty result set without querying the DB for queries under 2 chars", async () => {
@@ -41,6 +49,30 @@ describe("GET /api/search", () => {
     expect(res.status).toBe(400);
     await expect(res.json()).resolves.toEqual({ error: "Query too long." });
     expect(mockPrisma.study.findMany).not.toHaveBeenCalled();
+  });
+
+  it("returns 429 with Retry-After when the per-IP rate limit is exceeded", async () => {
+    mockCheckRateLimit.mockReturnValueOnce({
+      allowed: false,
+      retryAfterSeconds: 42,
+    });
+    const res = await search(req("nutrition"));
+    expect(res.status).toBe(429);
+    expect(res.headers.get("retry-after")).toBe("42");
+    await expect(res.json()).resolves.toEqual({
+      error: "Too many requests. Please slow down.",
+    });
+    // The DB-heavy work must be skipped entirely when rate-limited.
+    expect(mockPrisma.study.findMany).not.toHaveBeenCalled();
+  });
+
+  it("rate-limits using a per-IP search key", async () => {
+    mockEmpty();
+    await search(req("nutrition"));
+    expect(mockCheckRateLimit).toHaveBeenCalledWith(
+      expect.stringMatching(/^search:/),
+      expect.objectContaining({ max: expect.any(Number) }),
+    );
   });
 
   it("matches the hardcoded PAGES list on title/keywords", async () => {
