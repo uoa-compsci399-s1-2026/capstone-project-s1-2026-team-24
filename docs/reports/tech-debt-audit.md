@@ -170,7 +170,7 @@ routes are **publicly reachable in production**:
 "production"` *and* the admin session). They have no tests depending on them — the
 co-located `*.test.ts` files are Vitest suites, not consumers of these handlers.
 
-> Aside: 19 Vitest `*.test.ts` files live *inside the App Router tree* under
+> Aside: 17 Vitest `*.test.ts` files live *inside the App Router tree* under
 > `src/app/api/test/`. Next.js only routes `route.ts`/`page.tsx`, so they don't become
 > endpoints, but co-locating tests in `app/` is unusual and invites exactly the confusion
 > above. Consider moving them to a top-level `tests/` dir.
@@ -263,8 +263,15 @@ single faithful seed, and gives every contributor a realistic local dataset.
 ### 6.1 Type safety — a genuine strength
 
 - **No explicit `any`**, and **no `@ts-ignore` / `@ts-expect-error` / `@ts-nocheck`** anywhere
-  in `src/`. `strict: true` is on (`tsconfig.json:7`). The only suppression is one justified
-  `// eslint-disable-next-line @next/next/no-img-element` (`src/components/admin/page-editor/fields.tsx:47`).
+  in `src/`. `strict: true` is on (`tsconfig.json:7`). ESLint suppressions are limited to 7
+  `eslint-disable` lines, all narrow: **6× `@next/next/no-img-element`** (deliberate `<img>`
+  use, consistent with the disabled Next image optimizer) at
+  `src/components/admin/page-editor/fields.tsx:47,141`,
+  `src/components/admin/media/MediaLibrary.tsx:286,334`,
+  `src/components/admin/media/MediaPicker.tsx:151`, `src/app/admin/partners/page.tsx:137`;
+  plus **1× `react-hooks/exhaustive-deps`** at
+  `src/components/admin/page-editor/PreviewPane.tsx:51` — the one worth a glance, since
+  exhaustive-deps suppressions can hide stale-closure bugs.
 - **Gap:** `noUncheckedIndexedAccess` is **not** set (`tsconfig.json:2-24`). Turning it on
   would catch a class of array/record-index bugs, especially around the untrusted block-content
   JSON that `BlockRenderer.tsx` coerces. Expect a modest one-time fix-up.
