@@ -66,7 +66,7 @@ This matters because the wrong `DATABASE_URL` is the top onboarding bug — keep
 | Consumer | Loads | Notes |
 |----------|-------|-------|
 | Next.js app (`dev`, `build`, `start`) | `.env.local` then `.env` | Next's normal precedence: `.env.local` wins. |
-| Prisma CLI (`db push`, `generate`, `migrate`) | `.env` | Via `prisma.config.ts`, which reads `env("DATABASE_URL")`. |
+| Prisma CLI (`db push`, `generate`, `migrate`) | `.env.local` then `.env` | `prisma.config.ts` imports `prisma/load-env.ts` (Prisma 7 stopped auto-loading env files), then reads `env("DATABASE_URL")`. |
 | `seed.ts`, `seed-page-blocks.ts`, `catalog-public-media.ts` | `.env` only | They `import "dotenv/config"` at the top. |
 | `warm-translations.ts` | `.env.local` then `.env` | Imports `prisma/load-env.ts`, so it picks up `TRANSLATE_API_KEY` from `.env.local`. |
 
