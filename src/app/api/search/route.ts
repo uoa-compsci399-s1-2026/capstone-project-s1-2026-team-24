@@ -87,13 +87,18 @@ function stripHtml(input: string): string {
 }
 
 /** Collapses an array of blocks (each a `{ content }` JSON string) to searchable text. */
-function blocksToText(blocks: { content: string }[]): string {
+function blocksToText(blocks: { content: string }[], slug?: string): string {
   const parts: string[] = [];
-  for (const block of blocks) {
+  for (const [index, block] of blocks.entries()) {
     let parsed: unknown;
     try {
       parsed = JSON.parse(block.content);
     } catch {
+      // Don't drop a corrupt block silently — log it (page slug + index) so a
+      // malformed block is discoverable instead of just missing from search.
+      console.warn(
+        `[search] Skipping block with unparseable content (slug=${slug ?? "?"}, index=${index})`,
+      );
       continue;
     }
     collectText(parsed, parts);
@@ -106,10 +111,10 @@ function blocksToText(blocks: { content: string }[]): string {
  * page has never been published / has no usable content. Newlines in copy
  * (stored as "\n") are flattened to spaces so they don't break the snippet.
  */
-function pageSearchText(publishedContent: string | null): string {
+function pageSearchText(publishedContent: string | null, slug?: string): string {
   const blocks = parsePublishedSnapshot(publishedContent);
   if (blocks.length === 0) return "";
-  return blocksToText(blocks);
+  return blocksToText(blocks, slug);
 }
 
 /** Builds a readable snippet centred on the first match of `query` in `text`. */
@@ -301,8 +306,8 @@ export async function GET(request: NextRequest) {
       // Mirror the public renderer: use the published snapshot when present, else
       // fall back to the page's visible draft blocks (never-published pages).
       const text = page.publishedContent
-        ? pageSearchText(page.publishedContent)
-        : blocksToText(page.blocks);
+        ? pageSearchText(page.publishedContent, page.slug)
+        : blocksToText(page.blocks, page.slug);
       if (!text || !text.toLowerCase().includes(q.toLowerCase())) continue;
       results.push({
         type: "page-content",

@@ -240,6 +240,29 @@ describe("GET /api/search", () => {
     expect(content?.snippet).toContain("metabolic");
   });
 
+  it("logs (does not silently drop) a block with unparseable JSON content (B56/L5)", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    mockPrisma.study.findMany.mockResolvedValue([]);
+    mockPrisma.teamMember.findMany.mockResolvedValue([]);
+    mockPrisma.publication.findMany.mockResolvedValue([]);
+    mockPrisma.page.findMany.mockResolvedValue([
+      {
+        slug: "about",
+        title: "About",
+        publishedContent: null,
+        blocks: [{ content: "{ not valid json" }],
+      },
+    ]);
+
+    const res = await search(req("metabolic"));
+
+    // The corrupt block must be logged with its page slug, and the request must
+    // still succeed (the page just contributes no searchable text).
+    expect(res.status).toBe(200);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("slug=about"));
+    warnSpy.mockRestore();
+  });
+
   it("does not surface an unpublished draft edit on an already-published page", async () => {
     mockPrisma.study.findMany.mockResolvedValue([]);
     mockPrisma.teamMember.findMany.mockResolvedValue([]);
