@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/client-ip";
 import { sendContactNotification } from "@/lib/email";
 
 const ALLOWED_CATEGORIES = [
@@ -30,20 +31,6 @@ function isValidEmail(email: string) {
 function countUrlsLike(text: string) {
   const matches = text.match(URL_REGEX);
   return matches ? matches.length : 0;
-}
-
-function getClientIp(request: NextRequest) {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0]?.trim() || "unknown";
-  }
-
-  const realIp = request.headers.get("x-real-ip");
-  if (realIp) {
-    return realIp.trim();
-  }
-
-  return "unknown";
 }
 
 export async function POST(request: NextRequest) {
