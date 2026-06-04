@@ -1,14 +1,56 @@
+import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
   createAdminSessionToken,
   getAdminSessionCookieName,
+  requireStrongSecret,
 } from "@/lib/admin-session";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/client-ip";
+
+// Per-IP brute-force throttle on the login endpoint.
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_WINDOW_MS = 15 * 60 * 1000;
+
+// Constant-time comparison over fixed-length SHA-256 digests. Hashing first
+// guarantees equal-length inputs to timingSafeEqual (which throws on length
+// mismatch) and prevents the secret's length from leaking through timing.
+function safeEqual(a: string, b: string) {
+  const ha = createHash("sha256").update(a).digest();
+  const hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
 
 export async function POST(request: Request) {
-  const expectedPassword = process.env.ADMIN_PASSWORD;
-  if (!expectedPassword) {
+  // Throttle by client IP first, so brute-forcing is bounded regardless of
+  // whether the submitted password is correct. The IP comes from the
+  // trusted-proxy helper, so it can't be cheaply spoofed to dodge the limit.
+  const ip = getClientIp(request);
+  const rateLimit = checkRateLimit(`login:${ip}`, {
+    max: LOGIN_MAX_ATTEMPTS,
+    windowMs: LOGIN_WINDOW_MS,
+  });
+  if (!rateLimit.allowed) {
+    const response = NextResponse.json(
+      { error: "Too many login attempts. Please try again later." },
+      { status: 429 },
+    );
+    if (rateLimit.retryAfterSeconds) {
+      response.headers.set("Retry-After", String(rateLimit.retryAfterSeconds));
+    }
+    return response;
+  }
+
+  let expectedPassword: string;
+  try {
+    expectedPassword = requireStrongSecret(
+      process.env.ADMIN_PASSWORD,
+      "ADMIN_PASSWORD",
+      12,
+    );
+  } catch {
     return NextResponse.json(
-      { error: "Server auth config is missing" },
+      { error: "Server auth config is missing or too weak" },
       { status: 500 },
     );
   }
@@ -17,13 +59,10 @@ export async function POST(request: Request) {
   const password = body?.password;
 
   if (typeof password !== "string" || !password) {
-    return NextResponse.json(
-      { error: "Password is required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Password is required" }, { status: 400 });
   }
 
-  if (password !== expectedPassword) {
+  if (!safeEqual(password, expectedPassword)) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
