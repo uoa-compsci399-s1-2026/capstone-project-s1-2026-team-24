@@ -15,7 +15,7 @@
 | Node pin in-repo | **none** | host pins `22.17.1` in Render only; no `engines`/`.nvmrc` (§4) |
 | Pinning | 4 exact (`next`,`react`,`react-dom`,`eslint-config-next`) + caret rest + 0 tilde | sound (§3) |
 
-Severity: 🔴 high · 🟠 medium · 🟡 low · ⚪ noise (no action). "Prod runtime" = what `next start` serves (the app + `@prisma/client` + the better-sqlite3 adapter + `jose`/`sanitize-html`/`resend`/`image-size`); everything else (storybook, vitest, playwright, eslint, the `prisma` CLI, tsx, vite) is dev/build tooling that never ships.
+Severity badges mark **triaged priority**: 🔴 high · 🟠 medium · 🟡 low · 🟢 optional · ⚪ noise (no action). **Exception:** §1's audit table mirrors **npm-audit's own reported severity** (critical / high / moderate) so the tool's label sits beside the triaged verdict in each row; the prose and the §7 recommendations use the triaged scale. "Prod runtime" = what `next start` serves (the app + `@prisma/client` + the better-sqlite3 adapter + `jose`/`sanitize-html`/`resend`/`image-size`); everything else (storybook, vitest, playwright, eslint, the `prisma` CLI, tsx, vite) is dev/build tooling that never ships.
 
 ---
 
@@ -84,7 +84,7 @@ All four critical rows are the **same** advisory — **GHSA-2h32-95rg-cppp** (`@
 ## 3. Pinning, lockfile & registry
 
 - **Pinning is sound.** Four exact pins on the framework spine (`next`, `react`, `react-dom`, `eslint-config-next`) give reproducible builds where it matters most; carets elsewhere; zero loose tildes. Keep `next` and `eslint-config-next` moving together (both `16.2.x`).
-- **Lockfile is healthy.** `lockfileVersion: 3`; core packages dedupe to single versions; `.npmrc` pins the official npm registry (`registry=https://registry.npmjs.org/`) — a deliberate fix (commit #167) that stops a contributor's mirror config from poisoning `package-lock.json` and breaking `npm ci` on Render / cloud sessions. Keep it.
+- **Lockfile is healthy.** `lockfileVersion: 3`; core packages dedupe to single versions; `.npmrc` pins the official npm registry (`registry=https://registry.npmjs.org/`) — a deliberate fix (PR #167) that stops a contributor's mirror config from poisoning `package-lock.json` and breaking `npm ci` on Render / cloud sessions. Keep it.
 - **The "extraneous" WASM packages are a false alarm.** `npm ls` labels `@emnapi/core`, `@emnapi/runtime`, `@emnapi/wasi-threads`, `@napi-rs/wasm-runtime`, `@tybys/wasm-util` as extraneous, but they are **declared `optional`/`dev` deps in `package-lock.json`** — napi WASM fallbacks pulled by dev tooling. This is **not** lockfile drift; **do not** run `npm prune`/`npm ci --omit=optional` to "clean" them (a reinstall just re-adds them). `npm ci` is the formal sync check.
 
 ---
@@ -122,7 +122,7 @@ Clean ESLint 9 flat config extending `eslint-config-next/core-web-vitals` + `esl
 Only `images: { unoptimized: true }`, which is **deliberate** (the sharp optimizer OOMs on the 512 MB Render host) **and** security-relevant (§1: neutralizes the image-opt DoS advisory). No deprecated Next 16 options. Leave as is.
 
 ### `prisma.config.ts` — correct Prisma 7 setup (✓, one minor cleanup)
-Proper v7 `defineConfig` (`schema`, `migrations.path`/`seed`, `datasource.url: env("DATABASE_URL")`) with the `prisma/load-env` shim that compensates for v7 no longer auto-loading `.env` (commit #168).
+Proper v7 `defineConfig` (`schema`, `migrations.path`/`seed`, `datasource.url: env("DATABASE_URL")`) with the `prisma/load-env` shim that compensates for v7 no longer auto-loading `.env` (PR #168).
 
 > **Adapter wiring is correct — a common misreading to head off:** in Prisma 7 the SQLite driver adapter belongs on the **client**, not in `prisma.config.ts`. It's wired exactly right at `src/lib/prisma.ts:14` — `new PrismaBetterSqlite3({ url })` → `new PrismaClient({ adapter })` (and identically in every `prisma/*.ts` seed/backfill script). Nothing is missing here.
 
