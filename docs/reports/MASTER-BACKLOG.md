@@ -45,11 +45,11 @@ post-launch** split.
 | Severity | Open items | Notes |
 |---|---:|---|
 | Critical | 0 | No anon-exploitable / data-loss / crash bug found reproducibly. |
-| High | 23 | 12 are launch go-live blockers; the rest are security front-door, a11y-critical, perf-P1, and the partner-logos crash. |
+| High | 26 | 12 are launch go-live blockers; the rest are security front-door, a11y-critical, perf-P1, and the partner-logos crash. |
 | Medium | 18 | |
 | Low | 19 | Grouped at the bottom; nothing dropped. |
 
-**Coverage:** 95 raw findings across 8 reports → **60 de-duplicated backlog items**
+**Coverage:** 95 raw findings across 8 reports → **63 de-duplicated backlog items**
 (+ 6 verified-resolved, + a false-positive register).
 
 ### Top 8 to do first (highest leverage, mostly S, launch-or-crash)
@@ -67,7 +67,7 @@ post-launch** split.
 
 ## Global prioritized backlog
 
-### 🔴 High (B01–B23)
+### 🔴 High (B01–B26)
 
 #### Launch go-live blockers (from the launch-readiness audit)
 
@@ -83,7 +83,7 @@ post-launch** split.
 | B08 | Add the `.onrender.com` → custom-domain **301** (declarative `redirects()` in `next.config`, gated on the custom host being live) | S | launch L8 | `next.config.ts:3-10` | ✅ |
 | B09 | Verify the Resend sending domain (SPF/DKIM/DMARC) and set `EMAIL_FROM` off the `onboarding@resend.dev` default — **else the contact form only emails the account owner in prod** | S | launch L17 | `src/lib/email.ts:21-22`, DNS | ✅ |
 | B10 | Provision the custom domain + DNS/TLS in Render — **start early**, UoA-IT-controlled records have lead time | S | launch L20 | external infra/DNS | ext |
-| B11 | Fix the root title brand: `"UoA Research"` → `title.default` + `template: "%s \| HNU Auckland"` | S | launch L13 | `src/app/layout.tsx:18`, `constants.ts:2` | ✅ |
+| B11 | Fix the root title brand: `"UoA Research"` → a brand `title.default` + a per-page title template ending in "HNU Auckland" | S | launch L13 | `src/app/layout.tsx:18`, `constants.ts:2` | ✅ |
 | B12 | Set strong, high-entropy `ADMIN_PASSWORD` + `ADMIN_SESSION_SECRET` in Render env (no defaults reach the deploy) | S | sec F11 + arch #3 | Render env | ext |
 | B13 | **Launch-day trigger:** flip `ALLOW_INDEXING=1`, then verify robots Allow + no `noindex` + canonical + sitemap 200 | S | launch L19 | host env; `robots.ts:9`, `layout.tsx:25` | ✅ |
 
