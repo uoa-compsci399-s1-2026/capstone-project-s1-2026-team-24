@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-The application is, on the whole, **soundly built**: admin authorization is enforced centrally in middleware, the session JWT is correctly verified (signature + issuer + audience + expiry + pinned algorithm), all rich text is sanitized through a tight allow-list, there is **no raw SQL** anywhere, the only public mutation (the contact form) has real anti-abuse controls, and **no secrets are committed**. Several alarming-sounding issues raised during reconnaissance did **not** survive verification and are documented as false positives in §7.
+The application is, on the whole, **soundly built**: admin authorization is enforced centrally in middleware, the session JWT is correctly verified (signature + issuer + audience + expiry + pinned algorithm), all rich text is sanitized through a tight allow-list, there is **no raw SQL** anywhere, the only public endpoint that writes to the database (the contact form) has real anti-abuse controls, and **no secrets are committed**. Several alarming-sounding issues raised during reconnaissance did **not** survive verification and are documented as false positives in §7.
 
 **No Critical findings.** The actionable issues are:
 
@@ -230,7 +230,7 @@ Recorded so they are not re-raised. Each was re-checked against the source.
 - **Session JWT.** `jose` HS256 with issuer + audience verified, **algorithm pinned** (`algorithms: ["HS256"]`, preventing alg-confusion / `none`), 7-day expiry, and a required-or-throw secret (`src/lib/admin-session.ts:10-48`).
 - **Cookie / CSRF.** Session cookie is `httpOnly`, `sameSite: "strict"`, `secure` in production, `path: "/"` (`login/route.ts:33-41`). SameSite=Strict provides strong CSRF protection for cookie-authenticated admin mutations — no separate CSRF token is required.
 - **No raw SQL** — Prisma ORM throughout (parameterized).
-- **Only public mutation is `POST /api/contact`**, with honeypot (`:64`), time-trap (`:69`), IP + email rate limiting (`:74,149`), a category allow-list (`:113-122`), and length/URL caps. (See F7 about IP keying.)
+- **The only public endpoint that writes to the database is `POST /api/contact`**, with honeypot (`:64`), time-trap (`:69`), IP + email rate limiting (`:74,149`), a category allow-list (`:113-122`), and length/URL caps. (See F7 about IP keying.) The other public `POST`s — `/api/admin/auth/login` and `/logout` (`middleware.ts:15-16`) — only set/clear the session cookie and write nothing to the DB; login's missing throttle is **F1**.
 - **Uploads:** SVG is deliberately excluded (`media-upload.ts:14`), filenames are sanitized to `[A-Za-z0-9._-]` (no path traversal — files cannot escape `uploads/`), and the PDF routes require MIME **and** extension.
 - **Secrets:** nothing sensitive is committed, and no secret reaches the client bundle.
 
