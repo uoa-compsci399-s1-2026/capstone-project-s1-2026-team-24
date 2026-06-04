@@ -113,6 +113,11 @@ export function isValidOrcidId(value: string): boolean {
   return ORCID_ID_PATTERN.test(value.trim().toUpperCase());
 }
 
+// Placeholder title used when an ORCID work has no title. Exported so the sync
+// can detect it and avoid colliding distinct untitled works on a `title::year`
+// dedup key (B55/L3).
+export const UNTITLED_WORK_TITLE = "Untitled work";
+
 function asNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
@@ -140,29 +145,76 @@ function getDoiFromExternalIds(
   return doi?.value ?? null;
 }
 
-async function fetchOrcidJson<T>(path: string): Promise<T> {
-  const response = await fetch(`${ORCID_API_BASE_URL}${path}`, {
-    headers: {
-      Accept: "application/json",
-    },
-    cache: "no-store",
-  });
+// Retries are opt-in per call (default: none). Used only for the per-member
+// summary fetch (one request per member), NOT the per-work detail fetches —
+// those run in parallel and already degrade gracefully, so retrying them would
+// amplify outbound load on the 512 MB box during an upstream outage.
+const RETRY_BASE_DELAY_MS = 150;
 
-  if (!response.ok) {
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchOrcidJson<T>(
+  path: string,
+  { retries = 0 }: { retries?: number } = {},
+): Promise<T> {
+  const url = `${ORCID_API_BASE_URL}${path}`;
+  const maxAttempts = retries + 1;
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    let response: Response;
+    try {
+      response = await fetch(url, {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+    } catch (networkError) {
+      // Network-level failure (DNS / reset / timeout) — retry if attempts remain.
+      lastError = networkError;
+      if (attempt < maxAttempts) {
+        await delay(RETRY_BASE_DELAY_MS * attempt);
+        continue;
+      }
+      throw networkError;
+    }
+
+    if (response.ok) {
+      return response.json() as Promise<T>;
+    }
+
+    // Retry transient upstream errors (5xx); fail fast on client errors (4xx).
+    if (response.status >= 500 && attempt < maxAttempts) {
+      lastError = new Error(
+        `ORCID request failed: ${response.status} ${response.statusText}`,
+      );
+      await delay(RETRY_BASE_DELAY_MS * attempt);
+      continue;
+    }
+
     const text = await response.text().catch(() => "");
     throw new Error(
       `ORCID request failed: ${response.status} ${response.statusText} ${text}`,
     );
   }
 
-  return response.json() as Promise<T>;
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("ORCID request failed after retries");
 }
 
 export async function fetchOrcidWorksSummary(
   orcidId: string,
 ): Promise<OrcidWorkSummaryItem[]> {
   const cleanOrcidId = orcidId.trim();
-  const data = await fetchOrcidJson<OrcidWorksResponse>(`/${cleanOrcidId}/works`);
+  // Retry the summary fetch (one request per member) so a transient ORCID blip
+  // doesn't abort the member's whole sync — matching the tolerance the per-work
+  // detail path already has via its own catch-and-degrade.
+  const data = await fetchOrcidJson<OrcidWorksResponse>(
+    `/${cleanOrcidId}/works`,
+    { retries: 2 },
+  );
 
   const groups = data.group ?? [];
 
@@ -174,7 +226,8 @@ export async function fetchOrcidWorksSummary(
 
         return {
           putCode,
-          title: asNonEmptyString(summary.title?.title?.value) ?? "Untitled work",
+          title:
+            asNonEmptyString(summary.title?.title?.value) ?? UNTITLED_WORK_TITLE,
           type: asNonEmptyString(summary.type) ?? "unknown",
           journal: asNonEmptyString(summary["journal-title"]?.value ?? null),
           year: parseYear(
@@ -217,7 +270,7 @@ export async function fetchOrcidWorkDetail(
 
   return {
     putCode,
-    title: asNonEmptyString(data.title?.title?.value) ?? "Untitled work",
+    title: asNonEmptyString(data.title?.title?.value) ?? UNTITLED_WORK_TITLE,
     type: asNonEmptyString(data.type) ?? "unknown",
     journal: asNonEmptyString(data["journal-title"]?.value ?? null),
     year: parseYear(

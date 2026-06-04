@@ -33,6 +33,9 @@ const mockPrisma = vi.hoisted(() => ({
 
 const mockOrcid = vi.hoisted(() => ({
   fetchNormalizedOrcidWorks: vi.fn(),
+  // The sync route imports this constant from @/lib/orcid; the wholesale mock
+  // below must re-export it so the route's L3 placeholder check works.
+  UNTITLED_WORK_TITLE: "Untitled work",
 }));
 
 const mockOpenAlex = vi.hoisted(() => ({
@@ -446,6 +449,99 @@ describe("ORCID sync — tombstones (hard-delete permanence)", () => {
     expect(
       createdRows.find((r) => r.title === "Fresh nutrition trial"),
     ).toBeDefined();
+  });
+});
+
+describe("ORCID sync — resilience (B55)", () => {
+  it("keeps distinct DOI-less 'Untitled work' items from the same year (L3)", async () => {
+    mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
+      work({ title: "Untitled work", year: 2022, doi: null, sourceId: "wa" }),
+      work({ title: "Untitled work", year: 2022, doi: null, sourceId: "wb" }),
+    ]);
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    setupHappyPath({
+      members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
+    });
+
+    const res = await syncPost();
+    const body = await res.json();
+    // Before the fix these collapsed onto "untitled work::2022" and the second
+    // was dropped as a duplicate; now both are persisted (keyed on put-code).
+    expect(body.skippedDuplicates).toBe(0);
+    expect(mockPrisma.publication.create).toHaveBeenCalledTimes(2);
+  });
+
+  it("still dedups two same-titled, same-year works that DO have a real title (L3 guard)", async () => {
+    mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
+      work({ title: "A real nutrition paper", year: 2022, doi: null, sourceId: "wa" }),
+      work({ title: "A real nutrition paper", year: 2022, doi: null, sourceId: "wb" }),
+    ]);
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    setupHappyPath({
+      members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
+    });
+
+    const res = await syncPost();
+    const body = await res.json();
+    // Real titles still dedup on title::year — only the "Untitled work"
+    // placeholder is exempted.
+    expect(body.skippedDuplicates).toBe(1);
+    expect(mockPrisma.publication.create).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not overwrite a known DOI with null on a degraded work (L4)", async () => {
+    const title = "Paper with a known DOI";
+    mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
+      // Detail fetch failed upstream → doi degraded to null, but title+year
+      // still match the existing row.
+      work({ title, year: 2021, doi: null, sourceId: "w-degraded" }),
+    ]);
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    setupHappyPath({
+      members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
+      existing: [
+        {
+          id: 12,
+          title,
+          year: 2021,
+          doi: "10.1/known",
+          authorsRaw: "Dr Test",
+          reviewedManually: false,
+          status: "Approved",
+        },
+      ],
+    });
+
+    const res = await syncPost();
+    expect(res.status).toBe(200);
+    const updateCall = mockPrisma.publication.update.mock.calls.find(
+      (c) => (c[0] as UpdateArgs).where.id === 12,
+    );
+    expect(updateCall).toBeDefined();
+    expect((updateCall![0] as UpdateArgs).data.doi).toBe("10.1/known");
+  });
+
+  it("rejects an overlapping sync with 409 (L2 guard)", async () => {
+    let releaseWorks!: (value: unknown[]) => void;
+    mockOrcid.fetchNormalizedOrcidWorks.mockReturnValueOnce(
+      new Promise<unknown[]>((resolve) => {
+        releaseWorks = resolve;
+      }),
+    );
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    setupHappyPath({
+      members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
+    });
+
+    const first = syncPost(); // starts, then hangs inside the per-member fetch
+    await Promise.resolve(); // let the first call set the in-progress flag
+
+    const second = await syncPost();
+    expect(second.status).toBe(409);
+
+    releaseWorks([]); // let the first sync finish so the flag resets
+    const firstRes = await first;
+    expect(firstRes.status).toBe(200);
   });
 });
 
