@@ -38,7 +38,7 @@ The site has **excellent bilingual title/description coverage** on every public 
 | 9 | Structured data (Organization, BreadcrumbList, …) | 🟠/🟡 | None anywhere | — |
 | 10 | Favicon / manifest / theme-color | 🟡 | SVG only; no `.ico`, PWA icons, manifest | `src/app/layout.tsx` |
 | 11 | Title brand consistency | 🟡 | Root title `"UoA Research"` ≠ brand `"HNU Auckland"` | `src/app/layout.tsx` |
-| 12 | hreflang for EN/中文 | 🟢 (documented) | Impossible under cookie-based i18n (§8) | i18n architecture |
+| 12 | hreflang for EN/中文 | 🟢 (documented) | Impossible under cookie-based i18n (§7) | i18n architecture |
 | 13 | Resend domain verification | launch step | `EMAIL_FROM` defaults to `onboarding@resend.dev` | `src/lib/email.ts` |
 | 14 | Search Console + sitemap submission | launch step | Not set up | — |
 
@@ -482,7 +482,7 @@ Generate the PNG/ICO sizes from `public/images/logos/hnu-logo.svg`. (`theme-colo
 
 ## 10. Open Graph / Twitter images 🟠 / 🟢
 
-No share image today → social posts render bare. With `images.unoptimized: true` set in `next.config.ts`, a generated OG image is the simplest robust option:
+No share image today → social posts render bare. A generated OG image (via `next/og`'s `ImageResponse`) is the simplest robust option — it needs no hand-made static asset. Note it's rendered by `next/og` (Satori), independent of the `next/image` optimizer, so the `images.unoptimized: true` setting in `next.config.ts` has no effect on it:
 
 ```tsx
 // src/app/opengraph-image.tsx — REFERENCE (branded default; also serves Twitter)
