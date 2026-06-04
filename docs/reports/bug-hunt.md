@@ -17,10 +17,11 @@ re-verified against the source by the lead, and non-reproducible claims were dis
 are documented in [§ Discarded / verified-safe](#discarded--verified-safe-claims) because the absence of a
 bug where one was suspected is itself a useful result.
 
-Note on the safety net: there is **no CI**. The only gate is `npm run verify`
-(`tsc --noEmit && eslint && vitest run --project api`). The `api` vitest project covers
-`src/app/api/test/**` **only** (`vitest.config.ts:24-31`); the block pipeline, i18n, and the end-to-end
-publications-sync flow are largely untested, which is where several findings below live.
+Note on the safety net: **no CI workflow enforces the test/build gate.** The repo does have a GitHub
+Actions workflow (`.github/workflows/claude.yml`), but nothing runs `npm run verify`
+(`tsc --noEmit && eslint && vitest run --project api`) on pushes/PRs — it is a local/manual gate. The `api`
+vitest project covers `src/app/api/test/**` **only** (`vitest.config.ts:24-31`); the block pipeline, i18n,
+and the end-to-end publications-sync flow are largely untested, which is where several findings below live.
 
 ### Severity summary
 
@@ -64,14 +65,19 @@ order: nextOrder,   // :162  -> written straight to a Prisma Int column
    only has to fat-finger a big number once.)
 2. `POST /api/admin/partner-logos` with **no** `order` → `parsedOrder` is `undefined` →
    `nextOrder = MAX_ORDER + 1 = 2147483648`, written unclamped.
-3. Any subsequent read that selects the row — the admin partner-logos list **and** the public partner grid
-   (`GET /api/partner-logos`, the `ourPartners` block) — throws when Prisma decodes the out-of-range `Int`.
+3. Any subsequent read that **selects** the `order` column decodes the out-of-range `Int` and throws. The
+   admin partner-logos list does (`src/app/api/admin/partner-logos/route.ts:68-72` has no explicit
+   `select`, so Prisma reads every scalar incl. `order`), and the `create` in step 2 also throws on its own
+   response (it returns the new row). The **public** grid is *not* affected: `getPartnerLogos()`
+   (`src/lib/data/partner-logos.ts:22-34`) and `GET /api/partner-logos` use an explicit `select` that omits
+   `order` (it appears only in `orderBy`, which SQLite handles without Prisma decoding the value).
 
-**Impact:** A single bad row takes down both an admin screen and a public page (read-time crash), and the
-offending value is invisible until something reads it. This is the precise landmine `order.ts` was written
-to defuse, re-introduced on the one write path that skips the clamp. Ranked High rather than Critical only
-because triggering it requires an unusual admin precondition (a near-`MAX_ORDER` row); once present, blast
-radius is high and public-facing.
+**Impact:** A single bad row breaks the admin partner-logos management UI (read-time crash) and persists a
+poison value that stays invisible until something selects it; the public grid is spared by its explicit
+`select`. This is the precise landmine `order.ts` was written to defuse, re-introduced on the one write path
+that skips the clamp. Ranked High rather than Critical because impact is admin-only and triggering it
+requires an unusual admin precondition (a near-`MAX_ORDER` row); once present, the admin screen stays broken
+until the offending row's `order` is corrected.
 
 **Fix sketch:**
 ```ts
@@ -223,11 +229,11 @@ unique signal (e.g. ORCID put-code / `sourceId`) instead of `title::year`.
 
 ### L4 — Detail-fetch error drops DOI/abstract for that work
 
-- **File:** `src/lib/orcid.ts:254-270` (catch fallback `doi:null, abstract:null`); refreshed later via `sync/route.ts:281`
+- **File:** `src/lib/orcid.ts:254-270` (catch fallback `doi:null, abstract:null`); refreshed later via `src/app/api/admin/publications/sync/route.ts:281`
 
 On a transient per-work detail failure, the work is stored from summary data with `doi: null` and
 `abstract: null`. Because DOI feeds dedupe, a transient blip can change how that work is keyed until the
-next successful sync refreshes it (the update path does set `doi: work.doi` at `sync/route.ts:281`).
+next successful sync refreshes it (the update path does set `doi: work.doi` at `src/app/api/admin/publications/sync/route.ts:281`).
 
 **Impact:** Low / self-healing. Mostly a data-quality dip during upstream flakiness.
 
@@ -277,7 +283,7 @@ they were checked, not missed.
   `src/lib/translate/blocks.ts:298-307`. The chain is `cached → local ZH fallback → original English`.
   Falling back to English when no translation exists is the desired behavior, not a defect.
 - **"Sync deletes everything when an upstream API is down" → false.**
-  The sync only ever **creates/updates** (`sync/route.ts:275,311`); it has no delete path. Tombstones are
+  The sync only ever **creates/updates** (`src/app/api/admin/publications/sync/route.ts:275,311`); it has no delete path. Tombstones are
   written exclusively by the admin DELETE handler (`src/app/api/admin/publications/[id]/route.ts:141-190`,
   inside a transaction). Empty/failed ORCID or OpenAlex responses produce zero changes, not deletions —
   the "no results ⇒ wipe" failure mode does not exist here.
@@ -301,7 +307,7 @@ they were checked, not missed.
 
 ## Recommended follow-ups
 
-1. Fix **H1** first (one-line clamp); it's the only finding with a read-time crash + public blast radius.
+1. Fix **H1** first (one-line clamp); it's the only finding that crashes a screen at read time (the admin partner-logos list).
 2. M1/M3 are tiny, safe, high-clarity fixes.
 3. M2 + L1–L5 are resilience/observability improvements; batch them.
 4. Happy to open separate fix PRs per finding (this report intentionally changes no source files).
@@ -310,7 +316,8 @@ they were checked, not missed.
 
 ## Appendix A — `clampOrder` call-site audit
 
-`order`/`position` write paths and whether the clamp is applied:
+`order`/`position` write paths and whether the clamp is applied. Table paths are relative to `src/app/`
+(e.g. `api/admin/team/route.ts` → `src/app/api/admin/team/route.ts`); the findings above use full paths:
 
 | Write path | File:line | Clamped? | Notes |
 | --- | --- | --- | --- |
