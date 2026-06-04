@@ -8,6 +8,25 @@ import { isIP } from "node:net";
 // proxy added — the one at (length - TRUSTED_PROXY_HOPS).
 const TRUSTED_PROXY_HOPS = 1;
 
+// Strip surrounding brackets / port ([2001:db8::1]:443) and an IPv6 zone id
+// (fe80::1%eth0) so net.isIP recognises the address. Without this, those
+// otherwise-valid IPv6 forms fail validation and collapse to "unknown",
+// degrading per-IP rate limiting to one shared bucket for that traffic.
+function normalizeIp(value: string): string {
+  let ip = value;
+  if (ip.startsWith("[")) {
+    const end = ip.indexOf("]");
+    if (end !== -1) {
+      ip = ip.slice(1, end);
+    }
+  }
+  const zone = ip.indexOf("%");
+  if (zone !== -1) {
+    ip = ip.slice(0, zone);
+  }
+  return ip;
+}
+
 /**
  * Best-effort client IP for rate-limiting keys. Behind exactly one trusted proxy
  * (Render's load balancer) the rightmost `x-forwarded-for` entry is the real
@@ -28,8 +47,11 @@ export function getClientIp(request: Request): string {
     if (parts.length > 0) {
       const index = Math.max(parts.length - TRUSTED_PROXY_HOPS, 0);
       const candidate = parts[index];
-      if (candidate && isIP(candidate)) {
-        return candidate;
+      if (candidate) {
+        const ip = normalizeIp(candidate);
+        if (isIP(ip)) {
+          return ip;
+        }
       }
     }
   }
@@ -37,8 +59,11 @@ export function getClientIp(request: Request): string {
   // Fallback for proxies that only set x-real-ip. Still validated, so it cannot
   // be abused to inject an arbitrary key when x-forwarded-for is absent.
   const realIp = request.headers.get("x-real-ip")?.trim();
-  if (realIp && isIP(realIp)) {
-    return realIp;
+  if (realIp) {
+    const ip = normalizeIp(realIp);
+    if (isIP(ip)) {
+      return ip;
+    }
   }
 
   return "unknown";

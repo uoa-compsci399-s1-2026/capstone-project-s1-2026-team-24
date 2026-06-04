@@ -34,6 +34,18 @@ describe("getClientIp", () => {
     );
   });
 
+  it("normalizes bracketed IPv6 with a port", () => {
+    expect(
+      getClientIp(reqWith({ "x-forwarded-for": "[2001:db8::1]:443" })),
+    ).toBe("2001:db8::1");
+  });
+
+  it("strips an IPv6 zone id", () => {
+    expect(getClientIp(reqWith({ "x-real-ip": "fe80::1%eth0" }))).toBe(
+      "fe80::1",
+    );
+  });
+
   it("trims surrounding whitespace", () => {
     expect(getClientIp(reqWith({ "x-forwarded-for": "  203.0.113.9  " }))).toBe(
       "203.0.113.9",
