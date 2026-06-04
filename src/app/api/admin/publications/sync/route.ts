@@ -246,11 +246,16 @@ async function syncPublicationsFromOrcid() {
         // leaves the cross-member dedup (publicationByDoi/publicationByTitleYear)
         // untouched.
         if (!existing) {
-          const candidateSourceKey = `${work.sourceType}::${orcidId}:${work.sourceId}`;
+          const candidateSourceKey = `${work.sourceType}::${candidateSourceId}`;
           const isTombstoned =
             tombstonedSourceKeys.has(candidateSourceKey) ||
             (doiKey !== null && tombstonedDois.has(doiKey)) ||
-            tombstonedTitleYearKeys.has(titleYearKey);
+            // For untitled DOI-less works, "untitled work::<year>" is not a real
+            // identity (it collides across distinct works), so don't tombstone-
+            // match on it — that would silently drop genuinely-different untitled
+            // works from a year in which any untitled work was deleted (B55/L3).
+            // Such works can still be caught by the sourceId key above.
+            (!isUntitledNoDoi && tombstonedTitleYearKeys.has(titleYearKey));
           if (isTombstoned) {
             result.skippedDeleted += 1;
             totalSkippedDeleted += 1;
@@ -352,7 +357,7 @@ async function syncPublicationsFromOrcid() {
               abstract: work.abstract,
               affiliation: resolvedAffiliation,
               sourceType: work.sourceType,
-              sourceId: `${orcidId}:${work.sourceId}`,
+              sourceId: candidateSourceId,
               orcidSource: orcidId,
               status: relevance.status,
               isVisible: true,

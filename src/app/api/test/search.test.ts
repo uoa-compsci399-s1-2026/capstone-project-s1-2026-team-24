@@ -254,13 +254,20 @@ describe("GET /api/search", () => {
       },
     ]);
 
-    const res = await search(req("metabolic"));
+    try {
+      const res = await search(req("metabolic"));
 
-    // The corrupt block must be logged with its page slug, and the request must
-    // still succeed (the page just contributes no searchable text).
-    expect(res.status).toBe(200);
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("slug=about"));
-    warnSpy.mockRestore();
+      // The corrupt block must be logged with its page slug, and the request
+      // must still succeed (the page just contributes no searchable text).
+      expect(res.status).toBe(200);
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("slug=about"),
+      );
+    } finally {
+      // Restore even if an assertion throws, so console.warn isn't left a silent
+      // no-op for the rest of the file.
+      warnSpy.mockRestore();
+    }
   });
 
   it("does not surface an unpublished draft edit on an already-published page", async () => {

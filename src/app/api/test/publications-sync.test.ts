@@ -119,6 +119,7 @@ function setupHappyPath(opts: {
     title: string;
     year: number | null;
     doi: string | null;
+    sourceId?: string | null;
     authorsRaw: string;
     reviewedManually: boolean;
     status: string;
@@ -135,6 +136,8 @@ function setupHappyPath(opts: {
       title: e.title,
       year: e.year,
       doi: e.doi,
+      // Mirror the real select, which now includes sourceId (B55/L3).
+      sourceId: e.sourceId ?? null,
       authorsRaw: e.authorsRaw,
       reviewedManually: e.reviewedManually,
     })),
@@ -471,6 +474,70 @@ describe("ORCID sync — resilience (B55)", () => {
     expect(mockPrisma.publication.create).toHaveBeenCalledTimes(2);
   });
 
+  it("updates the same untitled work in place across runs via sourceId, not re-create (L3)", async () => {
+    mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
+      work({ title: "Untitled work", year: 2022, doi: null, sourceId: "wx" }),
+    ]);
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    setupHappyPath({
+      members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
+      existing: [
+        {
+          id: 50,
+          title: "Untitled work",
+          year: 2022,
+          doi: null,
+          // Stored sourceId form is `${orcidId}:${putCode}`.
+          sourceId: "0000-0001-0000-0001:wx",
+          authorsRaw: "Dr Test",
+          reviewedManually: false,
+          status: "Pending",
+        },
+      ],
+    });
+
+    const res = await syncPost();
+    expect(res.status).toBe(200);
+    // It must match the existing row by sourceId and update it — never create a
+    // duplicate untitled row each run.
+    expect(mockPrisma.publication.create).not.toHaveBeenCalled();
+    const updateCall = mockPrisma.publication.update.mock.calls.find(
+      (c) => (c[0] as UpdateArgs).where.id === 50,
+    );
+    expect(updateCall).toBeDefined();
+  });
+
+  it("does not tombstone-drop a distinct untitled work when another untitled work of that year was deleted (L3)", async () => {
+    // ORCID returns a genuinely-different untitled DOI-less 2022 work...
+    mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
+      work({ title: "Untitled work", year: 2022, doi: null, sourceId: "w-live" }),
+    ]);
+    mockOpenAlex.fetchOrcidAffiliations.mockResolvedValue(new Map());
+    setupHappyPath({
+      members: [{ id: 1, name: "Dr Test", orcidId: "0000-0001-0000-0001" }],
+    });
+    // ...and a DIFFERENT untitled 2022 work was previously hard-deleted, so its
+    // tombstone carries the colliding titleYearKey "untitled work::2022".
+    mockPrisma.deletedPublication.findMany.mockResolvedValue([
+      {
+        sourceType: "ORCID",
+        sourceId: "0000-0001-0000-0001:w-deleted",
+        doi: null,
+        titleYearKey: buildPublicationDedupKey({
+          title: "Untitled work",
+          year: 2022,
+        }),
+      },
+    ]);
+
+    const res = await syncPost();
+    const body = await res.json();
+    // The live work has a different sourceId than the tombstone, so it must NOT
+    // be skipped as deleted — it is a distinct work and must be created.
+    expect(body.skippedDeleted).toBe(0);
+    expect(mockPrisma.publication.create).toHaveBeenCalledTimes(1);
+  });
+
   it("still dedups two same-titled, same-year works that DO have a real title (L3 guard)", async () => {
     mockOrcid.fetchNormalizedOrcidWorks.mockResolvedValue([
       work({ title: "A real nutrition paper", year: 2022, doi: null, sourceId: "wa" }),
@@ -534,14 +601,19 @@ describe("ORCID sync — resilience (B55)", () => {
     });
 
     const first = syncPost(); // starts, then hangs inside the per-member fetch
-    await Promise.resolve(); // let the first call set the in-progress flag
+    try {
+      await Promise.resolve(); // let the first call set the in-progress flag
 
-    const second = await syncPost();
-    expect(second.status).toBe(409);
-
-    releaseWorks([]); // let the first sync finish so the flag resets
-    const firstRes = await first;
-    expect(firstRes.status).toBe(200);
+      const second = await syncPost();
+      expect(second.status).toBe(409);
+    } finally {
+      // Always release the first sync so the module-level in-progress flag is
+      // reset even if the assertion above throws — otherwise it leaks to later
+      // tests in this file.
+      releaseWorks([]);
+      const firstRes = await first;
+      expect(firstRes.status).toBe(200);
+    }
   });
 });
 
