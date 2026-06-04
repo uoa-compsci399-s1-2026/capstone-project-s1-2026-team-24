@@ -4,7 +4,7 @@
 **Scope:** Public bilingual site (EN/中文) + `/admin` console with drag-and-drop page editor
 **Stack:** Next.js 16 (App Router), React 19, Tailwind v4
 **Method:** Static source analysis only — no browser, no axe run, no screen-reader pass. Contrast ratios were computed from source hex values using the WCAG relative-luminance formula. Findings should be confirmed with a live AT pass before launch.
-**Gate:** There is no CI; `npm run verify` (`tsc --noEmit && eslint && vitest run --project api`, `package.json:11`) is the merge gate. Merging to `main` deploys production.
+**Gate:** There is no CI; `npm run verify` (`tsc --noEmit && eslint && vitest run --project api`, `package.json:11`) is the merge gate. `main` is the protected release branch (never pushed to directly); whether the site is deployed for the course is still an open question — see `docs/deployment.md`.
 
 ---
 
