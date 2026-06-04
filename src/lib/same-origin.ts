@@ -33,19 +33,20 @@ export function isSameOriginOrSafe(request: Request): boolean {
     return true;
   }
 
-  const sourceHost = hostOf(
-    request.headers.get("origin") ?? request.headers.get("referer"),
-  );
+  // Read the source once. `||` treats an empty Origin as missing so a valid
+  // Referer can still serve as the fallback.
+  const rawSource =
+    request.headers.get("origin") || request.headers.get("referer") || null;
+  const sourceHost = hostOf(rawSource);
   if (sourceHost === null) {
-    // Either no Origin/Referer (non-browser client) or a malformed one. Treat a
-    // *present but malformed* value as hostile; distinguish the two:
-    const hasSource =
-      request.headers.get("origin") !== null ||
-      request.headers.get("referer") !== null;
-    return !hasSource;
+    // No usable source header → non-browser client (no victim cookies) → allow.
+    // A present-but-malformed source → block.
+    return rawSource === null;
   }
 
-  const targetHost =
-    request.headers.get("host") ?? hostOf(request.url);
+  // Hostnames are case-insensitive; new URL() already lowercased sourceHost, so
+  // lowercase the raw Host header before comparing.
+  const rawTarget = request.headers.get("host") || hostOf(request.url);
+  const targetHost = rawTarget ? rawTarget.toLowerCase() : null;
   return targetHost !== null && sourceHost === targetHost;
 }

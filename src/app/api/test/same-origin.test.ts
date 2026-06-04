@@ -75,6 +75,14 @@ describe("isSameOriginOrSafe (CSRF defence-in-depth)", () => {
     expect(isSameOriginOrSafe(r)).toBe(true);
   });
 
+  it("compares hosts case-insensitively", () => {
+    // Uppercase Host header must still match a lowercase Origin (hostnames are
+    // case-insensitive).
+    expect(
+      isSameOriginOrSafe(req("POST", { origin: "http://app.test" }, "App.Test")),
+    ).toBe(true);
+  });
+
   it("matches host:port exactly", () => {
     expect(
       isSameOriginOrSafe(
