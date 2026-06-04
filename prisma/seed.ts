@@ -107,7 +107,7 @@ async function main() {
         contactEmail: "HNU_SYNERGY@auckland.ac.nz",
         contactPhone: "02109195443",
         contactPhoneZh: "021196703",
-        imagePath: "/NZ Food & Beverage Study.jpg",
+        imagePath: "/nz-food-beverage-study.jpg",
         ethicsStatement:
           "This study has received ethical approval from the NZ Southern Health and Disability Ethics Committee (21/STH/231).",
         isActive: true,

@@ -89,7 +89,7 @@ const PAGE_SEEDS: PageSeed[] = [
                 "We will investigate whether daily consumption of feijoa whole fruit powder alters risk of developing type 2 diabetes.",
               buttonHref: "/studies/food-beverage",
               buttonLabel: "Find out more >",
-              imageSrc: "/NZ Food & Beverage Study.jpg",
+              imageSrc: "/nz-food-beverage-study.jpg",
               imageAlt: "NZ Food and Beverage Study",
               imagePosition: "center",
             },
