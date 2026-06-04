@@ -23,7 +23,7 @@ These reframe what "slow" means on a 512 MB single instance, and they correct th
 | # | Sev | Finding | Who pays | Effort |
 |---|-----|---------|----------|--------|
 | 1 | 🔴 | ~2.4 MB of OTF fonts site-wide, no `font-display`, redundant 2nd family | every visitor, every page | M |
-| 2 | 🔴 | Navbar fires the search API **twice per keystroke**; 1002-line client component on every page | every searcher + every page | S (dedup) / L (split) |
+| 2 | 🔴 | Navbar fires the search API **twice per keystroke**; 1003-line client component on every page | every searcher + every page | S (dedup) / L (split) |
 | 3 | 🟠 | Both language dictionaries (~47 KB) bundled into the client on every page | every visitor, every page | M |
 | 4 | 🔴 | Homepage downloads the **entire** publications table to show 2 cards | every homepage visit | S |
 | 5 | 🟠 | Public sections fetch-on-mount (client) instead of server-rendering | studies / research / contact visitors | M |
@@ -57,9 +57,9 @@ A typical content page uses all four weights (body 400, italics, `font-medium`, 
 
 **Fix sketch:** Convert Inter to **WOFF2** and load it via **`next/font/local`** (gets `font-display: swap`, preload, self-hosting for free) — *or* drop Inter and standardise on the already-optimal Geist. Either way, remove the unused family. Expected: **~2.4 MB → ~300–500 KB** on every page, plus faster text paint.
 
-#### 2. 🔴 Navbar fires the search API twice per keystroke, and is a 1002-line client component on every page
+#### 2. 🔴 Navbar fires the search API twice per keystroke, and is a 1003-line client component on every page
 
-`src/components/layout/Navbar.tsx` is `"use client"` (`:1`) and imported by **all 13 public pages** (home, about, team, research, studies + 3 study pages, collaborations ×4, contact). It legitimately needs the client (scroll listener, mobile menu, focus trap, live search) — but it carries **duplicated effects**:
+`src/components/layout/Navbar.tsx` is `"use client"` (`:1`) and imported by **all 13 public pages** (home, about, team, research, contact; the studies index, the dynamic `studies/[slug]` route, and 3 named study pages; and 3 collaborations routes — index, academic, industry — but not the redirect-only `collaborations/funding`). It legitimately needs the client (scroll listener, mobile menu, focus trap, live search) — but it carries **duplicated effects**:
 
 - **Two near-identical debounced-search effects**, both keyed `[searchQuery]`: `:136-180` **and** `:192-222`. Both run on every keystroke, so each keystroke fires **two** `GET /api/search` requests.
 - **Two identical "reset on close" effects**, both keyed `[searchOpen]`: `:124-132` **and** `:182-190`.
