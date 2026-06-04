@@ -63,6 +63,7 @@ Secrets & config (platform env — never commit real values; see [environment.md
 - [ ] **`ADMIN_SESSION_SECRET`** — long random string (signs the admin JWT).
 - [ ] **`DATABASE_URL`** — absolute `file:` path on the persistent volume.
 - [ ] **`NEXT_PUBLIC_SITE_URL`** — set to the deployed origin for canonical metadata/SEO (default `http://localhost:3000` is wrong in prod).
+- [ ] **`ALLOW_INDEXING`** — leave **unset** for test/staging deploys (serves a deny-all `robots.txt` + site-wide `noindex` so the site stays out of search engines). Set to `1` only at the official public launch.
 - [ ] **`TRANSLATE_API_KEY`** (+ `TRANSLATE_REGION` for Azure) — only if 中文 machine translation of page copy is wanted; otherwise ZH falls back to English. Run `npm run warm:translations` after deploy to populate the cache.
 - [ ] **`RESEND_API_KEY`** + **`EMAIL_FROM`** (on a domain **verified in Resend**) — for contact-form email delivery. Without them, submissions are still saved; email is skipped.
 
@@ -75,5 +76,5 @@ Serving:
 
 - [environment.md](./environment.md) — every variable, what reads it, and `.env` vs `.env.local`.
 - [database.md](./database.md) — Prisma/SQLite workflow, seeds, `db push` vs `migrate`.
-- [architecture.md](./architecture.md) — why pages are `force-dynamic` and self-fetch the API.
+- [architecture.md](./architecture.md) — why pages are `force-dynamic` and how the block pipeline renders.
 - [contributing.md](./contributing.md) — pre-PR checks and conventions.

@@ -20,6 +20,11 @@ export const metadata: Metadata = {
   icons: {
     icon: '/images/logos/hnu-logo.svg',
   },
+  // Belt-and-braces with src/app/robots.ts: site-wide noindex until the
+  // official launch (flipped by setting ALLOW_INDEXING=1 in the host env).
+  ...(process.env.ALLOW_INDEXING === "1"
+    ? {}
+    : { robots: { index: false, follow: false } }),
 };
 
 export default async function RootLayout({
