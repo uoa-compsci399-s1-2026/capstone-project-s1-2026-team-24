@@ -4,6 +4,7 @@ import {
   getAdminSessionCookieName,
   verifyAdminSessionToken,
 } from "@/lib/admin-session";
+import { isSameOriginOrSafe } from "@/lib/same-origin";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -17,6 +18,17 @@ export async function middleware(request: NextRequest) {
 
   if (!isAdminPage && !isAdminApi) {
     return NextResponse.next();
+  }
+
+  // Defence-in-depth CSRF: reject cross-origin state-changing requests to the
+  // admin surface (including login/logout). The SameSite=Strict session cookie
+  // is the primary control; this adds a server-side origin assertion that does
+  // not rely solely on the browser honouring SameSite.
+  if (!isSameOriginOrSafe(request)) {
+    return NextResponse.json(
+      { error: "Cross-origin request blocked" },
+      { status: 403 },
+    );
   }
 
   if (isPublicAdminPath) {
