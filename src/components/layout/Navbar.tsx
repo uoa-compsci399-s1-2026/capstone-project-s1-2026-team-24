@@ -65,7 +65,7 @@ export default function Navbar() {
   const STUDIES_ITEMS = [
     { label: t.navbar.studiesOverview, image: "Studies Overview", href: "/studies" },
     { label: t.navbar.nzSynergy, image: "NZ Synergy Study", href: "/studies/nz-synergy" },
-    { label: t.navbar.foodBeverage, image: "NZ Food & Beverage Study", href: "/studies/food-beverage" },
+    { label: t.navbar.foodBeverage, image: "nz-food-beverage-study", href: "/studies/food-beverage" },
     { label: t.navbar.ferdinand, image: "Ferdinand Study", href: "/studies/ferdinand" },
   ] as const;
 
