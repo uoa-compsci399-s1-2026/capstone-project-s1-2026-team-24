@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatStudyDate } from "@/lib/format-study-date";
 
 type Lang = "en" | "zh";
 
@@ -66,11 +67,7 @@ export default function StudyContent({
   const statusStyle = STATUS_STYLES[status] || STATUS_STYLES.Completed;
 
   const deadlineDisplay = publishedAt
-    ? new Date(publishedAt).toLocaleDateString("en-NZ", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
+    ? formatStudyDate(publishedAt, lang)
     : null;
 
   return (
