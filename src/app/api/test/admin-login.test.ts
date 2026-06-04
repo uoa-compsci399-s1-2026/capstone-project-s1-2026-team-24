@@ -79,4 +79,17 @@ describe("POST /api/admin/auth/login (B16)", () => {
     const res = await loginPost(loginReq("whatever", "10.0.0.7"));
     expect(res.status).toBe(500);
   });
+
+  it("returns a clean 500 (not an unhandled throw) when ADMIN_SESSION_SECRET is weak in production", async () => {
+    // Correct password, but a placeholder session secret that the B12 guard
+    // rejects in production: token minting must fail closed with a 500, not an
+    // opaque unhandled rejection.
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("ADMIN_PASSWORD", "correct-horse-battery");
+    vi.stubEnv("ADMIN_SESSION_SECRET", "replace-with-a-long-random-string");
+    const res = await loginPost(
+      loginReq("correct-horse-battery", "10.0.0.9"),
+    );
+    expect(res.status).toBe(500);
+  });
 });

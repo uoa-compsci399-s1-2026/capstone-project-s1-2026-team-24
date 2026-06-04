@@ -48,7 +48,9 @@ export async function POST(request: Request) {
       "ADMIN_PASSWORD",
       12,
     );
-  } catch {
+  } catch (error) {
+    // Error messages never contain the secret value, so they are safe to log.
+    console.error("Admin login: ADMIN_PASSWORD misconfigured:", error);
     return NextResponse.json(
       { error: "Server auth config is missing or too weak" },
       { status: 500 },
@@ -66,8 +68,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
-  // On success, issue a signed cookie token consumed by middleware.
-  const token = await createAdminSessionToken();
+  // On success, issue a signed cookie token consumed by middleware. Token
+  // creation reads ADMIN_SESSION_SECRET, which fails closed in production on a
+  // weak/placeholder value (B12); handle that symmetrically with the password
+  // path instead of throwing an opaque 500.
+  let token: string;
+  try {
+    token = await createAdminSessionToken();
+  } catch (error) {
+    console.error(
+      "Admin login: failed to mint session token (check ADMIN_SESSION_SECRET):",
+      error,
+    );
+    return NextResponse.json(
+      { error: "Server auth config is missing or too weak" },
+      { status: 500 },
+    );
+  }
   const response = NextResponse.json({ ok: true });
   response.cookies.set({
     name: getAdminSessionCookieName(),
