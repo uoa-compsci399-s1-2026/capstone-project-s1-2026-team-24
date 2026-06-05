@@ -67,7 +67,7 @@ export default function PartnerImageGrid({
                   fill
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 15vw"
                   className={imageClass}
-                  priority={i < 8}
+                  loading="lazy"
                 />
               </div>
             );
