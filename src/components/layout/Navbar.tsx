@@ -8,6 +8,7 @@ import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { useNavStudies } from "@/contexts/NavStudiesContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
 import type { SearchResult } from "@/app/api/search/route";
@@ -43,6 +44,10 @@ export default function Navbar() {
   const wasSearchOpenRef = useRef(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Studies for the dropdown, resolved on the server (getNavStudies) and seeded
+  // by the root layout — present on first paint (SSR, no client fetch) and
+  // re-localised on a language toggle, which triggers router.refresh().
+  const navStudies = useNavStudies();
 
   const ABOUT_ITEMS = [
     { label: t.navbar.discoverHnu, image: "Discover HNU", href: "/about" },
@@ -65,12 +70,14 @@ export default function Navbar() {
     { label: t.navbar.contact, href: "/contact" },
   ];
 
-  const STUDIES_ITEMS = [
-    { label: t.navbar.studiesOverview, image: "Studies Overview", href: "/studies" },
-    { label: t.navbar.nzSynergy, image: "NZ Synergy Study", href: "/studies/nz-synergy" },
-    { label: t.navbar.foodBeverage, image: "nz-food-beverage-study", href: "/studies/food-beverage" },
-    { label: t.navbar.ferdinand, image: "Ferdinand Study", href: "/studies/ferdinand" },
-  ] as const;
+  // Dropdown entries from the server-seeded studies (was a hardcoded three-study
+  // list, so a fourth study never appeared in the nav). imagePath is a full
+  // public path on the Study row; entries without one render a placeholder.
+  const studyNavItems = navStudies.map((study) => ({
+    label: study.title,
+    image: study.imagePath || "",
+    href: `/studies/${study.slug}`,
+  }));
 
   const POPULAR_SEARCHES = [
     { label: t.navbar.discoverHnu, href: "/about" },
@@ -595,8 +602,11 @@ export default function Navbar() {
                       }}
                     >
                       <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
-                        <div className="flex space-x-4">
-                          {STUDIES_ITEMS.slice(1).map((item) => (
+                        {/* Stays the width of three cards (3×300px + 2×16px gap);
+                            more studies scroll horizontally behind a visible
+                            scrollbar instead of widening the dropdown. */}
+                        <div className="studies-dropdown-scroll flex space-x-4 max-w-[932px] overflow-x-auto py-2">
+                          {studyNavItems.map((item) => (
                             <Link
                               key={item.href}
                               href={item.href}
@@ -607,14 +617,21 @@ export default function Navbar() {
                                   setStudiesClosing(false);
                                 }, 300);
                               }}
-                              className="group block transition-transform duration-300 hover:scale-105"
+                              className="group block shrink-0 w-[300px] transition-transform duration-300 hover:scale-105"
                             >
                               <div className="relative">
-                                <img
-                                  src={`/${item.image}.jpg`}
-                                  className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                                  alt={item.label}
-                                />
+                                {item.image ? (
+                                  <img
+                                    src={item.image}
+                                    className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                                    alt={item.label}
+                                  />
+                                ) : (
+                                  <div
+                                    className="w-[300px] h-[200px] rounded-[30px] bg-white/10"
+                                    aria-hidden="true"
+                                  />
+                                )}
                               </div>
 
                               <p className="mt-3 text-white text-[18px] font-semibold text-center">
@@ -811,9 +828,11 @@ export default function Navbar() {
                     </svg>
                   </span>
                 </button>
-                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${mobileStudiesOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"}`}>
+                {/* Scrolls (overflow-y-auto, max-h-[60vh]) when open so a long study
+                    list isn't clipped; overflow-hidden only while collapsing. */}
+                <div className={`transition-all duration-300 ease-in-out ${mobileStudiesOpen ? "max-h-[60vh] overflow-y-auto opacity-100" : "max-h-0 overflow-hidden opacity-0"}`}>
                   <ul className="pl-4 pb-2 space-y-0">
-                    {STUDIES_ITEMS.slice(1).map((item) => (
+                    {studyNavItems.map((item) => (
                       <li key={item.href}>
                         <Link href={item.href} onClick={() => setMobileOpen(false)} className="block py-2.5 text-white text-[15px] font-medium hover:opacity-70 transition-opacity">
                           {item.label}

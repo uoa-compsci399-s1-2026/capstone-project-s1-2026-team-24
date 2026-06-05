@@ -3,8 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
+import { NavStudiesProvider } from "@/contexts/NavStudiesContext";
 import { getServerLang } from "@/lib/lang";
 import { getSiteSettings } from "@/lib/site-settings";
+import { getNavStudies } from "@/lib/nav-studies";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +42,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const lang = await getServerLang();
-  const siteSettings = await getSiteSettings();
+  // Independent server reads — resolve them together. Both seed client
+  // providers so the Navbar renders the right logos and studies on first paint.
+  const [navStudies, siteSettings] = await Promise.all([
+    getNavStudies(lang),
+    getSiteSettings(),
+  ]);
   return (
     <html
       lang={lang === "ZH" ? "zh-Hans" : "en"}
@@ -49,11 +56,12 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <LanguageProvider initialLang={lang}>
           <SiteSettingsProvider settings={siteSettings}>
-            {children}
+            <NavStudiesProvider studies={navStudies}>
+              {children}
+            </NavStudiesProvider>
           </SiteSettingsProvider>
         </LanguageProvider>
       </body>
     </html>
   );
 }
-

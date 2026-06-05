@@ -209,7 +209,12 @@ export default function BlockRenderer({
       }));
       // The carousel reads updates[current]; render nothing when empty.
       if (normalized.length === 0) return null;
-      return <Updates updates={normalized} />;
+      return (
+        <Updates
+          updates={normalized}
+          backgroundColor={str(c.backgroundColor) || undefined}
+        />
+      );
     }
     case "sectionHeading":
       return (
