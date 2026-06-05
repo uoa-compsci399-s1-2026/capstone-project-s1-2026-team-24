@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import Fuse, { type FuseResultMatch, type IFuseOptions } from "fuse.js";
 import { prisma } from "@/lib/prisma";
 import { getSafeHttpUrl } from "@/lib/safe-url";
 import { parsePublishedSnapshot } from "@/lib/page-publish";
@@ -46,6 +47,24 @@ const RESULT_LIMIT = 20;
 // debounced type-ahead, low enough to blunt a DoS against the DB on 512 MB.
 const SEARCH_RATE_LIMIT_MAX = 60;
 const SEARCH_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+
+// Typo tolerance. The fuzzy pass only runs when the exact `contains` pass left
+// the dropdown underfilled, and it scores bounded candidate pools in JS (the
+// tables are small — SQLite has no trigram index to lean on). 0.35 ≈ roughly
+// one error per three pattern characters, enough for common misspellings
+// without matching everything.
+const FUZZY_STUDY_TAKE = 50;
+const FUZZY_TEAM_TAKE = 50;
+const FUZZY_PUBLICATION_TAKE = 50;
+const FUZZY_PAGE_TAKE = 20;
+
+const FUZZY_OPTIONS: IFuseOptions<unknown> = {
+  threshold: 0.35,
+  ignoreLocation: true,
+  includeScore: true,
+  includeMatches: true,
+  minMatchCharLength: 2,
+};
 
 // Roughly how much text we keep on either side of a page-content match so the
 // snippet reads as a sentence fragment rather than the whole block.
@@ -124,15 +143,15 @@ function pageSearchText(publishedContent: string | null, slug?: string): string 
   return blocksToText(blocks, slug);
 }
 
-/** Builds a readable snippet centred on the first match of `query` in `text`. */
-function buildSnippet(text: string, query: string): string {
-  const index = text.toLowerCase().indexOf(query.toLowerCase());
-  if (index === -1) {
-    return text.length > SNIPPET_MAX ? `${text.slice(0, SNIPPET_MAX).trimEnd()}…` : text;
-  }
-
+/**
+ * Builds a readable snippet centred on a known match at `index` spanning
+ * `matchLength` characters. The exact path computes the index via `indexOf`;
+ * the fuzzy path passes Fuse's match indices (a typo'd query never appears
+ * literally in the text, so `indexOf` can't find it).
+ */
+function buildSnippetAt(text: string, index: number, matchLength: number): string {
   let start = Math.max(0, index - SNIPPET_RADIUS);
-  let end = Math.min(text.length, index + query.length + SNIPPET_RADIUS);
+  let end = Math.min(text.length, index + matchLength + SNIPPET_RADIUS);
 
   // Avoid cutting mid-word where there's a nearby space.
   if (start > 0) {
@@ -141,7 +160,7 @@ function buildSnippet(text: string, query: string): string {
   }
   if (end < text.length) {
     const space = text.lastIndexOf(" ", end);
-    if (space > index + query.length) end = space;
+    if (space > index + matchLength) end = space;
   }
 
   let snippet = text.slice(start, end).trim();
@@ -151,6 +170,33 @@ function buildSnippet(text: string, query: string): string {
   return snippet;
 }
 
+/** Builds a readable snippet centred on the first match of `query` in `text`. */
+function buildSnippet(text: string, query: string): string {
+  const index = text.toLowerCase().indexOf(query.toLowerCase());
+  if (index === -1) {
+    return text.length > SNIPPET_MAX ? `${text.slice(0, SNIPPET_MAX).trimEnd()}…` : text;
+  }
+  return buildSnippetAt(text, index, query.length);
+}
+
+/**
+ * The longest highlighted range Fuse reported for `key` — the most substantial
+ * region the fuzzy match latched onto, used to centre the snippet.
+ */
+function longestMatchRange(
+  matches: readonly FuseResultMatch[] | undefined,
+  key: string,
+): [number, number] | null {
+  let best: [number, number] | null = null;
+  for (const match of matches ?? []) {
+    if (match.key !== key) continue;
+    for (const [start, end] of match.indices) {
+      if (!best || end - start > best[1] - best[0]) best = [start, end];
+    }
+  }
+  return best;
+}
+
 /** A human-friendly slug → page title fallback (e.g. "collaborations-academic"). */
 function titleForSlug(slug: string, dbTitle: string): string {
   if (dbTitle && dbTitle.trim()) return dbTitle.trim();
@@ -158,6 +204,201 @@ function titleForSlug(slug: string, dbTitle: string): string {
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+// Row → SearchResult mappers, shared by the exact and fuzzy passes so both
+// produce identically-shaped rows.
+
+function studyResult(study: {
+  slug: string;
+  title: string;
+  shortDescription: string;
+}): SearchResult {
+  return {
+    type: "study",
+    title: study.title,
+    snippet: study.shortDescription,
+    href: `/studies/${study.slug}`,
+  };
+}
+
+function teamResult(member: {
+  name: string;
+  title: string;
+  profileUrl: string | null;
+}): SearchResult {
+  return {
+    type: "team",
+    title: member.name,
+    snippet: member.title,
+    href: getSafeHttpUrl(member.profileUrl) ?? "/team",
+  };
+}
+
+function publicationResult(publication: {
+  title: string;
+  journal: string | null;
+  year: number | null;
+  url: string | null;
+  doi: string | null;
+}): SearchResult {
+  const doiUrl = publication.doi
+    ? getSafeHttpUrl(`https://doi.org/${publication.doi.replace(/^https?:\/\/doi\.org\//i, "")}`)
+    : null;
+  const href = getSafeHttpUrl(publication.url) ?? doiUrl ?? "/research";
+  const snippet = [publication.journal, publication.year ? String(publication.year) : null]
+    .filter(Boolean)
+    .join(" · ");
+  return {
+    type: "publication",
+    title: publication.title,
+    snippet: snippet || "Publication",
+    href,
+  };
+}
+
+/**
+ * Fuzzy fallback for typo'd queries. Fetches bounded candidate pools (the same
+ * visibility filters as the exact pass, minus the `contains` constraint) and
+ * scores them with Fuse. Returns rows not already found by the exact pass,
+ * best-scored first within each group, in the same group order as the exact
+ * pass (static pages, studies, team, publications, page-content).
+ */
+async function fuzzySearch(
+  q: string,
+  existing: SearchResult[],
+): Promise<SearchResult[]> {
+  const [studies, teamMembers, publications, pages] = await Promise.all([
+    prisma.study.findMany({
+      where: { isActive: true },
+      select: { slug: true, title: true, shortDescription: true, category: true },
+      take: FUZZY_STUDY_TAKE,
+    }),
+    prisma.teamMember.findMany({
+      where: { isVisible: true },
+      select: { name: true, title: true, bio: true, profileUrl: true },
+      take: FUZZY_TEAM_TAKE,
+    }),
+    prisma.publication.findMany({
+      where: { status: "Approved", isVisible: true, hiddenManually: false },
+      select: { title: true, journal: true, authorsRaw: true, year: true, url: true, doi: true },
+      orderBy: { year: "desc" },
+      take: FUZZY_PUBLICATION_TAKE,
+    }),
+    prisma.page.findMany({
+      select: {
+        slug: true,
+        title: true,
+        publishedContent: true,
+        blocks: {
+          where: { isVisible: true },
+          orderBy: { position: "asc" },
+          select: { content: true },
+        },
+      },
+      take: FUZZY_PAGE_TAKE,
+    }),
+  ]);
+
+  // Dedupe against the exact pass: identical rows by (type, title, href), and
+  // page destinations by href — the same rule the exact pass applies between
+  // the static PAGES list and page-content rows.
+  const seenRows = new Set(existing.map((r) => `${r.type}|${r.title}|${r.href}`));
+  const seenHrefs = new Set(existing.map((r) => r.href));
+  const out: SearchResult[] = [];
+  const push = (result: SearchResult) => {
+    const key = `${result.type}|${result.title}|${result.href}`;
+    if (seenRows.has(key)) return;
+    seenRows.add(key);
+    out.push(result);
+  };
+
+  const pageListFuse = new Fuse(
+    PAGES.map((p) => ({ ...p, keywordsText: p.keywords.join(" ") })),
+    {
+      ...FUZZY_OPTIONS,
+      keys: [
+        { name: "title", weight: 0.5 },
+        { name: "keywordsText", weight: 0.3 },
+        { name: "snippet", weight: 0.2 },
+      ],
+    },
+  );
+  for (const hit of pageListFuse.search(q)) {
+    push({
+      type: "page",
+      title: hit.item.title,
+      snippet: hit.item.snippet,
+      href: hit.item.href,
+    });
+    seenHrefs.add(hit.item.href);
+  }
+
+  const studyFuse = new Fuse(studies, {
+    ...FUZZY_OPTIONS,
+    keys: [
+      { name: "title", weight: 0.6 },
+      { name: "shortDescription", weight: 0.3 },
+      { name: "category", weight: 0.1 },
+    ],
+  });
+  for (const hit of studyFuse.search(q)) push(studyResult(hit.item));
+
+  const teamFuse = new Fuse(teamMembers, {
+    ...FUZZY_OPTIONS,
+    keys: [
+      { name: "name", weight: 0.6 },
+      { name: "title", weight: 0.25 },
+      { name: "bio", weight: 0.15 },
+    ],
+  });
+  for (const hit of teamFuse.search(q)) push(teamResult(hit.item));
+
+  const publicationFuse = new Fuse(publications, {
+    ...FUZZY_OPTIONS,
+    keys: [
+      { name: "title", weight: 0.6 },
+      { name: "journal", weight: 0.25 },
+      { name: "authorsRaw", weight: 0.15 },
+    ],
+  });
+  for (const hit of publicationFuse.search(q)) push(publicationResult(hit.item));
+
+  // Page-content: flatten each page to its public text (published snapshot
+  // first, draft blocks only for never-published pages — same rule as the
+  // exact pass, so fuzzy can't leak unpublished draft edits either).
+  const pageDocs = pages
+    .map((page) => ({
+      slug: page.slug,
+      title: page.title,
+      href: publicPath(page.slug),
+      text: page.publishedContent
+        ? pageSearchText(page.publishedContent, page.slug)
+        : blocksToText(page.blocks, page.slug),
+    }))
+    .filter((page) => page.text && !seenHrefs.has(page.href));
+  const pageContentFuse = new Fuse(pageDocs, {
+    ...FUZZY_OPTIONS,
+    keys: [
+      { name: "title", weight: 0.3 },
+      { name: "text", weight: 0.7 },
+    ],
+  });
+  for (const hit of pageContentFuse.search(q)) {
+    if (seenHrefs.has(hit.item.href)) continue;
+    const range = longestMatchRange(hit.matches, "text");
+    push({
+      type: "page-content",
+      title: titleForSlug(hit.item.slug, hit.item.title),
+      snippet: range
+        ? buildSnippetAt(hit.item.text, range[0], range[1] - range[0] + 1)
+        : buildSnippet(hit.item.text, q),
+      href: hit.item.href,
+    });
+    seenHrefs.add(hit.item.href);
+  }
+
+  return out;
 }
 
 export async function GET(request: NextRequest) {
@@ -284,37 +525,15 @@ export async function GET(request: NextRequest) {
     }
 
     for (const study of studies) {
-      results.push({
-        type: "study",
-        title: study.title,
-        snippet: study.shortDescription,
-        href: `/studies/${study.slug}`,
-      });
+      results.push(studyResult(study));
     }
 
     for (const member of teamMembers) {
-      results.push({
-        type: "team",
-        title: member.name,
-        snippet: member.title,
-        href: getSafeHttpUrl(member.profileUrl) ?? "/team",
-      });
+      results.push(teamResult(member));
     }
 
     for (const publication of publications) {
-      const doiUrl = publication.doi
-        ? getSafeHttpUrl(`https://doi.org/${publication.doi.replace(/^https?:\/\/doi\.org\//i, "")}`)
-        : null;
-      const href = getSafeHttpUrl(publication.url) ?? doiUrl ?? "/research";
-      const snippet = [publication.journal, publication.year ? String(publication.year) : null]
-        .filter(Boolean)
-        .join(" · ");
-      results.push({
-        type: "publication",
-        title: publication.title,
-        snippet: snippet || "Publication",
-        href,
-      });
+      results.push(publicationResult(publication));
     }
 
     for (const page of pages) {
@@ -335,6 +554,13 @@ export async function GET(request: NextRequest) {
         href,
       });
       seenHrefs.add(href);
+    }
+
+    // Typo tolerance: when the exact pass leaves the dropdown underfilled, run
+    // a fuzzy pass so close misspellings still find results. Exact matches
+    // always rank first; a filled dropdown skips the extra queries entirely.
+    if (results.length < RESULT_LIMIT) {
+      results.push(...(await fuzzySearch(q, results)));
     }
 
     return NextResponse.json({ query: q, results: results.slice(0, RESULT_LIMIT) });
