@@ -314,6 +314,11 @@ const en = {
     nameLabel: "Name",
     namePlaceholder: "Enter your name",
     emailLabel: "Email",
+    phoneLabel: "Phone",
+    phonePlaceholder: "+64 21 123 4567",
+    eitherEmailOrPhoneHint:
+      "Provide an email address or a phone number — at least one is required.",
+    prefersPhoneLabel: "I prefer to be contacted by phone",
     inquiryTypeLabel: "Inquiry Type",
     selectPlaceholder: "Select",
     messageLabel: "Message",
@@ -322,6 +327,9 @@ const en = {
     sending: "Sending…",
     requiredError: "Please fill in all fields.",
     invalidEmailError: "Please enter a valid email address.",
+    invalidPhoneError: "Please enter a valid phone number.",
+    eitherEmailOrPhoneError:
+      "Please provide an email address or a phone number.",
     submissionError: "Submission failed. Please try again.",
     genericError: "Something went wrong. Please try again.",
     successTitle: "Message sent!",

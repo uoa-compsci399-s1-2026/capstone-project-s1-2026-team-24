@@ -23,7 +23,11 @@ const EMAIL_FROM =
 
 export type ContactSubmissionEmail = {
   name: string;
+  // "" when the enquirer gave a phone number instead (at least one of
+  // email/phone is always present — the contact route enforces it).
   email: string;
+  phone?: string | null;
+  prefersPhone?: boolean;
   category: string;
   message: string;
 };
@@ -48,7 +52,7 @@ export async function sendContactNotification(params: {
 
   if (!RESEND_API_KEY) {
     console.info(
-      `[email] RESEND_API_KEY not set — skipping send. Would notify ${recipientEmail} of a "${submission.category}" enquiry from ${submission.email}.`,
+      `[email] RESEND_API_KEY not set — skipping send. Would notify ${recipientEmail} of a "${submission.category}" enquiry from ${submission.email || submission.phone || "(no contact given)"}.`,
     );
     return { ok: true, skipped: true };
   }
@@ -61,19 +65,27 @@ export async function sendContactNotification(params: {
     "",
     `Category: ${submission.category}`,
     `Name:     ${submission.name}`,
-    `Email:    ${submission.email}`,
+    `Email:    ${submission.email || "—"}`,
+    `Phone:    ${submission.phone || "—"}`,
+    ...(submission.prefersPhone ? ["", "Preferred contact: Phone"] : []),
     "",
     "Message:",
     submission.message,
     "",
-    `— Reply directly to this email to respond to ${submission.name}.`,
+    // Phone-only enquirers can't be replied to by email — point at the phone
+    // number instead of a Reply-To that doesn't exist.
+    submission.email
+      ? `— Reply directly to this email to respond to ${submission.name}.`
+      : `— Call or text ${submission.phone} to respond to ${submission.name}.`,
   ].join("\n");
 
   try {
     const { error } = await resend.emails.send({
       from: EMAIL_FROM,
       to: recipientEmail,
-      replyTo: submission.email,
+      // Reply-To only when the enquirer gave an email (Resend accepts a send
+      // without one).
+      ...(submission.email ? { replyTo: submission.email } : {}),
       subject,
       text,
     });
