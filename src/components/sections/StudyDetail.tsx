@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
+import Button from "../ui/Button";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
 
@@ -11,6 +12,7 @@ interface StudyDetailProps {
   eligibility: string[];
   contactHref?: string;
   joinHref?: string;
+  pdfHref?: string;
   content: React.ReactNode;
 }
 
@@ -26,6 +28,7 @@ export default function StudyDetail({
   eligibility,
   contactHref = "/contact",
   joinHref = "/contact",
+  pdfHref,
   content,
 }: StudyDetailProps) {
   const { lang } = useLanguage();
@@ -39,9 +42,9 @@ export default function StudyDetail({
         : t.studies.statusComingSoon;
 
   return (
-    <section className="relative w-full bg-white py-16 px-6 sm:px-12 lg:px-45 overflow-hidden">
+    <section className="relative w-full bg-white py-10 sm:py-16 px-4 sm:px-12 lg:px-45 overflow-hidden">
       {/* Top pills */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "32px" }}>
+      <div className="flex flex-wrap gap-2 sm:gap-3 mb-6 sm:mb-8">
         <div
           style={{
             display: "inline-flex",
@@ -97,17 +100,16 @@ export default function StudyDetail({
         )}
       </div>
 
-      {/* Main layout */}
-      <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
+      {/* Main layout — stacked on mobile, side-by-side on lg */}
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
         {/* Left — study info */}
         <div
+          className="w-full lg:flex-1"
           style={{
-            flex: 1,
             backgroundColor: "white",
-            borderRadius: "20px",
+            borderRadius: "30px",
             boxShadow: "0 0 20px rgba(0,0,0,0.08)",
-            padding: "40px",
-            minHeight: "600px",
+            padding: "24px",
           }}
         >
           <div
@@ -123,20 +125,12 @@ export default function StudyDetail({
         </div>
 
         {/* Right — eligibility + join */}
-        <div
-          style={{
-            width: "320px",
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: "24px",
-          }}
-        >
+        <div className="w-full lg:w-[320px] lg:flex-shrink-0 flex flex-col gap-4 sm:gap-6">
           {/* Eligibility */}
           <div
             style={{
               border: "2px solid #0c0c48",
-              borderRadius: "16px",
+              borderRadius: "30px",
               padding: "24px",
             }}
           >
@@ -191,35 +185,9 @@ export default function StudyDetail({
           </div>
 
           {/* Join now */}
-          <Link
-            href={joinHref}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "2px solid #0c0c48",
-              borderRadius: "16px",
-              padding: "24px",
-              fontFamily: "Inter, sans-serif",
-              fontSize: "22px",
-              fontWeight: 600,
-              color: "#0c0c48",
-              textDecoration: "none",
-              transition: "all 0.2s ease",
-              backgroundColor: "white",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor =
-                "#0c0c48";
-              (e.currentTarget as HTMLElement).style.color = "white";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = "white";
-              (e.currentTarget as HTMLElement).style.color = "#0c0c48";
-            }}
-          >
-            {t.studies.joinNow}
-          </Link>
+          <Button className="w-full bg-[#0c0c48] text-white font-bold text-base sm:text-[16px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:underline transition-colors disabled:opacity-60 disabled:cursor-not-allowed">
+            <Link href={joinHref}>{t.studies.joinNow}</Link>
+          </Button>
 
           {/* Contact link */}
           <Link
