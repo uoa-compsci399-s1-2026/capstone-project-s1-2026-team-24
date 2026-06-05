@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { toMediaRef } from "@/lib/media-refs";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { primeMediaCache } from "./useMediaResolver";
@@ -33,6 +33,9 @@ export default function MediaPicker({
   const fileInput = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  // Unique per instance — the picker is rendered many times in the page editor,
+  // so a hardcoded id would duplicate and mislabel dialogs.
+  const titleId = useId();
   // Real dialog semantics (B35): trap focus, close on Escape, restore focus to
   // the trigger on close.
   const close = useCallback(() => setOpen(false), []);
@@ -104,11 +107,11 @@ export default function MediaPicker({
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="media-picker-title"
+            aria-labelledby={titleId}
             className="flex max-h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-              <h2 id="media-picker-title" className="text-lg font-bold text-[#0c0c48]">Media library</h2>
+              <h2 id={titleId} className="text-lg font-bold text-[#0c0c48]">Media library</h2>
               <div className="flex items-center gap-2">
                 <button
                   type="button"

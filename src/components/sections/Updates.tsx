@@ -189,7 +189,7 @@ export default function Updates({
             <button
               onClick={prev}
               aria-label={lang === "EN" ? "Previous update" : "上一条"}
-              className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="updates-arrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               style={{
                 position: "absolute",
                 left: "20px",
@@ -203,7 +203,10 @@ export default function Updates({
                 cursor: "pointer",
                 lineHeight: 1,
                 opacity: isHovered || isFocused ? 1 : 0,
-                pointerEvents: "auto",
+                // Not clickable while invisible (avoids accidental clicks on an
+                // unseen control); keyboard Tab still reaches it, which flips
+                // isFocused and makes it visible + interactive.
+                pointerEvents: isHovered || isFocused ? "auto" : "none",
                 transition: "opacity 0.2s ease",
                 zIndex: 2,
               }}
@@ -215,7 +218,7 @@ export default function Updates({
             <button
               onClick={next}
               aria-label={lang === "EN" ? "Next update" : "下一条"}
-              className="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="updates-arrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               style={{
                 position: "absolute",
                 right: "20px",
@@ -229,7 +232,10 @@ export default function Updates({
                 cursor: "pointer",
                 lineHeight: 1,
                 opacity: isHovered || isFocused ? 1 : 0,
-                pointerEvents: "auto",
+                // Not clickable while invisible (avoids accidental clicks on an
+                // unseen control); keyboard Tab still reaches it, which flips
+                // isFocused and makes it visible + interactive.
+                pointerEvents: isHovered || isFocused ? "auto" : "none",
                 transition: "opacity 0.2s ease",
                 zIndex: 2,
               }}
@@ -349,8 +355,9 @@ export default function Updates({
           to { opacity: 1; transform: translateX(0); }
         }
         @media (max-width: 640px) {
-          button[aria-label="Previous update"],
-          button[aria-label="Next update"] {
+          /* Hide the arrows on small screens via a stable class (not the now
+             localized aria-label); dots + swipe handle touch navigation. */
+          .updates-arrow {
             display: none !important;
           }
         }

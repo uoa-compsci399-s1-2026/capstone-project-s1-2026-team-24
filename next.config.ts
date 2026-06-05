@@ -8,9 +8,18 @@ import { buildSecurityHeaders } from "./src/lib/security-headers";
 // it is a no-op until that host is set AND differs from the onrender host, so
 // *.onrender.com previews keep working pre-launch (no redirect loop).
 const ONRENDER_HOST = process.env.RENDER_EXTERNAL_HOSTNAME;
-const CANONICAL_HOST = process.env.NEXT_PUBLIC_SITE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SITE_URL).host
-  : undefined;
+// Tolerate a malformed NEXT_PUBLIC_SITE_URL by treating it as unset, so the
+// redirect simply disables itself instead of throwing at config-evaluation time
+// (which would stop the app from starting).
+function hostOf(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    return new URL(url).host;
+  } catch {
+    return undefined;
+  }
+}
+const CANONICAL_HOST = hostOf(process.env.NEXT_PUBLIC_SITE_URL);
 
 const nextConfig: NextConfig = {
   // Serve images directly instead of through Next's on-the-fly optimizer.
