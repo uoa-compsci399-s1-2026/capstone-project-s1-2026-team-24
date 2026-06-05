@@ -14,7 +14,9 @@ export type InquiryTypeOption = {
 export async function getActiveInquiryTypes(): Promise<InquiryTypeOption[]> {
   const rows = await prisma.contactRecipient.findMany({
     where: { isArchived: false },
-    orderBy: { order: "asc" },
+    // Tiebreak by id (like the admin GET) so the dropdown order is deterministic
+    // and matches the admin list even if two rows ever share an `order`.
+    orderBy: [{ order: "asc" }, { id: "asc" }],
     select: { category: true, labelEn: true, labelZh: true },
   });
   // Older rows may predate the label backfill — fall back to the category

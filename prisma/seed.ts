@@ -11,6 +11,7 @@ import {
   DEFAULT_STRONG_KEYWORDS,
   DEFAULT_WEAK_KEYWORDS,
 } from "../src/lib/publication-filter";
+import { ORIGINAL_INQUIRY_TYPES } from "./inquiry-type-seed-data";
 
 const adapter = new PrismaBetterSqlite3({
   url: process.env.DATABASE_URL || "file:./dev.db",
@@ -146,17 +147,25 @@ async function main() {
     ],
   });
 
-  // Inquiry types: category is the immutable key; the labels are what the
-  // public form shows (per language) and are admin-editable.
+  // Inquiry types: category is the immutable key; labels (shared with the
+  // db-push backfill via ORIGINAL_INQUIRY_TYPES) are what the public form shows
+  // per language. Recipient inboxes are placeholders to fill in per deployment.
+  const recipientEmails: Record<string, string> = {
+    "Study Participant Enquiry": "TODO_PARTICIPANT@auckland.ac.nz",
+    "Industry Partnership": "TODO_PARTNERSHIPS@auckland.ac.nz",
+    "Internship or PhD Opportunity": "TODO_STUDENTS@auckland.ac.nz",
+    Donation: "TODO_DONATIONS@auckland.ac.nz",
+    "General Enquiry": "TODO_GENERAL@auckland.ac.nz",
+    Other: "TODO_GENERAL@auckland.ac.nz",
+  };
   await prisma.contactRecipient.createMany({
-    data: [
-      { category: "Study Participant Enquiry", labelEn: "Study Participant Enquiry", labelZh: "研究参与者咨询", order: 1, email: "TODO_PARTICIPANT@auckland.ac.nz" },
-      { category: "Industry Partnership", labelEn: "Industry Partnership", labelZh: "行业合作", order: 2, email: "TODO_PARTNERSHIPS@auckland.ac.nz" },
-      { category: "Internship or PhD Opportunity", labelEn: "Internship or PhD Opportunity", labelZh: "实习或博士机会", order: 3, email: "TODO_STUDENTS@auckland.ac.nz" },
-      { category: "Donation", labelEn: "Donation", labelZh: "捐赠", order: 4, email: "TODO_DONATIONS@auckland.ac.nz" },
-      { category: "General Enquiry", labelEn: "General Enquiry", labelZh: "一般咨询", order: 5, email: "TODO_GENERAL@auckland.ac.nz" },
-      { category: "Other", labelEn: "Other", labelZh: "其他", order: 6, email: "TODO_GENERAL@auckland.ac.nz" },
-    ],
+    data: ORIGINAL_INQUIRY_TYPES.map((t) => ({
+      category: t.category,
+      labelEn: t.category,
+      labelZh: t.labelZh,
+      order: t.order,
+      email: recipientEmails[t.category] ?? "TODO_GENERAL@auckland.ac.nz",
+    })),
   });
 
   await prisma.teamMember.createMany({

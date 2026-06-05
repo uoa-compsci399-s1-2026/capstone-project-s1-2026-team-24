@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockPrisma = vi.hoisted(() => ({
-  contactRecipient: {
+const mockPrisma = vi.hoisted(() => {
+  const contactRecipient = {
     findMany: vi.fn(),
     findUnique: vi.fn(),
     create: vi.fn(),
@@ -9,11 +9,20 @@ const mockPrisma = vi.hoisted(() => ({
     delete: vi.fn(),
     count: vi.fn(),
     aggregate: vi.fn(),
-  },
-  contactSubmission: {
-    count: vi.fn(),
-  },
-}));
+  };
+  const contactSubmission = { count: vi.fn() };
+  return {
+    contactRecipient,
+    contactSubmission,
+    // Interactive form runs the callback with a tx exposing the same mocks;
+    // array form resolves the batch (used by the reorder route).
+    $transaction: vi.fn((arg: unknown): unknown =>
+      typeof arg === "function"
+        ? (arg as (tx: unknown) => unknown)({ contactRecipient, contactSubmission })
+        : Promise.all(arg as unknown[]),
+    ),
+  };
+});
 
 vi.mock("@/lib/prisma", () => ({
   prisma: mockPrisma,
@@ -25,6 +34,7 @@ import {
   PATCH,
   DELETE,
 } from "@/app/api/admin/contact-recipients/route";
+import { PATCH as reorderTypes } from "@/app/api/admin/contact-recipients/reorder/route";
 
 function jsonRequest(method: string, body: Record<string, unknown>) {
   return new Request("http://localhost/api/admin/contact-recipients", {
@@ -52,7 +62,7 @@ describe("admin contact-recipients (inquiry types)", () => {
   });
 
   it("POST creates a new type with the English label as canonical category", async () => {
-    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.contactRecipient.findMany.mockResolvedValueOnce([]);
     mockPrisma.contactRecipient.create.mockImplementationOnce(
       async ({ data }: { data: Record<string, unknown> }) => ({ id: 7, ...data }),
     );
@@ -76,12 +86,10 @@ describe("admin contact-recipients (inquiry types)", () => {
     });
   });
 
-  it("POST restores an archived type with the same category", async () => {
-    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
-      id: 7,
-      category: "Media Enquiry",
-      isArchived: true,
-    });
+  it("POST restores an archived type with the same category and flags it", async () => {
+    mockPrisma.contactRecipient.findMany.mockResolvedValueOnce([
+      { id: 7, category: "Media Enquiry", isArchived: true },
+    ]);
     mockPrisma.contactRecipient.update.mockResolvedValueOnce({ id: 7 });
 
     const response = await POST(
@@ -92,6 +100,7 @@ describe("admin contact-recipients (inquiry types)", () => {
       }),
     );
     expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({ restored: true });
     expect(mockPrisma.contactRecipient.update).toHaveBeenCalledWith({
       where: { category: "Media Enquiry" },
       data: expect.objectContaining({ isArchived: false }),
@@ -99,23 +108,49 @@ describe("admin contact-recipients (inquiry types)", () => {
     expect(mockPrisma.contactRecipient.create).not.toHaveBeenCalled();
   });
 
-  it("POST rejects a duplicate active type", async () => {
-    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
-      category: "Donation",
-      isArchived: false,
-    });
+  it("POST restores an archived type matched case-insensitively", async () => {
+    mockPrisma.contactRecipient.findMany.mockResolvedValueOnce([
+      { id: 7, category: "Media Enquiry", isArchived: true },
+    ]);
+    mockPrisma.contactRecipient.update.mockResolvedValueOnce({ id: 7 });
+
+    // Typed in a different case — must still find and restore the original row
+    // (keyed by the original canonical category), not create a duplicate.
     const response = await POST(
-      jsonRequest("POST", { labelEn: "Donation", email: "d@example.com" }),
+      jsonRequest("POST", { labelEn: "media enquiry", email: "m@example.com" }),
     );
-    expect(response.status).toBe(409);
+    expect(response.status).toBe(200);
+    expect(mockPrisma.contactRecipient.update).toHaveBeenCalledWith({
+      where: { category: "Media Enquiry" },
+      data: expect.objectContaining({ isArchived: false }),
+    });
+    expect(mockPrisma.contactRecipient.create).not.toHaveBeenCalled();
   });
 
-  it("POST rejects a missing label or invalid email", async () => {
+  it("POST rejects a duplicate active type (case-insensitive)", async () => {
+    mockPrisma.contactRecipient.findMany.mockResolvedValueOnce([
+      { category: "Donation", isArchived: false },
+    ]);
+    const response = await POST(
+      jsonRequest("POST", { labelEn: "donation", email: "d@example.com" }),
+    );
+    expect(response.status).toBe(409);
+    expect(mockPrisma.contactRecipient.create).not.toHaveBeenCalled();
+  });
+
+  it("POST rejects a missing label, invalid email, or over-long label", async () => {
     expect(
       (await POST(jsonRequest("POST", { labelEn: "", email: "a@b.co" }))).status,
     ).toBe(400);
     expect(
       (await POST(jsonRequest("POST", { labelEn: "X", email: "nope" }))).status,
+    ).toBe(400);
+    expect(
+      (
+        await POST(
+          jsonRequest("POST", { labelEn: "x".repeat(121), email: "a@b.co" }),
+        )
+      ).status,
     ).toBe(400);
   });
 
@@ -137,6 +172,40 @@ describe("admin contact-recipients (inquiry types)", () => {
     expect(mockPrisma.contactRecipient.update).toHaveBeenCalledWith({
       where: { category: "Donation" },
       data: { labelEn: "Donations & Giving", labelZh: "捐赠与支持" },
+    });
+  });
+
+  it("PATCH clamps an out-of-range order to the Int ceiling", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "Donation",
+      isArchived: false,
+    });
+    mockPrisma.contactRecipient.update.mockResolvedValueOnce({});
+
+    const response = await PATCH(
+      jsonRequest("PATCH", { category: "Donation", order: 5_000_000_000 }),
+    );
+    expect(response.status).toBe(200);
+    expect(mockPrisma.contactRecipient.update).toHaveBeenCalledWith({
+      where: { category: "Donation" },
+      data: { order: 2_147_483_647 },
+    });
+  });
+
+  it("PATCH restoring a type appends it at the end (consistent with re-add)", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "Donation",
+      isArchived: true,
+    });
+    mockPrisma.contactRecipient.update.mockResolvedValueOnce({});
+
+    const response = await PATCH(
+      jsonRequest("PATCH", { category: "Donation", isArchived: false }),
+    );
+    expect(response.status).toBe(200);
+    expect(mockPrisma.contactRecipient.update).toHaveBeenCalledWith({
+      where: { category: "Donation" },
+      data: { isArchived: false, order: 7 },
     });
   });
 
@@ -216,5 +285,52 @@ describe("admin contact-recipients (inquiry types)", () => {
     const response = await DELETE(jsonRequest("DELETE", { category: "Other" }));
     expect(response.status).toBe(400);
     expect(mockPrisma.contactRecipient.delete).not.toHaveBeenCalled();
+  });
+
+  it("reorder reindexes the active types atomically to sequential orders", async () => {
+    mockPrisma.contactRecipient.findMany.mockResolvedValueOnce([
+      { category: "A" },
+      { category: "B" },
+      { category: "C" },
+    ]);
+
+    const response = await reorderTypes(
+      jsonRequest("PATCH", { order: ["C", "A", "B"] }),
+    );
+    expect(response.status).toBe(200);
+    expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.contactRecipient.update).toHaveBeenCalledWith({
+      where: { category: "C" },
+      data: { order: 0 },
+    });
+    expect(mockPrisma.contactRecipient.update).toHaveBeenCalledWith({
+      where: { category: "A" },
+      data: { order: 1 },
+    });
+    expect(mockPrisma.contactRecipient.update).toHaveBeenCalledWith({
+      where: { category: "B" },
+      data: { order: 2 },
+    });
+  });
+
+  it("reorder rejects a list that doesn't cover the active types exactly once", async () => {
+    mockPrisma.contactRecipient.findMany.mockResolvedValue([
+      { category: "A" },
+      { category: "B" },
+    ]);
+
+    // Wrong length.
+    expect(
+      (await reorderTypes(jsonRequest("PATCH", { order: ["A"] }))).status,
+    ).toBe(400);
+    // Foreign category.
+    expect(
+      (await reorderTypes(jsonRequest("PATCH", { order: ["A", "Z"] }))).status,
+    ).toBe(400);
+    // Duplicate.
+    expect(
+      (await reorderTypes(jsonRequest("PATCH", { order: ["A", "A"] }))).status,
+    ).toBe(400);
+    expect(mockPrisma.contactRecipient.update).not.toHaveBeenCalled();
   });
 });

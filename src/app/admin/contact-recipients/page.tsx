@@ -26,6 +26,7 @@ export default function AdminContactRecipients() {
   const [savedCategory, setSavedCategory] = useState<string | null>(null);
   const [newType, setNewType] = useState<Draft>({ labelEn: "", labelZh: "", email: "" });
   const [adding, setAdding] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchRecipients = useCallback(async () => {
@@ -35,15 +36,20 @@ export default function AdminContactRecipients() {
       const data = await res.json();
       const arr: Recipient[] = Array.isArray(data) ? data : [];
       setRecipients(arr);
-      const next: Record<string, Draft> = {};
-      for (const r of arr) {
-        next[r.category] = {
-          labelEn: r.labelEn || r.category,
-          labelZh: r.labelZh,
-          email: r.email,
-        };
-      }
-      setDrafts(next);
+      // Preserve any in-progress edit; only seed a draft from the server when
+      // the row has none yet, so a refetch after saving/reordering one row
+      // can't wipe unsaved edits in the others. Drafts for removed rows drop.
+      setDrafts((prev) => {
+        const next: Record<string, Draft> = {};
+        for (const r of arr) {
+          next[r.category] = prev[r.category] ?? {
+            labelEn: r.labelEn || r.category,
+            labelZh: r.labelZh,
+            email: r.email,
+          };
+        }
+        return next;
+      });
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -59,15 +65,22 @@ export default function AdminContactRecipients() {
     };
   }, [fetchRecipients]);
 
+  // Single helper for every mutation: sets busy state, surfaces errors, and
+  // refetches. Returns the parsed response on success (so callers can read
+  // flags like `restored`), or null on failure. `path` targets a sub-route
+  // (e.g. "/reorder"); `busyKey` is the row's category, or "" for non-row
+  // actions (add/reorder) so it can never mark a real (non-empty) row busy.
   async function call(
     method: "POST" | "PATCH" | "DELETE",
     body: Record<string, unknown>,
     busyKey: string,
-  ): Promise<boolean> {
+    path = "",
+  ): Promise<Record<string, unknown> | null> {
     setBusyCategory(busyKey);
     setError(null);
+    setNotice(null);
     try {
-      const res = await fetch("/api/admin/contact-recipients", {
+      const res = await fetch(`/api/admin/contact-recipients${path}`, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -76,11 +89,15 @@ export default function AdminContactRecipients() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "The request failed.");
       }
+      const data = (await res.json().catch(() => ({}))) as Record<
+        string,
+        unknown
+      >;
       await fetchRecipients();
-      return true;
+      return data;
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-      return false;
+      return null;
     } finally {
       setBusyCategory(null);
     }
@@ -89,7 +106,7 @@ export default function AdminContactRecipients() {
   async function save(r: Recipient) {
     const draft = drafts[r.category];
     if (!draft) return;
-    const ok = await call(
+    const data = await call(
       "PATCH",
       {
         category: r.category,
@@ -99,7 +116,7 @@ export default function AdminContactRecipients() {
       },
       r.category,
     );
-    if (ok) {
+    if (data) {
       if (savedTimerRef.current !== null) clearTimeout(savedTimerRef.current);
       setSavedCategory(r.category);
       savedTimerRef.current = setTimeout(
@@ -109,35 +126,22 @@ export default function AdminContactRecipients() {
     }
   }
 
-  // Swap `order` with the neighbour (the list is already order-sorted).
+  const active = recipients.filter((r) => !r.isArchived);
+  const archived = recipients.filter((r) => r.isArchived);
+  // Any in-flight mutation disables every reorder arrow, so two reorders can't
+  // interleave and corrupt `order`.
+  const anyBusy = busyCategory !== null;
+
+  // Reorder via one atomic endpoint: send the full active order with the two
+  // neighbours swapped. The server reindexes in a transaction, so orders stay
+  // unique and a partial failure can't leave two rows sharing an order. Reuses
+  // call() for the busy/error/refetch handling.
   async function move(index: number, direction: -1 | 1) {
-    const active = recipients.filter((r) => !r.isArchived);
-    const a = active[index];
-    const b = active[index + direction];
-    if (!a || !b) return;
-    setBusyCategory(a.category);
-    setError(null);
-    try {
-      for (const [category, order] of [
-        [a.category, b.order],
-        [b.category, a.order],
-      ] as const) {
-        const res = await fetch("/api/admin/contact-recipients", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ category, order }),
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error || "Reorder failed.");
-        }
-      }
-      await fetchRecipients();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setBusyCategory(null);
-    }
+    const target = index + direction;
+    if (target < 0 || target >= active.length) return;
+    const order = active.map((r) => r.category);
+    [order[index], order[target]] = [order[target], order[index]];
+    await call("PATCH", { order }, "", "/reorder");
   }
 
   async function archive(r: Recipient) {
@@ -167,13 +171,19 @@ export default function AdminContactRecipients() {
   async function addType(e: React.FormEvent) {
     e.preventDefault();
     setAdding(true);
-    const ok = await call("POST", newType, "__new__");
+    const data = await call("POST", newType, "");
     setAdding(false);
-    if (ok) setNewType({ labelEn: "", labelZh: "", email: "" });
+    if (data) {
+      // A re-added archived type is restored, not created — say so, since it
+      // brings back the original's history and recipient routing.
+      if (data.restored) {
+        setNotice(
+          `Restored “${newType.labelEn.trim()}” from the archive — it's active again.`,
+        );
+      }
+      setNewType({ labelEn: "", labelZh: "", email: "" });
+    }
   }
-
-  const active = recipients.filter((r) => !r.isArchived);
-  const archived = recipients.filter((r) => r.isArchived);
 
   function row(r: Recipient, index: number) {
     const draft = drafts[r.category] ?? { labelEn: "", labelZh: "", email: "" };
@@ -196,7 +206,7 @@ export default function AdminContactRecipients() {
             <div className="flex md:flex-col gap-1">
               <button
                 onClick={() => move(index, -1)}
-                disabled={busy || index === 0}
+                disabled={anyBusy || index === 0}
                 aria-label={`Move ${r.labelEn || r.category} up`}
                 className="px-2 py-0.5 rounded-lg text-[#0a4479] bg-[#f5f5f7] hover:bg-[#0a4479]/10 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold"
               >
@@ -204,7 +214,7 @@ export default function AdminContactRecipients() {
               </button>
               <button
                 onClick={() => move(index, 1)}
-                disabled={busy || index === active.length - 1}
+                disabled={anyBusy || index === active.length - 1}
                 aria-label={`Move ${r.labelEn || r.category} down`}
                 className="px-2 py-0.5 rounded-lg text-[#0a4479] bg-[#f5f5f7] hover:bg-[#0a4479]/10 disabled:opacity-30 disabled:cursor-not-allowed text-xs font-bold"
               >
@@ -309,6 +319,12 @@ export default function AdminContactRecipients() {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl mb-6">
           {error}
+        </div>
+      )}
+
+      {notice && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-2xl mb-6">
+          {notice}
         </div>
       )}
 

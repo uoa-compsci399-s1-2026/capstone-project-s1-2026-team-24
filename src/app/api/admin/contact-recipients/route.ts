@@ -1,16 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { asTrimmedString, isValidEmail } from "@/lib/validation";
+import { clampOrder } from "@/lib/order";
 
 // Admin CRUD for inquiry types (ContactRecipient rows double as the type list
 // and the per-type notification recipient). `category` is the immutable
 // canonical key stored on submissions — renames only touch the labels.
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
+// The English label becomes the canonical category and is copied onto every
+// submission and rendered into the public <option>; cap it like the contact
+// form caps name/message (see src/app/api/contact/route.ts).
+const MAX_LABEL_LENGTH = 120;
 
-function asTrimmedString(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
+// Collapse internal whitespace so a label normalises the same way whether it
+// arrives via POST (create, derives the category) or PATCH (rename).
+function normalizeLabel(value: unknown) {
+  return asTrimmedString(value).replace(/\s+/g, " ");
 }
 
 export async function GET() {
@@ -32,13 +37,19 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => null);
-    const labelEn = asTrimmedString(body?.labelEn).replace(/\s+/g, " ");
+    const labelEn = normalizeLabel(body?.labelEn);
     const labelZh = asTrimmedString(body?.labelZh);
     const email = asTrimmedString(body?.email);
 
     if (!labelEn) {
       return NextResponse.json(
         { error: "An English label is required." },
+        { status: 400 },
+      );
+    }
+    if (labelEn.length > MAX_LABEL_LENGTH || labelZh.length > MAX_LABEL_LENGTH) {
+      return NextResponse.json(
+        { error: `Labels must be ${MAX_LABEL_LENGTH} characters or fewer.` },
         { status: 400 },
       );
     }
@@ -50,33 +61,53 @@ export async function POST(request: Request) {
     }
 
     const category = labelEn;
-    const existing = await prisma.contactRecipient.findUnique({
-      where: { category },
+    const lower = category.toLowerCase();
+
+    // One transaction so the duplicate check, order calc and write can't race a
+    // concurrent create/restore. The match is case-insensitive: SQLite's default
+    // collation makes the unique index case-sensitive, which would otherwise let
+    // "Donation" and "donation" coexist and would miss an archived original on
+    // re-add. The table is tiny, so scanning it is cheap.
+    const result = await prisma.$transaction(async (tx) => {
+      const all = await tx.contactRecipient.findMany();
+      const existing =
+        all.find((r) => r.category.toLowerCase() === lower) ?? null;
+      if (existing && !existing.isArchived) {
+        return { conflict: true as const };
+      }
+
+      const maxOrder = await tx.contactRecipient.aggregate({
+        _max: { order: true },
+      });
+      const order = clampOrder((maxOrder._max.order ?? 0) + 1);
+
+      if (existing) {
+        // Re-adding an archived type restores the original row (its historical
+        // submissions reattach). Flag it so the UI can say so rather than look
+        // like a brand-new create.
+        const saved = await tx.contactRecipient.update({
+          where: { category: existing.category },
+          data: { labelEn, labelZh, email, order, isArchived: false },
+        });
+        return { restored: true as const, saved };
+      }
+
+      const saved = await tx.contactRecipient.create({
+        data: { category, labelEn, labelZh, email, order },
+      });
+      return { restored: false as const, saved };
     });
-    if (existing && !existing.isArchived) {
+
+    if ("conflict" in result) {
       return NextResponse.json(
         { error: "An inquiry type with that name already exists." },
         { status: 409 },
       );
     }
-
-    const maxOrder = await prisma.contactRecipient.aggregate({
-      _max: { order: true },
-    });
-    const order = (maxOrder._max.order ?? 0) + 1;
-
-    // Re-adding a previously archived type restores the same canonical
-    // category, so its historical submissions reattach to the revived type.
-    const saved = existing
-      ? await prisma.contactRecipient.update({
-          where: { category },
-          data: { labelEn, labelZh, email, order, isArchived: false },
-        })
-      : await prisma.contactRecipient.create({
-          data: { category, labelEn, labelZh, email, order },
-        });
-
-    return NextResponse.json(saved, { status: existing ? 200 : 201 });
+    return NextResponse.json(
+      { ...result.saved, restored: result.restored },
+      { status: result.restored ? 200 : 201 },
+    );
   } catch (error) {
     console.error("POST /api/admin/contact-recipients failed:", error);
     return NextResponse.json(
@@ -90,20 +121,14 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json().catch(() => null);
-    if (!body || typeof body !== "object" || typeof body.category !== "string") {
+    if (
+      !body ||
+      typeof body !== "object" ||
+      typeof body.category !== "string"
+    ) {
       return NextResponse.json(
         { error: "category is required." },
         { status: 400 },
-      );
-    }
-
-    const existing = await prisma.contactRecipient.findUnique({
-      where: { category: body.category },
-    });
-    if (!existing) {
-      return NextResponse.json(
-        { error: "No recipient exists for that category." },
-        { status: 404 },
       );
     }
 
@@ -126,55 +151,93 @@ export async function PATCH(request: Request) {
       data.email = email;
     }
     if (body.labelEn !== undefined) {
-      const labelEn = asTrimmedString(body.labelEn);
+      const labelEn = normalizeLabel(body.labelEn);
       if (!labelEn) {
         return NextResponse.json(
           { error: "The English label cannot be empty." },
           { status: 400 },
         );
       }
+      if (labelEn.length > MAX_LABEL_LENGTH) {
+        return NextResponse.json(
+          { error: `Labels must be ${MAX_LABEL_LENGTH} characters or fewer.` },
+          { status: 400 },
+        );
+      }
       data.labelEn = labelEn;
     }
     if (body.labelZh !== undefined) {
-      data.labelZh = asTrimmedString(body.labelZh);
+      const labelZh = asTrimmedString(body.labelZh);
+      if (labelZh.length > MAX_LABEL_LENGTH) {
+        return NextResponse.json(
+          { error: `Labels must be ${MAX_LABEL_LENGTH} characters or fewer.` },
+          { status: 400 },
+        );
+      }
+      data.labelZh = labelZh;
     }
     if (body.order !== undefined) {
-      if (typeof body.order !== "number" || !Number.isInteger(body.order)) {
-        return NextResponse.json(
-          { error: "order must be an integer." },
-          { status: 400 },
-        );
-      }
-      data.order = body.order;
-    }
-    if (body.isArchived !== undefined) {
-      if (typeof body.isArchived !== "boolean") {
-        return NextResponse.json(
-          { error: "isArchived must be a boolean." },
-          { status: 400 },
-        );
-      }
-      // Refuse to archive the last active type — the public form needs at
-      // least one option to function.
-      if (body.isArchived && !existing.isArchived) {
-        const activeCount = await prisma.contactRecipient.count({
-          where: { isArchived: false },
-        });
-        if (activeCount <= 1) {
-          return NextResponse.json(
-            { error: "At least one active inquiry type is required." },
-            { status: 400 },
-          );
-        }
-      }
-      data.isArchived = body.isArchived;
+      // Funnel through clampOrder so a negative/huge/non-numeric value can never
+      // reach the Int column (see src/lib/order.ts).
+      data.order = clampOrder(body.order);
     }
 
-    const updated = await prisma.contactRecipient.update({
-      where: { category: body.category },
-      data,
+    const wantsArchived: unknown = body.isArchived;
+    if (wantsArchived !== undefined && typeof wantsArchived !== "boolean") {
+      return NextResponse.json(
+        { error: "isArchived must be a boolean." },
+        { status: 400 },
+      );
+    }
+
+    // One transaction so the last-active guard and the write can't race a
+    // concurrent archive/restore.
+    const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.contactRecipient.findUnique({
+        where: { category: body.category },
+      });
+      if (!existing) return { notFound: true as const };
+
+      if (typeof wantsArchived === "boolean") {
+        // Refuse to archive the last active type — the public form needs at
+        // least one option to function.
+        if (wantsArchived && !existing.isArchived) {
+          const activeCount = await tx.contactRecipient.count({
+            where: { isArchived: false },
+          });
+          if (activeCount <= 1) return { lastActive: true as const };
+        }
+        // Restoring (un-archiving): append at the end so a revived type lands
+        // consistently with a freshly-added one instead of keeping a stale order.
+        if (!wantsArchived && existing.isArchived) {
+          const maxOrder = await tx.contactRecipient.aggregate({
+            _max: { order: true },
+          });
+          data.order = clampOrder((maxOrder._max.order ?? 0) + 1);
+        }
+        data.isArchived = wantsArchived;
+      }
+
+      const updated = await tx.contactRecipient.update({
+        where: { category: body.category },
+        data,
+      });
+      return { updated };
     });
-    return NextResponse.json(updated);
+
+    if ("notFound" in result) {
+      return NextResponse.json(
+        { error: "No recipient exists for that category." },
+        { status: 404 },
+      );
+    }
+    if ("lastActive" in result) {
+      return NextResponse.json(
+        { error: "At least one active inquiry type is required." },
+        { status: 400 },
+      );
+    }
+    return NextResponse.json(result.updated);
   } catch (error) {
     console.error("PATCH /api/admin/contact-recipients failed:", error);
     return NextResponse.json(
@@ -196,41 +259,50 @@ export async function DELETE(request: Request) {
       );
     }
 
-    const existing = await prisma.contactRecipient.findUnique({
-      where: { category },
+    // One transaction so the reference/last-active checks and the delete can't
+    // race a concurrent submission or archive.
+    const result = await prisma.$transaction(async (tx) => {
+      const existing = await tx.contactRecipient.findUnique({
+        where: { category },
+      });
+      if (!existing) return { notFound: true as const };
+
+      const submissionCount = await tx.contactSubmission.count({
+        where: { category },
+      });
+      if (submissionCount > 0) return { referenced: submissionCount };
+
+      if (!existing.isArchived) {
+        const activeCount = await tx.contactRecipient.count({
+          where: { isArchived: false },
+        });
+        if (activeCount <= 1) return { lastActive: true as const };
+      }
+
+      await tx.contactRecipient.delete({ where: { category } });
+      return { ok: true as const };
     });
-    if (!existing) {
+
+    if ("notFound" in result) {
       return NextResponse.json(
         { error: "No recipient exists for that category." },
         { status: 404 },
       );
     }
-
-    const submissionCount = await prisma.contactSubmission.count({
-      where: { category },
-    });
-    if (submissionCount > 0) {
+    if ("referenced" in result) {
       return NextResponse.json(
         {
-          error: `This type has ${submissionCount} submission(s) — archive it instead so they stay readable.`,
+          error: `This type has ${result.referenced} submission(s) — archive it instead so they stay readable.`,
         },
         { status: 409 },
       );
     }
-
-    if (!existing.isArchived) {
-      const activeCount = await prisma.contactRecipient.count({
-        where: { isArchived: false },
-      });
-      if (activeCount <= 1) {
-        return NextResponse.json(
-          { error: "At least one active inquiry type is required." },
-          { status: 400 },
-        );
-      }
+    if ("lastActive" in result) {
+      return NextResponse.json(
+        { error: "At least one active inquiry type is required." },
+        { status: 400 },
+      );
     }
-
-    await prisma.contactRecipient.delete({ where: { category } });
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("DELETE /api/admin/contact-recipients failed:", error);
