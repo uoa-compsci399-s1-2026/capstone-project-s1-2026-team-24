@@ -11,6 +11,7 @@ import {
   DEFAULT_STRONG_KEYWORDS,
   DEFAULT_WEAK_KEYWORDS,
 } from "../src/lib/publication-filter";
+import { ORIGINAL_INQUIRY_TYPES } from "./inquiry-type-seed-data";
 
 const adapter = new PrismaBetterSqlite3({
   url: process.env.DATABASE_URL || "file:./dev.db",
@@ -146,15 +147,25 @@ async function main() {
     ],
   });
 
+  // Inquiry types: category is the immutable key; labels (shared with the
+  // db-push backfill via ORIGINAL_INQUIRY_TYPES) are what the public form shows
+  // per language. Recipient inboxes are placeholders to fill in per deployment.
+  const recipientEmails: Record<string, string> = {
+    "Study Participant Enquiry": "TODO_PARTICIPANT@auckland.ac.nz",
+    "Industry Partnership": "TODO_PARTNERSHIPS@auckland.ac.nz",
+    "Internship or PhD Opportunity": "TODO_STUDENTS@auckland.ac.nz",
+    Donation: "TODO_DONATIONS@auckland.ac.nz",
+    "General Enquiry": "TODO_GENERAL@auckland.ac.nz",
+    Other: "TODO_GENERAL@auckland.ac.nz",
+  };
   await prisma.contactRecipient.createMany({
-    data: [
-      { category: "Study Participant Enquiry", email: "TODO_PARTICIPANT@auckland.ac.nz" },
-      { category: "Industry Partnership", email: "TODO_PARTNERSHIPS@auckland.ac.nz" },
-      { category: "Internship or PhD Opportunity", email: "TODO_STUDENTS@auckland.ac.nz" },
-      { category: "Donation", email: "TODO_DONATIONS@auckland.ac.nz" },
-      { category: "General Enquiry", email: "TODO_GENERAL@auckland.ac.nz" },
-      { category: "Other", email: "TODO_GENERAL@auckland.ac.nz" },
-    ],
+    data: ORIGINAL_INQUIRY_TYPES.map((t) => ({
+      category: t.category,
+      labelEn: t.category,
+      labelZh: t.labelZh,
+      order: t.order,
+      email: recipientEmails[t.category] ?? "TODO_GENERAL@auckland.ac.nz",
+    })),
   });
 
   await prisma.teamMember.createMany({

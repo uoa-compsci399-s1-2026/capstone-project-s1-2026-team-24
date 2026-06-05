@@ -11,14 +11,8 @@ import {
   sanitizePhone,
 } from "@/lib/validation";
 
-const ALLOWED_CATEGORIES = [
-  "Study Participant Enquiry",
-  "Industry Partnership",
-  "Internship or PhD Opportunity",
-  "Donation",
-  "General Enquiry",
-  "Other",
-] as const;
+// Inquiry types are admin-managed ContactRecipient rows — the recipient
+// lookup below doubles as the category validation (no hardcoded allow-list).
 
 const MIN_FORM_FILL_MS = 3000;
 const MAX_NAME_LENGTH = 120;
@@ -110,17 +104,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (
-      !ALLOWED_CATEGORIES.includes(
-        category as (typeof ALLOWED_CATEGORIES)[number],
-      )
-    ) {
-      return NextResponse.json(
-        { error: "category must be one of the allowed values." },
-        { status: 400 },
-      );
-    }
-
     if (message.length < MIN_MESSAGE_LENGTH) {
       return NextResponse.json(
         {
@@ -159,14 +142,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // The single source of truth for inquiry types: an unknown category means
+    // the client sent something the admin never configured (400, not 500),
+    // and an archived one means the type was removed from the form.
     const recipient = await prisma.contactRecipient.findUnique({
       where: { category },
     });
 
     if (!recipient) {
       return NextResponse.json(
-        { error: "No recipient configured for this inquiry type." },
-        { status: 500 },
+        { error: "category must be one of the allowed values." },
+        { status: 400 },
+      );
+    }
+
+    if (recipient.isArchived) {
+      return NextResponse.json(
+        { error: "This inquiry type is no longer available." },
+        { status: 400 },
       );
     }
 

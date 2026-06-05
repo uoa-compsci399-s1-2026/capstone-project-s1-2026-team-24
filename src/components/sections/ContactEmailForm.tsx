@@ -4,20 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import en from '@/messages/en';
 import zh from '@/messages/zh';
+// Type-only import — erased at compile time, so the server-side prisma code
+// in inquiry-types.ts never reaches the client bundle.
+import type { InquiryTypeOption } from '@/lib/inquiry-types';
 import { isValidEmail, isValidPhone } from '@/lib/validation';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
-
-// Canonical inquiry-type values sent to the API (must stay English for contact
-// routing / recipient matching). The visible label is translated separately.
-const INQUIRY_TYPES = [
-  'Study Participant Enquiry',
-  'Industry Partnership',
-  'Internship or PhD Opportunity',
-  'Donation',
-  'General Enquiry',
-  'Other',
-] as const;
 
 const inputClass =
   'w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors';
@@ -28,17 +20,16 @@ const labelClass =
 const textareaClass =
   'w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none';
 
-export default function ContactEmailForm() {
+export default function ContactEmailForm({
+  // Admin-managed types (DB-driven), passed by the server ContactDetails
+  // wrapper. The canonical `category` is submitted; labels are per-language.
+  inquiryTypes = [],
+}: {
+  inquiryTypes?: InquiryTypeOption[];
+}) {
   const { lang } = useLanguage();
   const t = lang === 'EN' ? en : zh;
-  const inquiryLabels: Record<(typeof INQUIRY_TYPES)[number], string> = {
-    'Study Participant Enquiry': t.contactPage.inquiryStudyParticipant,
-    'Industry Partnership': t.contactPage.inquiryIndustryPartnership,
-    'Internship or PhD Opportunity': t.contactPage.inquiryInternshipPhd,
-    Donation: t.contactPage.inquiryDonation,
-    'General Enquiry': t.contactPage.inquiryGeneral,
-    Other: t.contactPage.inquiryOther,
-  };
+  const noInquiryTypes = inquiryTypes.length === 0;
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -232,14 +223,18 @@ export default function ContactEmailForm() {
               clearError();
             }}
             className={`${inputClass} appearance-none pr-12 cursor-pointer`}
-            disabled={state === 'loading'}
+            disabled={state === 'loading' || noInquiryTypes}
           >
             <option value="" disabled>
-              {t.contactPage.selectPlaceholder}
+              {noInquiryTypes
+                ? t.contactPage.noInquiryTypes
+                : t.contactPage.selectPlaceholder}
             </option>
-            {INQUIRY_TYPES.map(type => (
-              <option key={type} value={type}>
-                {inquiryLabels[type]}
+            {inquiryTypes.map(type => (
+              <option key={type.category} value={type.category}>
+                {lang === 'ZH'
+                  ? type.labelZh || type.labelEn
+                  : type.labelEn}
               </option>
             ))}
           </select>
@@ -304,7 +299,7 @@ export default function ContactEmailForm() {
 
       <button
         type="submit"
-        disabled={state === 'loading'}
+        disabled={state === 'loading' || noInquiryTypes}
         className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
       >
         {state === 'loading' ? t.contactPage.sending : t.contactPage.sendMessage}

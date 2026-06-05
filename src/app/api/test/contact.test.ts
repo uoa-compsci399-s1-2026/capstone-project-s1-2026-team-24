@@ -53,7 +53,8 @@ describe("POST /api/contact", () => {
     mockSendContactNotification.mockResolvedValue({ ok: true });
   });
 
-  it("returns 400 for invalid category", async () => {
+  it("returns 400 for a category with no ContactRecipient row", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce(null);
     const response = await postContact(
       buildRequest(
         buildValidPayload({
@@ -64,6 +65,38 @@ describe("POST /api/contact", () => {
     expect(response.status).toBe(400);
     await expect(response.json()).resolves.toEqual({
       error: "category must be one of the allowed values.",
+    });
+    expect(mockPrisma.contactSubmission.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for an archived inquiry type", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "General Enquiry",
+      email: "general@example.com",
+      isArchived: true,
+    });
+    const response = await postContact(buildRequest(buildValidPayload()));
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "This inquiry type is no longer available.",
+    });
+    expect(mockPrisma.contactSubmission.create).not.toHaveBeenCalled();
+  });
+
+  it("accepts any category an active ContactRecipient row exists for", async () => {
+    // Admin-created type that never appeared in any hardcoded list.
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "Media Enquiry",
+      email: "media@example.com",
+      isArchived: false,
+    });
+    mockPrisma.contactSubmission.create.mockResolvedValueOnce({});
+    const response = await postContact(
+      buildRequest(buildValidPayload({ category: "Media Enquiry" })),
+    );
+    expect(response.status).toBe(201);
+    expect(mockPrisma.contactSubmission.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ category: "Media Enquiry" }),
     });
   });
 
