@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/client-ip";
 import { sendContactNotification } from "@/lib/email";
 
 const ALLOWED_CATEGORIES = [
@@ -32,20 +33,6 @@ function countUrlsLike(text: string) {
   return matches ? matches.length : 0;
 }
 
-function getClientIp(request: NextRequest) {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0]?.trim() || "unknown";
-  }
-
-  const realIp = request.headers.get("x-real-ip");
-  if (realIp) {
-    return realIp.trim();
-  }
-
-  return "unknown";
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => null);
@@ -74,19 +61,10 @@ export async function POST(request: NextRequest) {
     const ipRateLimit = checkRateLimit(`ip:${ip}`);
 
     if (!ipRateLimit.allowed) {
-      const response = NextResponse.json(
-        { error: "Too many submissions. Please try again later." },
-        { status: 429 },
+      return rateLimitResponse(
+        ipRateLimit,
+        "Too many submissions. Please try again later.",
       );
-
-      if (ipRateLimit.retryAfterSeconds) {
-        response.headers.set(
-          "Retry-After",
-          String(ipRateLimit.retryAfterSeconds),
-        );
-      }
-
-      return response;
     }
 
     if (!name || !email || !category || !message) {
@@ -148,17 +126,10 @@ export async function POST(request: NextRequest) {
 
     const emailRateLimit = checkRateLimit(`email:${email.toLowerCase()}`);
     if (!emailRateLimit.allowed) {
-      const response = NextResponse.json(
-        { error: "Too many submissions. Please try again later." },
-        { status: 429 },
+      return rateLimitResponse(
+        emailRateLimit,
+        "Too many submissions. Please try again later.",
       );
-      if (emailRateLimit.retryAfterSeconds) {
-        response.headers.set(
-          "Retry-After",
-          String(emailRateLimit.retryAfterSeconds),
-        );
-      }
-      return response;
     }
 
     const recipient = await prisma.contactRecipient.findUnique({

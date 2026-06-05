@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { buildSecurityHeaders } from "./src/lib/security-headers";
 
 const nextConfig: NextConfig = {
   // Serve images directly instead of through Next's on-the-fly optimizer.
@@ -7,6 +8,14 @@ const nextConfig: NextConfig = {
   // broken in production. Source images are kept reasonably sized at commit time,
   // so direct serving is fine here.
   images: { unoptimized: true },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: buildSecurityHeaders(),
+      },
+    ];
+  },
 };
 
 export default nextConfig;

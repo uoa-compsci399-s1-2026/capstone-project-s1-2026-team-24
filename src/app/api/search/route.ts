@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getSafeHttpUrl } from "@/lib/safe-url";
 import { parsePublishedSnapshot } from "@/lib/page-publish";
 import { publicPath } from "@/lib/blocks/page-paths";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/client-ip";
 
 // This handler reads the database on every request, so it must never be
 // prerendered or cached — the result depends entirely on the `q` query param.
@@ -39,6 +41,11 @@ const TEAM_TAKE = 8;
 const PUBLICATION_TAKE = 8;
 const PAGE_CONTENT_TAKE = 6;
 const RESULT_LIMIT = 20;
+
+// Per-IP rate limit for the public search endpoint. Generous enough for
+// debounced type-ahead, low enough to blunt a DoS against the DB on 512 MB.
+const SEARCH_RATE_LIMIT_MAX = 60;
+const SEARCH_RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
 // Roughly how much text we keep on either side of a page-content match so the
 // snippet reads as a sentence fragment rather than the whole block.
@@ -160,6 +167,18 @@ export async function GET(request: NextRequest) {
       { error: "Query too long." },
       { status: 400 },
     );
+  }
+
+  // Throttle per client IP, after the length guards so trivial type-ahead
+  // (q < 2) never spends budget. The IP comes from the trusted-proxy helper, so
+  // it can't be cheaply spoofed to dodge the limit or flood the limiter's map.
+  const ip = getClientIp(request);
+  const rateLimit = checkRateLimit(`search:${ip}`, {
+    max: SEARCH_RATE_LIMIT_MAX,
+    windowMs: SEARCH_RATE_LIMIT_WINDOW_MS,
+  });
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit, "Too many requests. Please slow down.");
   }
 
   try {
