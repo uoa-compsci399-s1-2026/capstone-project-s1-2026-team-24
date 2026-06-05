@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
 import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { NewTabHint } from "@/components/ui/NewTabHint";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useNavStudies } from "@/contexts/NavStudiesContext";
@@ -240,7 +241,9 @@ export default function Navbar() {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (searchOpen) {
+    // Lock background scroll while either modal overlay is open (the search
+    // dialog or the focus-trapped mobile drawer).
+    if (searchOpen || mobileOpen) {
       previousBodyOverflowRef.current = document.body.style.overflow;
       document.body.style.overflow = "hidden";
     } else if (previousBodyOverflowRef.current !== null) {
@@ -253,7 +256,7 @@ export default function Navbar() {
         previousBodyOverflowRef.current = null;
       }
     };
-  }, [searchOpen]);
+  }, [searchOpen, mobileOpen]);
 
   useEffect(() => {
     const updateOffset = () => setSearchContentTopOffset(headerRef.current?.offsetHeight ?? 0);
@@ -403,6 +406,7 @@ export default function Navbar() {
                 className="px-3 text-[14px] font-bold tracking-[0.28px] text-[#0c0c48] hover:opacity-70 transition-opacity whitespace-nowrap"
               >
                 {link.label}
+                {link.target === "_blank" && <NewTabHint />}
               </Link>
             ))}
 
@@ -767,7 +771,7 @@ export default function Navbar() {
                   onClick={() => { if (mobileOpen) { setMobileOpen(false); } else { setSearchOpen(false); setMobileOpen(true); } }}
                   aria-label={mobileOpen ? "Close menu" : "Open menu"}
                   aria-expanded={mobileOpen}
-                  aria-controls="mobile-menu"
+                  aria-controls={mobileOpen ? "mobile-menu" : undefined}
                   className={`w-14 h-14 flex items-center justify-center transition-colors duration-300 ${mobileNavActive ? "text-white" : "text-[#0c0c48]"}`}
                 >
                   <div className="relative w-8 h-8">
@@ -868,7 +872,7 @@ export default function Navbar() {
               <li>
                 <Link href="https://www.auckland.ac.nz/en/giving/donate.html" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
                   {lang === "EN" ? "Donations" : "捐赠"}
-                  <span className="sr-only">{lang === "EN" ? " (opens in new tab)" : "（在新标签页中打开）"}</span>
+                  <NewTabHint />
                 </Link>
               </li>
 

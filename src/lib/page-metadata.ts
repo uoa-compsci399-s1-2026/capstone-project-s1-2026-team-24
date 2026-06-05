@@ -6,8 +6,8 @@ type LocalizedString = { en: string; zh: string };
 
 /**
  * Builds per-page metadata from localized title/description strings, in the
- * visitor's current language (the `lang` cookie, via getServerLang). It extends
- * the older `localizedMetadata` helper by also emitting:
+ * visitor's current language (the `lang` cookie, via getServerLang). Beyond the
+ * language-selected title/description it also emits:
  *
  * - a self-referential `alternates.canonical` (resolved against `metadataBase`
  *   in the root layout, so it becomes an absolute custom-domain URL at launch);

@@ -116,7 +116,12 @@ export default function Updates({
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  const autoplayPaused = isHovered || isFocused || isPaused || reducedMotion;
+  // Pauses on hover, on an explicit user pause, and under reduced motion. It
+  // deliberately does NOT pause on keyboard focus — focusing the Pause/Play
+  // toggle would otherwise prevent it from ever resuming (the announced state
+  // would contradict the behaviour). Keyboard users still have the explicit
+  // Pause control. (isFocused is still used to reveal the prev/next arrows.)
+  const autoplayPaused = isHovered || isPaused || reducedMotion;
 
   useEffect(() => {
     if (autoplayPaused) return;

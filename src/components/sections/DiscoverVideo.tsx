@@ -19,7 +19,9 @@ export default function DiscoverVideo({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [videoHovered, setVideoHovered] = useState(false);
-  const src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&rel=0&modestbranding=1`;
+  // enablejsapi=1 is required for the postMessage commands below (play/pause/
+  // mute) — and for the scroll-into-view unmute — to be honoured by the player.
+  const src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&rel=0&modestbranding=1`;
 
   function postMessage(command: string) {
     iframeRef.current?.contentWindow?.postMessage(
