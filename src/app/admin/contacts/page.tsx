@@ -5,7 +5,9 @@ import { useEffect, useMemo, useState } from "react";
 type Submission = {
   id: number;
   name: string;
-  email: string;
+  email: string; // "" when the enquirer gave a phone number instead
+  phone: string | null;
+  prefersPhone: boolean;
   category: string;
   message: string;
   submittedAt: string;
@@ -113,12 +115,27 @@ export default function AdminContacts() {
                   <p className="text-base font-bold text-[#0c0c48]">
                     {s.name}
                   </p>
-                  <a
-                    href={`mailto:${s.email}`}
-                    className="text-sm text-[#0a4479] hover:underline"
-                  >
-                    {s.email}
-                  </a>
+                  {s.email && (
+                    <a
+                      href={`mailto:${s.email}`}
+                      className="text-sm text-[#0a4479] hover:underline"
+                    >
+                      {s.email}
+                    </a>
+                  )}
+                  {s.phone && (
+                    <a
+                      href={`tel:${s.phone}`}
+                      className="text-sm text-[#0a4479] hover:underline"
+                    >
+                      {s.phone}
+                    </a>
+                  )}
+                  {s.prefersPhone && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">
+                      prefers phone
+                    </span>
+                  )}
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#0a4479]/10 text-[#0a4479]">
                     {s.category}
                   </span>

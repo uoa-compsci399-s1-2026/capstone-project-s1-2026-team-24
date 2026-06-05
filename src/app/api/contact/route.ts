@@ -3,6 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
 import { sendContactNotification } from "@/lib/email";
+import {
+  asTrimmedString,
+  isValidEmail,
+  isValidPhone,
+  normalizePhone,
+  sanitizePhone,
+} from "@/lib/validation";
 
 const ALLOWED_CATEGORIES = [
   "Study Participant Enquiry",
@@ -20,14 +27,6 @@ const MIN_MESSAGE_LENGTH = 10;
 const MAX_URLS_IN_MESSAGE = 3;
 const URL_REGEX = /https?:\/\/|www\./gi;
 
-function asTrimmedString(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 function countUrlsLike(text: string) {
   const matches = text.match(URL_REGEX);
   return matches ? matches.length : 0;
@@ -39,6 +38,13 @@ export async function POST(request: NextRequest) {
 
     const name = asTrimmedString(body?.name);
     const email = asTrimmedString(body?.email);
+    // Canonical phone: whitespace collapsed to single spaces (no CR/LF), so the
+    // value we store and drop into the notification email body is injection-safe
+    // while staying human-readable. Validation/rate-limit key off normalizePhone.
+    const phone = sanitizePhone(asTrimmedString(body?.phone));
+    // Only meaningful when both contact channels were given (the form shows
+    // the checkbox only then) — never trust it without a phone to prefer.
+    const prefersPhone = body?.prefersPhone === true && phone !== "";
     const category = asTrimmedString(body?.category);
     const message = asTrimmedString(body?.message);
     const honeypot = asTrimmedString(body?.honeypot);
@@ -67,9 +73,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!name || !email || !category || !message) {
+    if (!name || !category || !message) {
       return NextResponse.json(
-        { error: "name, email, category, and message are required." },
+        { error: "name, category, and message are required." },
+        { status: 400 },
+      );
+    }
+
+    // Either/or: the enquirer chooses their contact channel — at least one of
+    // email/phone must be present, and whichever is given must be valid.
+    if (!email && !phone) {
+      return NextResponse.json(
+        { error: "Provide an email address or a phone number." },
         { status: 400 },
       );
     }
@@ -81,9 +96,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!isValidEmail(email)) {
+    if (email && !isValidEmail(email)) {
       return NextResponse.json(
         { error: "email must be a valid email address." },
+        { status: 400 },
+      );
+    }
+
+    if (phone && !isValidPhone(phone)) {
+      return NextResponse.json(
+        { error: "phone must be a valid phone number." },
         { status: 400 },
       );
     }
@@ -124,10 +146,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const emailRateLimit = checkRateLimit(`email:${email.toLowerCase()}`);
-    if (!emailRateLimit.allowed) {
+    // Second limiter keyed on the contact handle. Phone-only submissions key
+    // on the normalised phone number — keying them all on email:"" would give
+    // every phone-only sender one shared bucket.
+    const contactRateLimit = checkRateLimit(
+      email ? `email:${email.toLowerCase()}` : `phone:${normalizePhone(phone)}`,
+    );
+    if (!contactRateLimit.allowed) {
       return rateLimitResponse(
-        emailRateLimit,
+        contactRateLimit,
         "Too many submissions. Please try again later.",
       );
     }
@@ -147,6 +174,8 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         email,
+        phone: phone || null,
+        prefersPhone,
         category,
         message,
       },
@@ -157,7 +186,7 @@ export async function POST(request: NextRequest) {
     // must not fail the request — log it and move on.
     const emailResult = await sendContactNotification({
       recipientEmail: recipient.email,
-      submission: { name, email, category, message },
+      submission: { name, email, phone: phone || null, prefersPhone, category, message },
     }).catch((err) => {
       console.error("Contact notification email threw (non-fatal):", err);
       return { ok: false as const, error: "threw" };
@@ -165,7 +194,7 @@ export async function POST(request: NextRequest) {
 
     if (!emailResult.ok) {
       console.error(
-        `Contact notification email not delivered for "${category}" enquiry from ${email}.`,
+        `Contact notification email not delivered for "${category}" enquiry from ${email || phone}.`,
       );
     }
 

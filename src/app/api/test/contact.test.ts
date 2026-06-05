@@ -16,8 +16,10 @@ vi.mock("@/lib/prisma", () => ({
   prisma: mockPrisma,
 }));
 
+const mockCheckRateLimit = vi.hoisted(() => vi.fn(() => ({ allowed: true })));
+
 vi.mock("@/lib/rate-limit", () => ({
-  checkRateLimit: () => ({ allowed: true }),
+  checkRateLimit: mockCheckRateLimit,
 }));
 
 vi.mock("@/lib/email", () => ({
@@ -81,6 +83,8 @@ describe("POST /api/contact", () => {
       data: {
         name: "Alice",
         email: "alice@example.com",
+        phone: null,
+        prefersPhone: false,
         category: "General Enquiry",
         message: "Hello there, this is valid.",
       },
@@ -90,9 +94,123 @@ describe("POST /api/contact", () => {
       submission: {
         name: "Alice",
         email: "alice@example.com",
+        phone: null,
+        prefersPhone: false,
         category: "General Enquiry",
         message: "Hello there, this is valid.",
       },
+    });
+  });
+
+  it("accepts a phone-only submission (email stored as empty string)", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "General Enquiry",
+      email: "general@example.com",
+    });
+    mockPrisma.contactSubmission.create.mockResolvedValueOnce({});
+
+    const response = await postContact(
+      buildRequest(
+        buildValidPayload({ email: "", phone: "+64 21 123 4567" }),
+      ),
+    );
+    expect(response.status).toBe(201);
+    expect(mockPrisma.contactSubmission.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        email: "",
+        phone: "+64 21 123 4567",
+        prefersPhone: false,
+      }),
+    });
+    // Phone-only senders are rate-limited by phone, not a shared email:"" key.
+    expect(mockCheckRateLimit).toHaveBeenCalledWith("phone:+64211234567");
+  });
+
+  it("collapses whitespace/newlines in the stored & emailed phone (no CR/LF survives)", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "General Enquiry",
+      email: "general@example.com",
+    });
+    mockPrisma.contactSubmission.create.mockResolvedValueOnce({});
+
+    // A phone with embedded newlines passes validation (normalize strips \s),
+    // so without sanitising the stored/emailed value the newline would survive.
+    const response = await postContact(
+      buildRequest(
+        buildValidPayload({ email: "", phone: "021\n123\n4567" }),
+      ),
+    );
+    expect(response.status).toBe(201);
+    const storedPhone =
+      mockPrisma.contactSubmission.create.mock.calls[0][0].data.phone;
+    expect(storedPhone).toBe("021 123 4567");
+    expect(storedPhone).not.toMatch(/[\r\n]/);
+    // The notification email receives the same sanitised value.
+    expect(mockSendContactNotification).toHaveBeenCalledWith(
+      expect.objectContaining({
+        submission: expect.objectContaining({ phone: "021 123 4567" }),
+      }),
+    );
+    // Rate-limit key is still the digits-only normalised form.
+    expect(mockCheckRateLimit).toHaveBeenCalledWith("phone:0211234567");
+  });
+
+  it("returns 400 when neither email nor phone is given", async () => {
+    const response = await postContact(
+      buildRequest(buildValidPayload({ email: "", phone: "" })),
+    );
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Provide an email address or a phone number.",
+    });
+    expect(mockPrisma.contactSubmission.create).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for an invalid phone number", async () => {
+    const response = await postContact(
+      buildRequest(buildValidPayload({ phone: "not-a-phone" })),
+    );
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "phone must be a valid phone number.",
+    });
+  });
+
+  it("persists prefersPhone when both channels are given", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "General Enquiry",
+      email: "general@example.com",
+    });
+    mockPrisma.contactSubmission.create.mockResolvedValueOnce({});
+
+    const response = await postContact(
+      buildRequest(
+        buildValidPayload({ phone: "021 123 4567", prefersPhone: true }),
+      ),
+    );
+    expect(response.status).toBe(201);
+    expect(mockPrisma.contactSubmission.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        email: "alice@example.com",
+        phone: "021 123 4567",
+        prefersPhone: true,
+      }),
+    });
+  });
+
+  it("ignores prefersPhone without a phone number to prefer", async () => {
+    mockPrisma.contactRecipient.findUnique.mockResolvedValueOnce({
+      category: "General Enquiry",
+      email: "general@example.com",
+    });
+    mockPrisma.contactSubmission.create.mockResolvedValueOnce({});
+
+    const response = await postContact(
+      buildRequest(buildValidPayload({ prefersPhone: true })),
+    );
+    expect(response.status).toBe(201);
+    expect(mockPrisma.contactSubmission.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({ phone: null, prefersPhone: false }),
     });
   });
 

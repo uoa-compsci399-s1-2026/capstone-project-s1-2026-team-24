@@ -73,12 +73,18 @@ model CaseStudy {
 }
 
 model ContactSubmission {
-  id          Int      @id @default(autoincrement())
-  name        String
-  email       String
-  category    String
-  message     String
-  submittedAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  name         String
+  // At least one of email/phone is present (enforced by the API; the column
+  // stays non-null with "" meaning "not given" so legacy rows are untouched).
+  email        String
+  phone        String?
+  // True when the enquirer gave both and ticked "I prefer to be contacted by
+  // phone" (the checkbox only shows when both are filled).
+  prefersPhone Boolean  @default(false)
+  category     String
+  message      String
+  submittedAt  DateTime @default(now())
 }
 
 model PartnerLogo {

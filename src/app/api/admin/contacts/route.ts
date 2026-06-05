@@ -11,6 +11,8 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         email: true,
+        phone: true,
+        prefersPhone: true,
         category: true,
         message: true,
         submittedAt: true,

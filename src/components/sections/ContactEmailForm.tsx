@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import en from '@/messages/en';
 import zh from '@/messages/zh';
+import { isValidEmail, isValidPhone } from '@/lib/validation';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -27,10 +28,6 @@ const labelClass =
 const textareaClass =
   'w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none';
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 export default function ContactEmailForm() {
   const { lang } = useLanguage();
   const t = lang === 'EN' ? en : zh;
@@ -45,12 +42,17 @@ export default function ContactEmailForm() {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [prefersPhone, setPrefersPhone] = useState(false);
   const [category, setCategory] = useState('');
   const [message, setMessage] = useState('');
   const [honeypot, setHoneypot] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const mountedAtRef = useRef<number>(0);
+
+  // The preference checkbox only makes sense when both channels were given.
+  const showPrefersPhone = email.trim() !== '' && phone.trim() !== '';
 
   useEffect(() => {
     mountedAtRef.current = Date.now();
@@ -66,14 +68,28 @@ export default function ContactEmailForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!name.trim() || !email.trim() || !category || !message.trim()) {
+    if (!name.trim() || !category || !message.trim()) {
       setErrorMsg(t.contactPage.requiredError);
       setState('error');
       return;
     }
 
-    if (!isValidEmail(email.trim())) {
+    // Either/or: at least one contact channel, and whichever is given must
+    // be valid.
+    if (!email.trim() && !phone.trim()) {
+      setErrorMsg(t.contactPage.eitherEmailOrPhoneError);
+      setState('error');
+      return;
+    }
+
+    if (email.trim() && !isValidEmail(email.trim())) {
       setErrorMsg(t.contactPage.invalidEmailError);
+      setState('error');
+      return;
+    }
+
+    if (phone.trim() && !isValidPhone(phone.trim())) {
+      setErrorMsg(t.contactPage.invalidPhoneError);
       setState('error');
       return;
     }
@@ -88,6 +104,8 @@ export default function ContactEmailForm() {
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
+          phone: phone.trim(),
+          prefersPhone: showPrefersPhone && prefersPhone,
           category,
           message: message.trim(),
           honeypot: honeypot.trim(),
@@ -157,6 +175,49 @@ export default function ContactEmailForm() {
           disabled={state === 'loading'}
         />
       </div>
+
+      <div>
+        <label htmlFor="contact-phone" className={labelClass}>
+          {t.contactPage.phoneLabel}
+        </label>
+        <input
+          id="contact-phone"
+          type="tel"
+          value={phone}
+          onChange={e => {
+            setPhone(e.target.value);
+            clearError();
+          }}
+          placeholder={t.contactPage.phonePlaceholder}
+          className={inputClass}
+          disabled={state === 'loading'}
+        />
+        <p className="text-sm text-[#0a4479]/70 mt-1.5 ml-2">
+          {t.contactPage.eitherEmailOrPhoneHint}
+        </p>
+      </div>
+
+      {showPrefersPhone && (
+        <label
+          htmlFor="contact-prefers-phone"
+          className="flex items-center gap-3 ml-2 cursor-pointer select-none"
+        >
+          <input
+            id="contact-prefers-phone"
+            type="checkbox"
+            checked={prefersPhone}
+            onChange={e => {
+              setPrefersPhone(e.target.checked);
+              clearError();
+            }}
+            className="h-5 w-5 accent-[#0a4479] cursor-pointer"
+            disabled={state === 'loading'}
+          />
+          <span className="text-[#0a4479] text-base sm:text-[18px]">
+            {t.contactPage.prefersPhoneLabel}
+          </span>
+        </label>
+      )}
 
       <div>
         <label htmlFor="contact-category" className={labelClass}>
