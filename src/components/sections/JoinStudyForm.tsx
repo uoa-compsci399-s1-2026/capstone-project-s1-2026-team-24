@@ -22,8 +22,10 @@ function isStudy(data: unknown): data is Study {
   );
 }
 
+// Border #cac7c7 (1.7:1) -> #767676 (>=3:1); placeholder -> #6b6b6b; keyboard
+// focus-visible ring on top of the border-colour change (B21, B38).
 const inputClass =
-  'w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors';
+  'w-full border-2 border-[#767676] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#6b6b6b] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-1 transition-colors';
 
 const labelClass =
   'block font-semibold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2';
@@ -106,7 +108,7 @@ export default function JoinStudyForm() {
 
   if (state === 'success') {
     return (
-      <div className="py-10">
+      <div role="status" className="py-10">
         <p className="text-[#0a4479] text-xl font-bold">Message sent!</p>
         <p className="text-[#0a4479] text-base mt-2">
           Thank you for your interest. We&apos;ll get back to you soon.
@@ -124,6 +126,10 @@ export default function JoinStudyForm() {
         <input
           id="join-name"
           type="text"
+          required
+          aria-required="true"
+          aria-invalid={state === 'error' && !name.trim()}
+          aria-describedby="join-error"
           value={name}
           onChange={e => {
             setName(e.target.value);
@@ -142,6 +148,10 @@ export default function JoinStudyForm() {
         <input
           id="join-contact"
           type="text"
+          required
+          aria-required="true"
+          aria-invalid={state === 'error' && !contact.trim()}
+          aria-describedby="join-error"
           value={contact}
           onChange={e => {
             setContact(e.target.value);
@@ -160,6 +170,10 @@ export default function JoinStudyForm() {
         <div className="relative">
           <select
             id="join-study"
+            required
+            aria-required="true"
+            aria-invalid={state === 'error' && !study}
+            aria-describedby="join-error"
             value={study}
             onChange={e => {
               setStudy(e.target.value);
@@ -203,6 +217,10 @@ export default function JoinStudyForm() {
         </label>
         <textarea
           id="join-message"
+          required
+          aria-required="true"
+          aria-invalid={state === 'error' && !message.trim()}
+          aria-describedby="join-error"
           value={message}
           onChange={e => {
             setMessage(e.target.value);
@@ -210,21 +228,30 @@ export default function JoinStudyForm() {
           }}
           placeholder="Write your message here..."
           rows={6}
-          className="w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none"
+          className="w-full border-2 border-[#767676] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#6b6b6b] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-1 transition-colors resize-none"
           disabled={state === 'loading'}
         />
       </div>
 
-      {state === 'error' && (
-        <p className="text-red-500 text-sm ml-2" role="alert">
-          {errorMsg}
-        </p>
-      )}
+      {/* Always in the DOM so aria-describedby resolves and role="alert"
+          announces; hidden while empty. Non-colour cue + red-600 (>=4.5:1). */}
+      <p
+        id="join-error"
+        role="alert"
+        className="text-red-600 font-semibold text-sm ml-2 empty:hidden"
+      >
+        {state === 'error' && (
+          <>
+            <span aria-hidden="true">⚠ </span>
+            Error: {errorMsg}
+          </>
+        )}
+      </p>
 
       <button
         type="submit"
         disabled={state === 'loading'}
-        className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-2"
       >
         {state === 'loading' ? 'Sending…' : 'Send Message'}
       </button>

@@ -15,18 +15,45 @@ function collectIds(value: unknown, ids: Set<number>): void {
   }
 }
 
+// Block fields that hold an image source; their alt sibling is always `imageAlt`.
+const IMAGE_SRC_KEYS = ["imageSrc", "image"] as const;
+
 // Deep-replace media refs with resolved paths. An unresolved ref becomes "" so a
 // dangling reference renders as no-image rather than a literal "media:42".
-function replaceRefs(value: unknown, paths: Map<number, string>): unknown {
+//
+// Additionally, when an object pairs an image source (a "media:{id}" ref) with an
+// empty/absent `imageAlt`, surface the asset's library altText as the fallback
+// (B23 / A11Y-01) so a well-described asset is described wherever it's used. A
+// per-block alt always wins; intentionally-decorative images keep alt="" because
+// their asset altText is empty too.
+function replaceRefs(
+  value: unknown,
+  paths: Map<number, string>,
+  alts: Map<number, string>,
+): unknown {
   if (typeof value === "string") {
     const id = parseMediaRef(value);
     return id !== null ? (paths.get(id) ?? "") : value;
   }
-  if (Array.isArray(value)) return value.map((v) => replaceRefs(v, paths));
+  if (Array.isArray(value)) {
+    return value.map((v) => replaceRefs(v, paths, alts));
+  }
   if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, replaceRefs(v, paths)]),
-    );
+    const obj = value as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(obj)) out[k] = replaceRefs(v, paths, alts);
+    if (out.imageAlt === undefined || out.imageAlt === "") {
+      for (const key of IMAGE_SRC_KEYS) {
+        const raw = obj[key];
+        const id = typeof raw === "string" ? parseMediaRef(raw) : null;
+        const alt = id !== null ? alts.get(id) : undefined;
+        if (alt) {
+          out.imageAlt = alt;
+          break;
+        }
+      }
+    }
+    return out;
   }
   return value;
 }
@@ -79,10 +106,11 @@ export async function resolveBlockContents(
 
   const assets = await prisma.mediaAsset.findMany({
     where: { id: { in: [...ids] } },
-    select: { id: true, filePath: true },
+    select: { id: true, filePath: true, altText: true },
   });
   const paths = new Map(assets.map((a) => [a.id, a.filePath]));
-  return parsed.map((c) => serializeBlockContent(replaceRefs(c, paths)));
+  const alts = new Map(assets.map((a) => [a.id, a.altText]));
+  return parsed.map((c) => serializeBlockContent(replaceRefs(c, paths, alts)));
 }
 
 export interface MediaUsage {

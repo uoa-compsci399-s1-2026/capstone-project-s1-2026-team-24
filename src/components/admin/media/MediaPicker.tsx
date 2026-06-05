@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toMediaRef } from "@/lib/media-refs";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { primeMediaCache } from "./useMediaResolver";
 
 export type MediaAsset = {
@@ -30,6 +31,12 @@ export default function MediaPicker({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  // Real dialog semantics (B35): trap focus, close on Escape, restore focus to
+  // the trigger on close.
+  const close = useCallback(() => setOpen(false), []);
+  useFocusTrap(open, dialogRef, close, triggerRef);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -83,18 +90,25 @@ export default function MediaPicker({
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
+        className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-[#0c0c48] hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48]"
       >
         {label}
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="flex max-h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="media-picker-title"
+            className="flex max-h-[80vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+          >
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-              <h2 className="text-lg font-bold text-[#0c0c48]">Media library</h2>
+              <h2 id="media-picker-title" className="text-lg font-bold text-[#0c0c48]">Media library</h2>
               <div className="flex items-center gap-2">
                 <button
                   type="button"

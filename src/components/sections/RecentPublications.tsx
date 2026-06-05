@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { NewTabHint } from "@/components/ui/NewTabHint";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
 
@@ -145,6 +146,7 @@ export default function RecentPublications({
                     }}
                   >
                     {t.research.viewPublicationArrow}
+                    <NewTabHint />
                   </a>
                 )}
               </div>

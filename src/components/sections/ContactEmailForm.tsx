@@ -11,14 +11,17 @@ import { isValidEmail, isValidPhone } from '@/lib/validation';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
+// Borders darkened #cac7c7 (1.7:1, fails 1.4.11) -> #767676 (>=3:1); placeholder
+// darkened to #6b6b6b (>=4.5:1); a keyboard focus-visible ring supplements the
+// border-colour change (B21 contrast, B38 focus-visible).
 const inputClass =
-  'w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors';
+  'w-full border-2 border-[#767676] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#6b6b6b] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-1 transition-colors';
 
 const labelClass =
   'block font-bold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2';
 
 const textareaClass =
-  'w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none';
+  'w-full border-2 border-[#767676] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#6b6b6b] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-1 transition-colors resize-none';
 
 export default function ContactEmailForm({
   // Admin-managed types (DB-driven), passed by the server ContactDetails
@@ -120,7 +123,7 @@ export default function ContactEmailForm({
 
   if (state === 'success') {
     return (
-      <div className="flex flex-col gap-3 py-10">
+      <div role="status" className="flex flex-col gap-3 py-10">
         <p className="text-[#0a4479] text-xl font-bold">
           {t.contactPage.successTitle}
         </p>
@@ -138,6 +141,10 @@ export default function ContactEmailForm({
         <input
           id="contact-name"
           type="text"
+          required
+          aria-required="true"
+          aria-invalid={state === 'error' && !name.trim()}
+          aria-describedby="contact-error"
           value={name}
           onChange={e => {
             setName(e.target.value);
@@ -156,6 +163,12 @@ export default function ContactEmailForm({
         <input
           id="contact-email"
           type="email"
+          aria-describedby="contact-channel-hint contact-error"
+          aria-invalid={
+            state === 'error' &&
+            ((!email.trim() && !phone.trim()) ||
+              (!!email.trim() && !isValidEmail(email.trim())))
+          }
           value={email}
           onChange={e => {
             setEmail(e.target.value);
@@ -174,6 +187,12 @@ export default function ContactEmailForm({
         <input
           id="contact-phone"
           type="tel"
+          aria-describedby="contact-channel-hint contact-error"
+          aria-invalid={
+            state === 'error' &&
+            ((!email.trim() && !phone.trim()) ||
+              (!!phone.trim() && !isValidPhone(phone.trim())))
+          }
           value={phone}
           onChange={e => {
             setPhone(e.target.value);
@@ -183,7 +202,7 @@ export default function ContactEmailForm({
           className={inputClass}
           disabled={state === 'loading'}
         />
-        <p className="text-sm text-[#0a4479]/70 mt-1.5 ml-2">
+        <p id="contact-channel-hint" className="text-sm text-[#0a4479]/80 mt-1.5 ml-2">
           {t.contactPage.eitherEmailOrPhoneHint}
         </p>
       </div>
@@ -217,6 +236,10 @@ export default function ContactEmailForm({
         <div className="relative">
           <select
             id="contact-category"
+            required
+            aria-required="true"
+            aria-invalid={state === 'error' && !category}
+            aria-describedby="contact-error"
             value={category}
             onChange={e => {
               setCategory(e.target.value);
@@ -264,6 +287,10 @@ export default function ContactEmailForm({
         </label>
         <textarea
           id="contact-message"
+          required
+          aria-required="true"
+          aria-invalid={state === 'error' && !message.trim()}
+          aria-describedby="contact-error"
           value={message}
           onChange={e => {
             setMessage(e.target.value);
@@ -291,16 +318,27 @@ export default function ContactEmailForm({
         />
       </div>
 
-      {state === 'error' && (
-        <p className="text-red-500 text-sm ml-2" role="alert">
-          {errorMsg}
-        </p>
-      )}
+      {/* Always in the DOM so aria-describedby resolves and role="alert"
+          announces; hidden while empty. Non-colour cue (icon + "Error:") plus
+          red-600 (>=4.5:1) instead of the failing red-500. */}
+      <p
+        id="contact-error"
+        role="alert"
+        className="text-red-600 font-semibold text-sm ml-2 empty:hidden"
+      >
+        {state === 'error' && (
+          <>
+            <span aria-hidden="true">⚠ </span>
+            {lang === 'EN' ? 'Error: ' : '错误：'}
+            {errorMsg}
+          </>
+        )}
+      </p>
 
       <button
         type="submit"
         disabled={state === 'loading' || noInquiryTypes}
-        className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-2"
       >
         {state === 'loading' ? t.contactPage.sending : t.contactPage.sendMessage}
       </button>

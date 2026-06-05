@@ -253,7 +253,7 @@ export default function MediaLibrary() {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search by name or alt text…"
-        className="mb-4 w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0c0c48] focus:outline-none lg:flex-shrink-0"
+        className="mb-4 w-full max-w-sm rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0c0c48] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48] lg:flex-shrink-0"
       />
 
       <div className="flex gap-6 lg:min-h-0 lg:flex-1">
@@ -381,7 +381,7 @@ export default function MediaLibrary() {
               onChange={(e) =>
                 setSelected({ ...selected, altText: e.target.value })
               }
-              className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0c0c48] focus:outline-none"
+              className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0c0c48] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48]"
             />
             <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500">
               Caption
@@ -392,7 +392,7 @@ export default function MediaLibrary() {
                 setSelected({ ...selected, caption: e.target.value })
               }
               rows={2}
-              className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0c0c48] focus:outline-none"
+              className="mb-3 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-[#0c0c48] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48]"
             />
             <div className="flex gap-2">
               <button
