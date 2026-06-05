@@ -190,48 +190,6 @@ export default function Navbar() {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (!searchOpen) {
-      setSearchQuery("");
-      setSearchResults([]);
-      setSearchLoading(false);
-      setSearchPerformed(false);
-      setActiveIndex(-1);
-    }
-  }, [searchOpen]);
-
-  useEffect(() => {
-    const trimmed = searchQuery.trim();
-    if (trimmed.length < 2) {
-      setSearchResults([]);
-      setSearchLoading(false);
-      setSearchPerformed(false);
-      setActiveIndex(-1);
-      return;
-    }
-    const controller = new AbortController();
-    setSearchLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal });
-        if (!res.ok) throw new Error(`Search request failed: ${res.status}`);
-        const data: { results?: SearchResult[] } = await res.json();
-        setSearchResults(Array.isArray(data.results) ? data.results : []);
-        setSearchPerformed(true);
-        setActiveIndex(-1);
-      } catch (error) {
-        if ((error as Error).name === "AbortError") return;
-        console.error("Search failed:", error);
-        setSearchResults([]);
-        setSearchPerformed(true);
-        setActiveIndex(-1);
-      } finally {
-        if (!controller.signal.aborted) setSearchLoading(false);
-      }
-    }, 250);
-    return () => { clearTimeout(timer); controller.abort(); };
-  }, [searchQuery]);
-
-  useEffect(() => {
     if (searchOpen) {
       previousBodyOverflowRef.current = document.body.style.overflow;
       document.body.style.overflow = "hidden";
