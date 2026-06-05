@@ -86,6 +86,7 @@ export default function PageEditor({
   const [showRevisions, setShowRevisions] = useState(false);
   const [revisions, setRevisions] = useState<RevisionMeta[] | null>(null);
   const [revisionsLoading, setRevisionsLoading] = useState(false);
+  const [rebaselining, setRebaselining] = useState(false);
 
   // Call after any successful block mutation: refresh the preview and (for
   // publishable pages) mark the draft as having unpublished changes.
@@ -320,6 +321,32 @@ export default function PageEditor({
     }
   }
 
+  // Stamp the current published version as the "Original" baseline in History.
+  // Used after a deliberate redesign is final, so "Original" keeps meaning
+  // "the page as designed" rather than an outdated layout.
+  async function handleRebaseline() {
+    if (
+      !window.confirm(
+        'Make the currently published version the new "Original" in History? The old Original entry is replaced and cannot be brought back.',
+      )
+    ) {
+      return;
+    }
+    setRebaselining(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/pages/${slug}/rebaseline`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("rebaseline failed");
+      await loadRevisions();
+    } catch {
+      setError("Failed to update the Original baseline.");
+    } finally {
+      setRebaselining(false);
+    }
+  }
+
   const liveHref = viewHref ?? publicPath(slug);
 
   const editorPane = (
@@ -482,9 +509,26 @@ export default function PageEditor({
 
         {publishable && showRevisions && (
           <div className="mt-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
-              Version history
-            </p>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                Version history
+              </p>
+              {publishedAtState && (
+                <button
+                  type="button"
+                  onClick={handleRebaseline}
+                  disabled={dirty || rebaselining}
+                  title={
+                    dirty
+                      ? "Publish your changes first — this stamps the published version."
+                      : 'Replace the "Original" entry with the currently published version.'
+                  }
+                  className="flex-shrink-0 rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {rebaselining ? "Updating…" : "Set current as Original"}
+                </button>
+              )}
+            </div>
             {revisionsLoading ? (
               <p className="text-sm text-gray-400">Loading…</p>
             ) : revisions && revisions.length > 0 ? (
@@ -532,6 +576,12 @@ export default function PageEditor({
                 No published versions yet. Publish to start the history.
               </p>
             )}
+            <p className="mt-2 text-[11px] leading-snug text-gray-400">
+              &ldquo;Original&rdquo; is the page&rsquo;s approved baseline
+              design. When a redesign is published and final, use &ldquo;Set
+              current as Original&rdquo; so restoring Original brings back the
+              right version.
+            </p>
           </div>
         )}
       </div>

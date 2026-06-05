@@ -82,8 +82,9 @@ The helpers are pure functions in `src/lib/page-publish.ts`:
 - **Publish** → `POST /api/admin/pages/<slug>/publish`. Copies the draft into `publishedContent`, records a **`PageRevision`** snapshot, and warms translations (below).
 - **History / Restore** → `GET .../revisions` lists snapshots; `POST .../revisions/<id>/restore` loads a past version back into the draft (you then review and Publish to make it live).
 - **Discard** → `POST .../discard` reverts the draft to the published version.
+- **Set current as Original** → `POST .../rebaseline`. Replaces the `"Original"` revision's content with the current `publishedContent` (creates it, backdated, if missing). Use after a deliberate redesign is published and final, so "Original" keeps meaning *the page as designed* — without this, restoring Original would resurrect an outdated layout. Disabled while the draft has unpublished changes (it stamps the **published** version, not the draft).
 
-`PageRevision` rows are the point-in-time history (pruned to the most recent few). One may be labelled `"Original"`.
+`PageRevision` rows are the point-in-time history (pruned to the most recent few). One may be labelled `"Original"` — the page's approved baseline. It is never pruned and only changes via the rebaseline action above.
 
 ### Study layouts (a special case of the page editor)
 
