@@ -146,14 +146,16 @@ async function main() {
     ],
   });
 
+  // Inquiry types: category is the immutable key; the labels are what the
+  // public form shows (per language) and are admin-editable.
   await prisma.contactRecipient.createMany({
     data: [
-      { category: "Study Participant Enquiry", email: "TODO_PARTICIPANT@auckland.ac.nz" },
-      { category: "Industry Partnership", email: "TODO_PARTNERSHIPS@auckland.ac.nz" },
-      { category: "Internship or PhD Opportunity", email: "TODO_STUDENTS@auckland.ac.nz" },
-      { category: "Donation", email: "TODO_DONATIONS@auckland.ac.nz" },
-      { category: "General Enquiry", email: "TODO_GENERAL@auckland.ac.nz" },
-      { category: "Other", email: "TODO_GENERAL@auckland.ac.nz" },
+      { category: "Study Participant Enquiry", labelEn: "Study Participant Enquiry", labelZh: "研究参与者咨询", order: 1, email: "TODO_PARTICIPANT@auckland.ac.nz" },
+      { category: "Industry Partnership", labelEn: "Industry Partnership", labelZh: "行业合作", order: 2, email: "TODO_PARTNERSHIPS@auckland.ac.nz" },
+      { category: "Internship or PhD Opportunity", labelEn: "Internship or PhD Opportunity", labelZh: "实习或博士机会", order: 3, email: "TODO_STUDENTS@auckland.ac.nz" },
+      { category: "Donation", labelEn: "Donation", labelZh: "捐赠", order: 4, email: "TODO_DONATIONS@auckland.ac.nz" },
+      { category: "General Enquiry", labelEn: "General Enquiry", labelZh: "一般咨询", order: 5, email: "TODO_GENERAL@auckland.ac.nz" },
+      { category: "Other", labelEn: "Other", labelZh: "其他", order: 6, email: "TODO_GENERAL@auckland.ac.nz" },
     ],
   });
 

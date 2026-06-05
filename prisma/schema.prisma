@@ -100,11 +100,23 @@ model PartnerLogo {
   @@index([order])
 }
 
+// The admin-managed inquiry types AND their routing, one row per type. The
+// public form's dropdown, /api/contact's category validation, and the
+// notification recipient all read from here. `category` is the immutable
+// canonical key stored on ContactSubmission rows — renames touch only the
+// labels, so history and routing stay stable. Removal = isArchived (soft):
+// the type leaves the form but historical submissions keep resolving.
 model ContactRecipient {
-  id        Int      @id @default(autoincrement())
-  category  String   @unique
-  email     String
-  updatedAt DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  category   String   @unique
+  email      String
+  labelEn    String   @default("")
+  labelZh    String   @default("")
+  order      Int      @default(0)
+  isArchived Boolean  @default(false)
+  updatedAt  DateTime @updatedAt
+
+  @@index([isArchived, order])
 }
 
 model StudyPdf {
