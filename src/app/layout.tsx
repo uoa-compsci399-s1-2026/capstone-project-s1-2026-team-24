@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
@@ -8,9 +8,13 @@ import { getServerLang } from "@/lib/lang";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getNavStudies } from "@/lib/nav-studies";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Inter is the site's body font. next/font self-hosts a WOFF2 latin subset at
+// build time with font-display: swap (no FOIT, no ~2.4MB of OTF on every page),
+// exposed as the --font-sans token. Geist Mono stays for admin `font-mono`.
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -51,7 +55,7 @@ export default async function RootLayout({
   return (
     <html
       lang={lang === "ZH" ? "zh-Hans" : "en"}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <LanguageProvider initialLang={lang}>

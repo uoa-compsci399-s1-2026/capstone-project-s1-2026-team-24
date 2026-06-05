@@ -29,7 +29,7 @@ function renderUpdate(update: Update) {
       {update.date && (
         <span
           style={{
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: "12px",
             fontWeight: 600,
             color: "rgba(255,255,255,0.5)",
@@ -43,7 +43,7 @@ function renderUpdate(update: Update) {
 
       <h3
         style={{
-          fontFamily: "Inter, sans-serif",
+          fontFamily: "var(--font-inter), sans-serif",
           fontSize: "clamp(18px, 4vw, 22px)",
           fontWeight: 700,
           color: "white",
@@ -65,7 +65,7 @@ function renderUpdate(update: Update) {
           <p
             key={i}
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "clamp(13px, 3.5vw, 15px)",
               color: "rgba(255,255,255,0.75)",
               lineHeight: 1.7,

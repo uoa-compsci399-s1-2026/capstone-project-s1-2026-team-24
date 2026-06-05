@@ -37,14 +37,14 @@ Two distinct things live in `globals.css`, and it's worth keeping them straight:
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 }
 ```
 
-Variables defined in `@theme` become Tailwind tokens (e.g. `--color-background` → the `bg-background` / `text-background` utilities). Today this block only maps `background`/`foreground` colours and the `font-sans`/`font-mono` families. The font variables point at `--font-geist-sans` / `--font-geist-mono`, which `src/app/layout.tsx` defines via `next/font/google` (Geist).
+Variables defined in `@theme` become Tailwind tokens (e.g. `--color-background` → the `bg-background` / `text-background` utilities). Today this block only maps `background`/`foreground` colours and the `font-sans`/`font-mono` families. The font variables point at `--font-inter` and `--font-geist-mono`, both defined in `src/app/layout.tsx` via `next/font/google` (Inter for the body, Geist Mono for `font-mono`).
 
-> **Note:** the visible body font is **Inter**, not Geist. `body` in `globals.css` sets `font-family: "Inter", sans-serif`, and Inter is loaded from `@font-face` rules (the `.otf` files in `public/fonts/`). The Geist `--font-*` variables are wired through `@theme` but the `font-sans`/`font-mono` Tailwind utilities aren't what drives the default page font — Inter on `body` does. If you add `font-sans` somewhere expecting Inter, be aware it resolves to Geist.
+> **Note:** the body font is **Inter**, loaded via `next/font/google` (`src/app/layout.tsx`), which self-hosts a WOFF2 latin subset with `font-display: swap` and exposes it as the `--font-inter` CSS variable on `<html>`. `body` in `globals.css` sets `font-family: var(--font-inter), sans-serif`, and the `font-sans` Tailwind token also maps to `--font-inter` — so `font-sans` and the default body font now agree (both Inter). Use `var(--font-inter)` when you need the family in raw CSS/inline styles (the `@theme inline` `--font-sans` token is inlined into utilities, not emitted as a `:root` variable). Geist **Mono** remains for the `font-mono` utility (admin tables).
 
 ### 2. Brand colours (plain CSS custom properties)
 

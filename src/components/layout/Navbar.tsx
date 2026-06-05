@@ -830,7 +830,7 @@ export default function Navbar() {
                   key={l}
                   onClick={() => setLang(l)}
                   aria-pressed={lang === l}
-                  className={`px-6 py-2.5 rounded-[30px] text-sm tracking-widest transition-colors border-[3px] font-bold font-['Inter'] ${lang === l ? "border-white text-white" : "border-white/15 text-white/50"}`}
+                  className={`px-6 py-2.5 rounded-[30px] text-sm tracking-widest transition-colors border-[3px] font-bold font-[var(--font-inter)] ${lang === l ? "border-white text-white" : "border-white/15 text-white/50"}`}
                 >
                   {l === "EN" ? "EN" : "中文"}
                 </button>

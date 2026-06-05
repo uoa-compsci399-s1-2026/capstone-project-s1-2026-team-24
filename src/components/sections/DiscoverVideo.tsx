@@ -104,7 +104,7 @@ export default function DiscoverVideo({
             <h2
               className="text-white font-bold"
               style={{
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: "32px",
                 lineHeight: 1.2,
               }}
@@ -115,7 +115,7 @@ export default function DiscoverVideo({
             <p
               className="text-white/85"
               style={{
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: "16px",
                 lineHeight: 1.6,
               }}

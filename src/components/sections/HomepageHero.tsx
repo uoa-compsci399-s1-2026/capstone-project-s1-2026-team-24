@@ -61,7 +61,7 @@ export default function HomepageHero({
               <h2
                 className="leading-[1.05]"
                 style={{
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "72px",
                   fontWeight: 800,
                   opacity: 0.75,

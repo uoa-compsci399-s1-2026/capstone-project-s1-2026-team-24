@@ -56,7 +56,7 @@ export default function StudyHero({
       >
         <h1
           style={{
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: "clamp(28px, 6vw, 76px)",
             fontWeight: 800,
             color: "rgba(255,255,255,0.75)",

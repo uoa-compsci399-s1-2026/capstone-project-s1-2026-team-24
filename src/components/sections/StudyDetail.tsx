@@ -50,7 +50,7 @@ export default function StudyDetail({
             border: "1.5px solid #0c0c48",
             borderRadius: "9999px",
             padding: "6px 16px",
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: "14px",
             color: "#0c0c48",
           }}
@@ -76,7 +76,7 @@ export default function StudyDetail({
               border: "1.5px solid #0c0c48",
               borderRadius: "9999px",
               padding: "6px 16px",
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "14px",
               color: "#0c0c48",
             }}
@@ -112,7 +112,7 @@ export default function StudyDetail({
         >
           <div
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "16px",
               lineHeight: 1.8,
               color: "#1f2937",
@@ -142,7 +142,7 @@ export default function StudyDetail({
           >
             <h2
               style={{
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: "18px",
                 fontWeight: 700,
                 color: "#0c0c48",
@@ -168,7 +168,7 @@ export default function StudyDetail({
                     display: "flex",
                     alignItems: "flex-start",
                     gap: "8px",
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "14px",
                     color: "#374151",
                     lineHeight: 1.5,
@@ -200,7 +200,7 @@ export default function StudyDetail({
               border: "2px solid #0c0c48",
               borderRadius: "16px",
               padding: "24px",
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "22px",
               fontWeight: 600,
               color: "#0c0c48",
@@ -225,7 +225,7 @@ export default function StudyDetail({
           <Link
             href={contactHref}
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "14px",
               color: "#0c0c48",
               textAlign: "center",

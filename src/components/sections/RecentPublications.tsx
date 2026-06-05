@@ -82,7 +82,7 @@ export default function RecentPublications({
                     alignSelf: "flex-start",
                     backgroundColor: "rgba(10,67,121,0.1)",
                     color: "#0a4379",
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "11px",
                     fontWeight: 700,
                     letterSpacing: "0.08em",
@@ -96,7 +96,7 @@ export default function RecentPublications({
 
                 <h3
                   style={{
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "20px",
                     fontWeight: 700,
                     color: "#0c0c48",
@@ -109,7 +109,7 @@ export default function RecentPublications({
 
                 <p
                   style={{
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "14px",
                     color: "#0a4379",
                     margin: 0,
@@ -120,7 +120,7 @@ export default function RecentPublications({
 
                 <p
                   style={{
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "14px",
                     fontStyle: "italic",
                     color: "#6b7280",
@@ -138,7 +138,7 @@ export default function RecentPublications({
                     style={{
                       alignSelf: "flex-start",
                       marginTop: "8px",
-                      fontFamily: "Inter, sans-serif",
+                      fontFamily: "var(--font-inter), sans-serif",
                       fontSize: "14px",
                       color: "#0a4379",
                       textDecoration: "underline",
