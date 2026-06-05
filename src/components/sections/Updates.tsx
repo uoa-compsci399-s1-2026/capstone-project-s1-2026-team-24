@@ -14,6 +14,72 @@ interface UpdatesProps {
   backgroundColor?: string;
 }
 
+/** Shared layout for each cell in the grid stack (hidden sizing cells + visible card). */
+const cellStyle: React.CSSProperties = {
+  gridArea: "1 / 1",
+  display: "flex",
+  flexDirection: "column",
+  gap: "12px",
+};
+
+/** One update's content — rendered both as a hidden sizing cell and as the visible card. */
+function renderUpdate(update: Update) {
+  return (
+    <>
+      {update.date && (
+        <span
+          style={{
+            fontFamily: "Inter, sans-serif",
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.5)",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+          }}
+        >
+          {update.date}
+        </span>
+      )}
+
+      <h3
+        style={{
+          fontFamily: "Inter, sans-serif",
+          fontSize: "clamp(18px, 4vw, 22px)",
+          fontWeight: 700,
+          color: "white",
+          lineHeight: 1.25,
+          margin: 0,
+        }}
+      >
+        {update.title}
+      </h3>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+        }}
+      >
+        {update.paragraphs.map((para, i) => (
+          <p
+            key={i}
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontSize: "clamp(13px, 3.5vw, 15px)",
+              color: "rgba(255,255,255,0.75)",
+              lineHeight: 1.7,
+              margin: 0,
+            }}
+          >
+            {para}
+          </p>
+        ))}
+      </div>
+    </>
+  );
+}
+
 export default function Updates({
   updates,
   backgroundColor = "#0c0c48f2",
@@ -54,8 +120,6 @@ export default function Updates({
     }
     touchStartX.current = null;
   };
-
-  const update = updates[current];
 
   return (
     <section className="w-full bg-white py-10 px-6 sm:px-12">
@@ -134,65 +198,31 @@ export default function Updates({
               →
             </button>
 
-            {/* Animated content */}
-            <div
-              key={current}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "12px",
-                animation: `${direction === "left" ? "slideInLeft" : "slideInRight"} 0.3s ease`,
-              }}
-            >
-              {update.date && (
-                <span
-                  style={{
-                    fontFamily: "Inter, sans-serif",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    color: "rgba(255,255,255,0.5)",
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                  }}
+            {/* Animated content as a grid stack: every update stays mounted
+                as a hidden cell in the same grid area, so the card always
+                holds the height of the tallest update and the page never
+                reflows (jumps) when the carousel rotates. The active update
+                is a visible overlay keyed on `current`, remounted per change
+                so the slide-in animation restarts. */}
+            <div style={{ display: "grid" }}>
+              {updates.map((u, i) => (
+                <div
+                  key={i}
+                  aria-hidden="true"
+                  style={{ ...cellStyle, visibility: "hidden" }}
                 >
-                  {update.date}
-                </span>
-              )}
-
-              <h3
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  fontSize: "clamp(18px, 4vw, 22px)",
-                  fontWeight: 700,
-                  color: "white",
-                  lineHeight: 1.25,
-                  margin: 0,
-                }}
-              >
-                {update.title}
-              </h3>
+                  {renderUpdate(u)}
+                </div>
+              ))}
 
               <div
+                key={`active-${current}`}
                 style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
+                  ...cellStyle,
+                  animation: `${direction === "left" ? "slideInLeft" : "slideInRight"} 0.3s ease`,
                 }}
               >
-                {update.paragraphs.map((para, i) => (
-                  <p
-                    key={i}
-                    style={{
-                      fontFamily: "Inter, sans-serif",
-                      fontSize: "clamp(13px, 3.5vw, 15px)",
-                      color: "rgba(255,255,255,0.75)",
-                      lineHeight: 1.7,
-                      margin: 0,
-                    }}
-                  >
-                    {para}
-                  </p>
-                ))}
+                {renderUpdate(updates[current])}
               </div>
             </div>
           </div>
