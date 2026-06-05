@@ -12,6 +12,14 @@ import zh from "@/messages/zh";
 import type { SearchResult } from "@/app/api/search/route";
 import React from "react";
 
+// The slice of /api/studies the dropdown needs (the route returns more).
+type NavStudy = {
+  slug: string;
+  title: string;
+  imagePath: string | null;
+  status: string;
+};
+
 export default function Navbar() {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -40,6 +48,33 @@ export default function Navbar() {
   const wasSearchOpenRef = useRef(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [navStudies, setNavStudies] = useState<NavStudy[]>([]);
+
+  // Live studies for the Studies dropdown: every active, not-yet-completed
+  // study, order-sorted and title-localised by the route. Refetched on a
+  // language switch so the titles follow the toggle.
+  useEffect(() => {
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const res = await fetch(`/api/studies?lang=${lang.toLowerCase()}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`Studies request failed: ${res.status}`);
+        const data: NavStudy[] = await res.json();
+        setNavStudies(
+          (Array.isArray(data) ? data : []).filter(
+            (study) => study.status !== "Completed",
+          ),
+        );
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+        // Non-fatal: the dropdown just stays empty (the Studies link still works).
+        console.error("Navbar studies fetch failed:", error);
+      }
+    })();
+    return () => controller.abort();
+  }, [lang]);
 
   const ABOUT_ITEMS = [
     { label: t.navbar.discoverHnu, image: "Discover HNU", href: "/about" },
@@ -62,12 +97,14 @@ export default function Navbar() {
     { label: t.navbar.contact, href: "/contact" },
   ];
 
-  const STUDIES_ITEMS = [
-    { label: t.navbar.studiesOverview, image: "Studies Overview", href: "/studies" },
-    { label: t.navbar.nzSynergy, image: "NZ Synergy Study", href: "/studies/nz-synergy" },
-    { label: t.navbar.foodBeverage, image: "nz-food-beverage-study", href: "/studies/food-beverage" },
-    { label: t.navbar.ferdinand, image: "Ferdinand Study", href: "/studies/ferdinand" },
-  ] as const;
+  // Dropdown entries derived from the DB (was a hardcoded three-study list, so
+  // a fourth study never appeared anywhere in the nav). imagePath is a full
+  // public path on the Study row; entries without one render a placeholder.
+  const studyNavItems = navStudies.map((study) => ({
+    label: study.title,
+    image: study.imagePath || "",
+    href: `/studies/${study.slug}`,
+  }));
 
   const POPULAR_SEARCHES = [
     { label: t.navbar.discoverHnu, href: "/about" },
@@ -592,8 +629,11 @@ export default function Navbar() {
                       }}
                     >
                       <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
-                        <div className="flex space-x-4">
-                          {STUDIES_ITEMS.slice(1).map((item) => (
+                        {/* Stays the width of three cards (3×300px + 2×16px gap);
+                            more studies scroll horizontally behind a visible
+                            scrollbar instead of widening the dropdown. */}
+                        <div className="studies-dropdown-scroll flex space-x-4 max-w-[932px] overflow-x-auto py-2">
+                          {studyNavItems.map((item) => (
                             <Link
                               key={item.href}
                               href={item.href}
@@ -604,14 +644,21 @@ export default function Navbar() {
                                   setStudiesClosing(false);
                                 }, 300);
                               }}
-                              className="group block transition-transform duration-300 hover:scale-105"
+                              className="group block shrink-0 w-[300px] transition-transform duration-300 hover:scale-105"
                             >
                               <div className="relative">
-                                <img
-                                  src={`/${item.image}.jpg`}
-                                  className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                                  alt={item.label}
-                                />
+                                {item.image ? (
+                                  <img
+                                    src={item.image}
+                                    className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                                    alt={item.label}
+                                  />
+                                ) : (
+                                  <div
+                                    className="w-[300px] h-[200px] rounded-[30px] bg-white/10"
+                                    aria-hidden="true"
+                                  />
+                                )}
                               </div>
 
                               <p className="mt-3 text-white text-[18px] font-semibold text-center">
@@ -808,9 +855,10 @@ export default function Navbar() {
                     </svg>
                   </span>
                 </button>
-                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${mobileStudiesOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"}`}>
+                {/* max-h-96 (not 48) so more than three DB studies aren't clipped. */}
+                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${mobileStudiesOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
                   <ul className="pl-4 pb-2 space-y-0">
-                    {STUDIES_ITEMS.slice(1).map((item) => (
+                    {studyNavItems.map((item) => (
                       <li key={item.href}>
                         <Link href={item.href} onClick={() => setMobileOpen(false)} className="block py-2.5 text-white text-[15px] font-medium hover:opacity-70 transition-opacity">
                           {item.label}

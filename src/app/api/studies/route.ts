@@ -20,6 +20,10 @@ export async function GET(request: Request) {
         imagePath: true,
         contactEmail: true,
         isActive: true,
+        // status lets clients split current vs completed studies (the navbar
+        // dropdown hides "Completed"); order exposes the admin-set sort key.
+        status: true,
+        order: true,
       },
     });
 

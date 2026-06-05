@@ -33,6 +33,8 @@ describe("GET /api/studies", () => {
         imagePath: "/images/studies/s1.jpg",
         contactEmail: "team@example.com",
         isActive: true,
+        status: "Recruiting",
+        order: 1,
       },
     ]);
 
@@ -40,6 +42,8 @@ describe("GET /api/studies", () => {
       new Request("http://localhost/api/studies?lang=en"),
     );
     expect(response.status).toBe(200);
+    // status + order are part of the contract: the navbar dropdown filters out
+    // "Completed" studies client-side and relies on the admin-set order.
     await expect(response.json()).resolves.toEqual([
       {
         id: 1,
@@ -49,6 +53,8 @@ describe("GET /api/studies", () => {
         imagePath: "/images/studies/s1.jpg",
         contactEmail: "team@example.com",
         isActive: true,
+        status: "Recruiting",
+        order: 1,
       },
     ]);
     expect(mockPrisma.study.findMany).toHaveBeenCalledWith({
@@ -62,6 +68,8 @@ describe("GET /api/studies", () => {
         imagePath: true,
         contactEmail: true,
         isActive: true,
+        status: true,
+        order: true,
       },
     });
   });
@@ -76,6 +84,8 @@ describe("GET /api/studies", () => {
         imagePath: "/images/studies/s1.jpg",
         contactEmail: "team@example.com",
         isActive: true,
+        status: "Recruiting",
+        order: 1,
       },
     ]);
     const sha256 = (s: string) =>
@@ -98,6 +108,8 @@ describe("GET /api/studies", () => {
         imagePath: "/images/studies/s1.jpg",
         contactEmail: "team@example.com",
         isActive: true,
+        status: "Recruiting",
+        order: 1,
       },
     ]);
   });
