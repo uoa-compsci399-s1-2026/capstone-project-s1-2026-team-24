@@ -296,6 +296,7 @@ async function fuzzySearch(
           select: { content: true },
         },
       },
+      orderBy: { updatedAt: "desc" },
       take: FUZZY_PAGE_TAKE,
     }),
   ]);
@@ -556,10 +557,12 @@ export async function GET(request: NextRequest) {
       seenHrefs.add(href);
     }
 
-    // Typo tolerance: when the exact pass leaves the dropdown underfilled, run
-    // a fuzzy pass so close misspellings still find results. Exact matches
-    // always rank first; a filled dropdown skips the extra queries entirely.
-    if (results.length < RESULT_LIMIT) {
+    // Typo tolerance: only when the exact pass found nothing do we fall back to
+    // a fuzzy pass, so close misspellings still surface results. Keeping this a
+    // zero-result fallback (rather than topping up any underfilled dropdown)
+    // means well-spelled queries never pay for the fuzzy pass's extra DB reads
+    // and in-JS scoring on the type-ahead hot path.
+    if (results.length === 0) {
       results.push(...(await fuzzySearch(q, results)));
     }
 
