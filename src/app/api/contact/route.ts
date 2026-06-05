@@ -3,6 +3,13 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
 import { sendContactNotification } from "@/lib/email";
+import {
+  asTrimmedString,
+  isValidEmail,
+  isValidPhone,
+  normalizePhone,
+  sanitizePhone,
+} from "@/lib/validation";
 
 const ALLOWED_CATEGORIES = [
   "Study Participant Enquiry",
@@ -20,25 +27,6 @@ const MIN_MESSAGE_LENGTH = 10;
 const MAX_URLS_IN_MESSAGE = 3;
 const URL_REGEX = /https?:\/\/|www\./gi;
 
-function asTrimmedString(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-// Lenient (NZ + international): allow spaces/dashes/parentheses and an
-// optional leading +, then require 7–15 digits. Whitespace-free output also
-// keeps the email body injection-safe (no CR/LF can survive).
-function normalizePhone(phone: string) {
-  return phone.replace(/[\s\-().]/g, "");
-}
-
-function isValidPhone(phone: string) {
-  return /^\+?\d{7,15}$/.test(normalizePhone(phone));
-}
-
 function countUrlsLike(text: string) {
   const matches = text.match(URL_REGEX);
   return matches ? matches.length : 0;
@@ -50,7 +38,10 @@ export async function POST(request: NextRequest) {
 
     const name = asTrimmedString(body?.name);
     const email = asTrimmedString(body?.email);
-    const phone = asTrimmedString(body?.phone);
+    // Canonical phone: whitespace collapsed to single spaces (no CR/LF), so the
+    // value we store and drop into the notification email body is injection-safe
+    // while staying human-readable. Validation/rate-limit key off normalizePhone.
+    const phone = sanitizePhone(asTrimmedString(body?.phone));
     // Only meaningful when both contact channels were given (the form shows
     // the checkbox only then) — never trust it without a phone to prefer.
     const prefersPhone = body?.prefersPhone === true && phone !== "";

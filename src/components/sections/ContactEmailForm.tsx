@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import en from '@/messages/en';
 import zh from '@/messages/zh';
+import { isValidEmail, isValidPhone } from '@/lib/validation';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
@@ -26,16 +27,6 @@ const labelClass =
 
 const textareaClass =
   'w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none';
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-// Lenient phone check mirroring the API: spaces/dashes/parentheses allowed,
-// optional leading +, then 7–15 digits.
-function isValidPhone(phone: string) {
-  return /^\+?\d{7,15}$/.test(phone.replace(/[\s\-().]/g, ''));
-}
 
 export default function ContactEmailForm() {
   const { lang } = useLanguage();
