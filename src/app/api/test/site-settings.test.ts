@@ -5,6 +5,12 @@ const mockPrisma = vi.hoisted(() => ({
     findUnique: vi.fn(),
     upsert: vi.fn(),
   },
+  // The route reads the previous path and writes the new one in one
+  // $transaction([...]); the mocked calls already return resolved values, so
+  // Promise.all reproduces the array-form result tuple.
+  $transaction: vi.fn((ops: unknown[]) =>
+    Promise.all(ops as Promise<unknown>[]),
+  ),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -17,6 +23,9 @@ const mockFs = vi.hoisted(() => ({
   unlink: vi.fn(),
 }));
 
+// The route imports mkdir/writeFile from "node:fs/promises"; media-upload's
+// tryRemoveFile imports unlink from "fs/promises". Vitest treats both specifiers
+// as the same module, so this single mock covers all three on one spy set.
 vi.mock("node:fs/promises", () => mockFs);
 
 // unstable_cache becomes a pass-through so getSiteSettings hits the (mocked)
@@ -197,5 +206,58 @@ describe("site settings", () => {
     expect(response.status).toBe(200);
     // Old value pointed outside /uploads/branding → must not be unlinked.
     expect(mockFs.unlink).not.toHaveBeenCalled();
+  });
+
+  it("stores an extension-less PNG with a derived .png extension", async () => {
+    mockPrisma.siteSettings.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.siteSettings.upsert.mockImplementationOnce(
+      async ({ create }: { create: Record<string, string> }) => ({
+        id: 1,
+        faviconPath: "",
+        logoLightPath: create.logoLightPath ?? "",
+        logoDarkPath: "",
+      }),
+    );
+
+    // A genuine PNG whose filename has no extension: validated by MIME, and the
+    // stored file must still end in .png so it is served as an image, not octet-stream.
+    const response = await POST(
+      postRequest({
+        target: "logoLight",
+        file: new File(["png-bytes"], "logo", { type: "image/png" }),
+      }) as never,
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { logoLightPath: string };
+    expect(body.logoLightPath).toMatch(/^\/uploads\/branding\/\d+-logo\.png$/);
+    expect(mockFs.writeFile).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects an upload with neither a recognised type nor a valid extension", async () => {
+    const response = await POST(
+      postRequest({
+        target: "logoLight",
+        file: new File(["x"], "logo", { type: "application/octet-stream" }),
+      }) as never,
+    );
+    expect(response.status).toBe(400);
+    expect(mockFs.writeFile).not.toHaveBeenCalled();
+  });
+
+  it("removes the just-saved file if the DB write fails (no orphan)", async () => {
+    mockPrisma.siteSettings.findUnique.mockResolvedValueOnce(null);
+    mockPrisma.siteSettings.upsert.mockRejectedValueOnce(new Error("db down"));
+
+    const response = await POST(
+      postRequest({
+        target: "logoLight",
+        file: new File(["png-bytes"], "logo.png", { type: "image/png" }),
+      }) as never,
+    );
+    expect(response.status).toBe(500);
+    expect(mockFs.writeFile).toHaveBeenCalledTimes(1);
+    // The orphaned upload is cleaned up.
+    expect(mockFs.unlink).toHaveBeenCalledTimes(1);
+    expect(String(mockFs.unlink.mock.calls[0][0])).toMatch(/\d+-logo\.png$/);
   });
 });

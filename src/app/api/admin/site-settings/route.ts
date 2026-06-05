@@ -1,9 +1,9 @@
-import { mkdir, unlink, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { sanitizeFileName } from "@/lib/media-upload";
+import { sanitizeFileName, tryRemoveFile } from "@/lib/media-upload";
 import {
   getRawSiteSettings,
   SITE_SETTINGS_CACHE_TAG,
@@ -11,18 +11,56 @@ import {
 
 export const runtime = "nodejs";
 
-const BRANDING_UPLOAD_PREFIX = "/uploads/branding/";
+// Branding uploads live under /public/uploads/branding; this is also the guard
+// prefix passed to tryRemoveFile so a delete can never escape that directory.
+const BRANDING_UPLOAD_DIR = "uploads/branding";
 
-// Favicons are tiny; logos match the team-photo limit.
-const MAX_FAVICON_SIZE = 1 * 1024 * 1024;
-const MAX_LOGO_SIZE = 5 * 1024 * 1024;
+const MB = 1024 * 1024;
 
 type Target = "favicon" | "logoLight" | "logoDark";
+type Column = "faviconPath" | "logoLightPath" | "logoDarkPath";
 
-const TARGET_COLUMNS: Record<Target, "faviconPath" | "logoLightPath" | "logoDarkPath"> = {
-  favicon: "faviconPath",
-  logoLight: "logoLightPath",
-  logoDark: "logoDarkPath",
+// Per-target upload policy in one place (column, size cap, accepted types, and
+// the canonical stored extension by MIME). SVG stays banned for uploads
+// (stored-XSS stance shared with media uploads); the committed default logo IS
+// an SVG, but resets restore it — uploads can't introduce new ones. Favicons
+// additionally accept .ico, whose MIME is browser-inconsistent, so we also map
+// by filename extension.
+const TARGET_CONFIG: Record<
+  Target,
+  {
+    column: Column;
+    rejectMessage: string;
+    maxSize: number;
+    extByMime: Record<string, string>;
+    extByName: RegExp;
+  }
+> = {
+  favicon: {
+    column: "faviconPath",
+    rejectMessage: "Favicon must be a PNG or ICO file.",
+    maxSize: 1 * MB,
+    extByMime: {
+      "image/png": "png",
+      "image/x-icon": "ico",
+      "image/vnd.microsoft.icon": "ico",
+    },
+    extByName: /\.(png|ico)$/i,
+  },
+  logoLight: {
+    column: "logoLightPath",
+    rejectMessage: "Logo must be a PNG or WebP file.",
+    maxSize: 5 * MB,
+    extByMime: { "image/png": "png", "image/webp": "webp" },
+    extByName: /\.(png|webp)$/i,
+  },
+  logoDark: {
+    column: "logoDarkPath",
+    rejectMessage: "Logo must be a PNG or WebP file.",
+    maxSize: 5 * MB,
+    extByMime: { "image/png": "png", "image/webp": "webp" },
+    extByName: /\.(png|webp)$/i,
+  },
 };
 
 function parseTarget(value: FormDataEntryValue | null): Target | null {
@@ -31,45 +69,36 @@ function parseTarget(value: FormDataEntryValue | null): Target | null {
     : null;
 }
 
-// SVG stays banned for uploads (stored-XSS stance shared with media uploads;
-// the committed default logo IS an SVG, but resets restore that, uploads
-// can't introduce new ones). Favicons additionally accept .ico — its MIME is
-// inconsistent across browsers, so fall back to the extension.
-function isAllowedFaviconFile(file: File): boolean {
-  return (
-    /^image\/(png|x-icon|vnd\.microsoft\.icon)$/i.test(file.type) ||
-    /\.(png|ico)$/i.test(file.name)
-  );
+// Canonical stored extension: prefer the validated MIME, fall back to a valid
+// filename extension. Returns null when neither identifies an accepted image —
+// the upload is rejected rather than stored with a non-image extension (which
+// would be served as octet-stream and render as a broken image).
+function resolveExtension(
+  file: File,
+  cfg: (typeof TARGET_CONFIG)[Target],
+): string | null {
+  const byMime = cfg.extByMime[file.type.toLowerCase()];
+  if (byMime) return byMime;
+  const match = cfg.extByName.exec(file.name);
+  return match ? match[1].toLowerCase() : null;
 }
 
-function isAllowedLogoFile(file: File): boolean {
-  return /^image\/(png|webp)$/i.test(file.type) || /\.(png|webp)$/i.test(file.name);
-}
-
-// Remove a previously-uploaded branding file; never touches anything outside
-// /public/uploads/branding (the committed default assets live elsewhere).
-async function tryRemoveBrandingFile(filePath: string): Promise<void> {
-  if (!filePath.startsWith(BRANDING_UPLOAD_PREFIX)) return;
-  const relative = filePath.replace(/^\/+/, "");
-  try {
-    await unlink(path.join(process.cwd(), "public", relative));
-  } catch (error) {
-    console.warn("Branding file could not be removed:", error);
-  }
-}
-
-async function saveBrandingFile(file: File): Promise<string> {
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "branding");
+async function saveBrandingFile(file: File, ext: string): Promise<string> {
+  const uploadDir = path.join(process.cwd(), "public", BRANDING_UPLOAD_DIR);
   await mkdir(uploadDir, { recursive: true });
 
   // Timestamped name: collision-free, and a fresh URL each upload busts the
-  // browser's (aggressive) favicon cache.
-  const safeFileName = `${Date.now()}-${sanitizeFileName(file.name)}`;
+  // browser's (aggressive) favicon cache. The extension is always the canonical
+  // one derived from the validated type, so the file is served as an image
+  // even if the original upload had a missing or misleading extension.
+  const base =
+    sanitizeFileName(file.name).replace(/\.[^.]*$/, "") || "branding";
+  const safeFileName = `${Date.now()}-${base}.${ext}`;
   await writeFile(
     path.join(uploadDir, safeFileName),
     Buffer.from(await file.arrayBuffer()),
   );
-  return `${BRANDING_UPLOAD_PREFIX}${safeFileName}`;
+  return `/${BRANDING_UPLOAD_DIR}/${safeFileName}`;
 }
 
 /** Raw stored values ("" = built-in default) for the admin UI. */
@@ -102,7 +131,7 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
-    const column = TARGET_COLUMNS[target];
+    const cfg = TARGET_CONFIG[target];
     const reset = formData.get("reset") === "true";
     const file = formData.get("file");
 
@@ -114,42 +143,47 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         );
       }
-      if (target === "favicon" ? !isAllowedFaviconFile(file) : !isAllowedLogoFile(file)) {
+      if (file.size > cfg.maxSize) {
         return NextResponse.json(
-          {
-            error:
-              target === "favicon"
-                ? "Favicon must be a PNG or ICO file."
-                : "Logo must be a PNG or WebP file.",
-          },
+          { error: `File must be under ${Math.round(cfg.maxSize / MB)}MB.` },
           { status: 400 },
         );
       }
-      const maxSize = target === "favicon" ? MAX_FAVICON_SIZE : MAX_LOGO_SIZE;
-      if (file.size > maxSize) {
-        return NextResponse.json(
-          { error: `File must be under ${Math.round(maxSize / 1024 / 1024)}MB.` },
-          { status: 400 },
-        );
+      const ext = resolveExtension(file, cfg);
+      if (!ext) {
+        return NextResponse.json({ error: cfg.rejectMessage }, { status: 400 });
       }
-      newPath = await saveBrandingFile(file);
+      newPath = await saveBrandingFile(file, ext);
     }
 
-    const previous = await prisma.siteSettings.findUnique({ where: { id: 1 } });
-    const updated = await prisma.siteSettings.upsert({
-      where: { id: 1 },
-      create: { id: 1, [column]: newPath },
-      update: { [column]: newPath },
-    });
+    let updated;
+    try {
+      // Read the previous path and write the new one atomically so concurrent
+      // saves can't interleave the read with the write.
+      const [previous, result] = await prisma.$transaction([
+        prisma.siteSettings.findUnique({ where: { id: 1 } }),
+        prisma.siteSettings.upsert({
+          where: { id: 1 },
+          create: { id: 1, [cfg.column]: newPath },
+          update: { [cfg.column]: newPath },
+        }),
+      ]);
+      updated = result;
 
-    // Clean up the file the old value pointed at (no-op for defaults/"").
-    const previousPath = previous?.[column] ?? "";
-    if (previousPath && previousPath !== newPath) {
-      await tryRemoveBrandingFile(previousPath);
+      // Clean up the file the old value pointed at (no-op for defaults/"" and
+      // for anything outside the branding dir).
+      const previousPath = previous?.[cfg.column] ?? "";
+      if (previousPath && previousPath !== newPath) {
+        await tryRemoveFile(previousPath, BRANDING_UPLOAD_DIR);
+      }
+    } catch (dbError) {
+      // The DB write failed after the file was saved — remove the orphan.
+      if (newPath) await tryRemoveFile(newPath, BRANDING_UPLOAD_DIR);
+      throw dbError;
     }
 
-    // expire:0 forces the next render to refetch (plain profile strings are
-    // stale-while-revalidate — one request would still serve the old logo).
+    // Next 16 tag invalidation: purge the unstable_cache entry behind
+    // getSiteSettings so the next render serves the new branding immediately.
     revalidateTag(SITE_SETTINGS_CACHE_TAG, { expire: 0 });
 
     return NextResponse.json(

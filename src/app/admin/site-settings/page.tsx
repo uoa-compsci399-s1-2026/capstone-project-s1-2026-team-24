@@ -10,6 +10,13 @@ import {
 
 type Target = "favicon" | "logoLight" | "logoDark";
 
+// target → the SiteBranding field it edits (shared by storedPath + the cards).
+const COLUMN: Record<Target, keyof SiteBranding> = {
+  favicon: "faviconPath",
+  logoLight: "logoLightPath",
+  logoDark: "logoDarkPath",
+};
+
 type AssetCard = {
   target: Target;
   title: string;
@@ -80,10 +87,7 @@ export default function AdminSiteSettings() {
   }
 
   function storedPath(target: Target): string {
-    if (!settings) return "";
-    if (target === "favicon") return settings.faviconPath;
-    if (target === "logoLight") return settings.logoLightPath;
-    return settings.logoDarkPath;
+    return settings ? settings[COLUMN[target]] : "";
   }
 
   async function submit(target: Target, body: FormData) {
@@ -178,9 +182,13 @@ export default function AdminSiteSettings() {
 
                 <div
                   className={`rounded-xl flex items-center justify-center h-32 px-4 ${
-                    card.previewOnDark
-                      ? "bg-[#0c0c48]"
-                      : "bg-white border-2 border-[#cac7c7]"
+                    card.target === "favicon"
+                      ? // Browser tabs can be light or dark, so preview the favicon
+                        // on a split background — visible whatever colour it is.
+                        "border-2 border-[#cac7c7] bg-[linear-gradient(to_right,#0c0c48_50%,#ffffff_50%)]"
+                      : card.previewOnDark
+                        ? "bg-[#0c0c48]"
+                        : "bg-white border-2 border-[#cac7c7]"
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element -- raw preview of an admin-managed asset; next/image is configured unoptimized anyway */}

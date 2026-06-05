@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import {
   DEFAULT_FAVICON,
@@ -33,7 +34,7 @@ export async function getRawSiteSettings(): Promise<SiteBranding> {
  * uncached read would cost a DB query per request); the admin save route
  * revalidates the tag.
  */
-export const getSiteSettings = unstable_cache(
+const cachedSiteSettings = unstable_cache(
   async (): Promise<SiteBranding> => {
     const raw = await getRawSiteSettings();
     return {
@@ -45,3 +46,9 @@ export const getSiteSettings = unstable_cache(
   ["site-settings"],
   { tags: [SITE_SETTINGS_CACHE_TAG] },
 );
+
+// React.cache memoises within a single render, so the root layout's two reads
+// (generateMetadata for the favicon, RootLayout for the logos) share one
+// unstable_cache lookup instead of two; unstable_cache then caches across
+// requests and is revalidated by the admin save route.
+export const getSiteSettings = cache(cachedSiteSettings);
