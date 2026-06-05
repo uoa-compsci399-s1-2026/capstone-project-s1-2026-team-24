@@ -56,6 +56,13 @@ async function main() {
   await prisma.contactRecipient.deleteMany();
   await prisma.publicationFilterSetting.deleteMany();
 
+  // Branding singleton: ensure the row exists; empty paths = built-in defaults.
+  await prisma.siteSettings.upsert({
+    where: { id: 1 },
+    create: { id: 1 },
+    update: {},
+  });
+
   await prisma.study.createMany({
     data: [
       {
