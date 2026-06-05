@@ -337,3 +337,15 @@ model MediaAsset {
   size         Int
   uploadedAt   DateTime @default(now())
 }
+
+// Site-wide branding assets, editable from the admin console. A singleton row
+// (id = 1). An empty string means "use the built-in default asset", so a reset
+// never needs a reseed and the defaults can change in code later. Uploaded
+// files live under /public/uploads/branding.
+model SiteSettings {
+  id            Int      @id @default(autoincrement())
+  faviconPath   String   @default("")
+  logoLightPath String   @default("") // white-on-dark (desktop navbar)
+  logoDarkPath  String   @default("") // blue-on-light (mobile bar)
+  updatedAt     DateTime @updatedAt
+}

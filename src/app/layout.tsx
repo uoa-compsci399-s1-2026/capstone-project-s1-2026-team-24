@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { NavStudiesProvider } from "@/contexts/NavStudiesContext";
 import { getServerLang } from "@/lib/lang";
+import { getSiteSettings } from "@/lib/site-settings";
 import { getNavStudies } from "@/lib/nav-studies";
 
 const geistSans = Geist({
@@ -16,18 +18,23 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "UoA Research",
-  description: "University of Auckland Research",
-  icons: {
-    icon: '/images/logos/hnu-logo.svg',
-  },
-  // Belt-and-braces with src/app/robots.ts: site-wide noindex until the
-  // official launch (flipped by setting ALLOW_INDEXING=1 in the host env).
-  ...(process.env.ALLOW_INDEXING === "1"
-    ? {}
-    : { robots: { index: false, follow: false } }),
-};
+// Metadata is generated (not static) so the favicon follows the admin-set
+// branding (SiteSettings); the read is cached across requests.
+export async function generateMetadata(): Promise<Metadata> {
+  const { faviconPath } = await getSiteSettings();
+  return {
+    title: "UoA Research",
+    description: "University of Auckland Research",
+    icons: {
+      icon: faviconPath,
+    },
+    // Belt-and-braces with src/app/robots.ts: site-wide noindex until the
+    // official launch (flipped by setting ALLOW_INDEXING=1 in the host env).
+    ...(process.env.ALLOW_INDEXING === "1"
+      ? {}
+      : { robots: { index: false, follow: false } }),
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -35,7 +42,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const lang = await getServerLang();
-  const navStudies = await getNavStudies(lang);
+  // Independent server reads — resolve them together. Both seed client
+  // providers so the Navbar renders the right logos and studies on first paint.
+  const [navStudies, siteSettings] = await Promise.all([
+    getNavStudies(lang),
+    getSiteSettings(),
+  ]);
   return (
     <html
       lang={lang === "ZH" ? "zh-Hans" : "en"}
@@ -43,12 +55,13 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LanguageProvider initialLang={lang}>
-          <NavStudiesProvider studies={navStudies}>
-            {children}
-          </NavStudiesProvider>
+          <SiteSettingsProvider settings={siteSettings}>
+            <NavStudiesProvider studies={navStudies}>
+              {children}
+            </NavStudiesProvider>
+          </SiteSettingsProvider>
         </LanguageProvider>
       </body>
     </html>
   );
 }
-

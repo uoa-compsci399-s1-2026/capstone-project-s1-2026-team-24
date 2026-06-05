@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useNavStudies } from "@/contexts/NavStudiesContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
@@ -26,6 +27,8 @@ export default function Navbar() {
   const [searchStudiesOpen, setSearchStudiesOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const { lang, setLang } = useLanguage();
+  // Admin-set logos (defaults when unset), seeded server-side by the layout.
+  const { logoLightPath, logoDarkPath } = useSiteSettings();
   const t = lang === "EN" ? en : zh;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
@@ -460,7 +463,7 @@ export default function Navbar() {
               <div className="hidden lg:block flex items-center">
                 <Link href="/" aria-label="HNU — Home">
                   <Image
-                    src="/images/logos/hnu-logo.svg"
+                    src={logoLightPath}
                     alt="HNU"
                     width={mounted && scrolled && isDesktop ? 180 : 200}
                     height={mounted && scrolled && isDesktop ? 52 : 70}
@@ -743,7 +746,7 @@ export default function Navbar() {
 
                 <Link href="/" aria-label="HNU — Home" className="absolute left-1/2 -translate-x-1/2">
                   <Image
-                    src={mobileNavActive ? "/images/logos/hnu-logo.svg" : "/images/logos/hnu-logo-blue.png"}
+                    src={mobileNavActive ? logoLightPath : logoDarkPath}
                     alt="HNU"
                     width={140}
                     height={20}
