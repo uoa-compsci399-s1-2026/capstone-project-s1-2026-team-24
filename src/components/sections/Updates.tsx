@@ -89,21 +89,23 @@ export default function Updates({
   const [isHovered, setIsHovered] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
+  // Modulo wrap so the index self-heals even if `updates` shrinks at
+  // runtime and `current` points past the end.
   const prev = () => {
     setDirection("right");
-    setCurrent((i) => (i === 0 ? updates.length - 1 : i - 1));
+    setCurrent((i) => (i - 1 + updates.length) % updates.length);
   };
 
   const next = () => {
     setDirection("left");
-    setCurrent((i) => (i === updates.length - 1 ? 0 : i + 1));
+    setCurrent((i) => (i + 1) % updates.length);
   };
 
   useEffect(() => {
     if (isHovered) return;
     const timer = setInterval(() => {
       setDirection("left");
-      setCurrent((i) => (i === updates.length - 1 ? 0 : i + 1));
+      setCurrent((i) => (i + 1) % updates.length);
     }, 5000);
     return () => clearInterval(timer);
   }, [updates.length, current, isHovered]);
@@ -120,6 +122,12 @@ export default function Updates({
     }
     touchStartX.current = null;
   };
+
+  // Defensive: the block renderer never passes an empty list, but don't
+  // crash if it happens — and fall back to the first update if `current`
+  // is briefly out of range after the list shrinks.
+  const activeUpdate = updates[current] ?? updates[0];
+  if (!activeUpdate) return null;
 
   return (
     <section className="w-full bg-white py-10 px-6 sm:px-12">
@@ -222,7 +230,7 @@ export default function Updates({
                   animation: `${direction === "left" ? "slideInLeft" : "slideInRight"} 0.3s ease`,
                 }}
               >
-                {renderUpdate(updates[current])}
+                {renderUpdate(activeUpdate)}
               </div>
             </div>
           </div>
