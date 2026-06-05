@@ -370,9 +370,9 @@ export default function BlockRenderer({
     }
 
     default:
-      if (process.env.NODE_ENV !== "production") {
-        console.warn(`[BlockRenderer] Unknown block type: ${type}`);
-      }
+      // Prod-visible signal: a drifted/unknown block type would otherwise vanish
+      // silently (the page still 200s). Log unconditionally so it's diagnosable.
+      console.error(`[BlockRenderer] Unknown block type: ${type}`);
       return null;
   }
 }

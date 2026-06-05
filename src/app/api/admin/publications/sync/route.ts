@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { fetchNormalizedOrcidWorks } from "@/lib/orcid";
+import { fetchNormalizedOrcidWorks, UNTITLED_WORK_TITLE } from "@/lib/orcid";
 import { fetchOrcidAffiliations, lookupAffiliation } from "@/lib/openalex";
 import {
   buildPublicationDedupKey,
@@ -38,6 +38,7 @@ type StoredPublication = {
   title: string;
   year: number | null;
   doi: string | null;
+  sourceId: string | null;
   authorsRaw: string;
   reviewedManually: boolean;
 };
@@ -80,12 +81,19 @@ async function syncPublicationsFromOrcid() {
     };
   }
 
+  // Single-writer assumption: we snapshot the library into in-memory maps once,
+  // then create/update against them without a surrounding transaction. Wrapping
+  // the whole sync in one would hold a SQLite write lock across slow ORCID/
+  // OpenAlex network calls (bad at 512 MB), so instead the POST guards against
+  // overlapping syncs (the realistic race), and an admin edit made *during* a
+  // sync is accepted as self-healing on the next run (B55/L2).
   const existingPublications = await prisma.publication.findMany({
     select: {
       id: true,
       title: true,
       year: true,
       doi: true,
+      sourceId: true,
       authorsRaw: true,
       reviewedManually: true,
     },
@@ -93,10 +101,18 @@ async function syncPublicationsFromOrcid() {
 
   const publicationByDoi = new Map<string, StoredPublication>();
   const publicationByTitleYear = new Map<string, StoredPublication>();
+  // Untitled, DOI-less works can't be identified by title::year (they'd all
+  // collide on "untitled work::year"); match them by their stable sourceId
+  // instead so distinct ones stay distinct yet the same one still updates in
+  // place across runs (B55/L3).
+  const publicationBySourceId = new Map<string, StoredPublication>();
 
   for (const publication of existingPublications) {
     if (publication.doi?.trim()) {
       publicationByDoi.set(publication.doi.trim().toLowerCase(), publication);
+    }
+    if (publication.sourceId) {
+      publicationBySourceId.set(publication.sourceId, publication);
     }
     publicationByTitleYear.set(
       buildPublicationDedupKey({
@@ -199,7 +215,16 @@ async function syncPublicationsFromOrcid() {
           title: work.title,
           year: work.year,
         });
-        const dedupKey = doiKey || titleYearKey;
+        // A DOI-less work carrying the "Untitled work" placeholder can't be
+        // identified by title::year — two genuinely different untitled works
+        // from the same year would collide and the second would be dropped as a
+        // duplicate (B55/L3). Key those on the stable ORCID sourceId (put-code)
+        // instead, the same value stored on the row below.
+        const candidateSourceId = `${orcidId}:${work.sourceId}`;
+        const isUntitledNoDoi = !doiKey && work.title === UNTITLED_WORK_TITLE;
+
+        const dedupKey =
+          doiKey ?? (isUntitledNoDoi ? `sourceid::${candidateSourceId}` : titleYearKey);
 
         if (seenThisMember.has(dedupKey)) {
           result.skippedDuplicates += 1;
@@ -211,7 +236,9 @@ async function syncPublicationsFromOrcid() {
         let existing =
           doiKey && publicationByDoi.has(doiKey)
             ? publicationByDoi.get(doiKey) ?? null
-            : publicationByTitleYear.get(titleYearKey) ?? null;
+            : isUntitledNoDoi
+              ? publicationBySourceId.get(candidateSourceId) ?? null
+              : publicationByTitleYear.get(titleYearKey) ?? null;
 
         // Tombstone guard: a previously hard-deleted work must never be re-created
         // by the sync. We only skip when there's NO live row to update — an admin
@@ -219,11 +246,16 @@ async function syncPublicationsFromOrcid() {
         // leaves the cross-member dedup (publicationByDoi/publicationByTitleYear)
         // untouched.
         if (!existing) {
-          const candidateSourceKey = `${work.sourceType}::${orcidId}:${work.sourceId}`;
+          const candidateSourceKey = `${work.sourceType}::${candidateSourceId}`;
           const isTombstoned =
             tombstonedSourceKeys.has(candidateSourceKey) ||
             (doiKey !== null && tombstonedDois.has(doiKey)) ||
-            tombstonedTitleYearKeys.has(titleYearKey);
+            // For untitled DOI-less works, "untitled work::<year>" is not a real
+            // identity (it collides across distinct works), so don't tombstone-
+            // match on it — that would silently drop genuinely-different untitled
+            // works from a year in which any untitled work was deleted (B55/L3).
+            // Such works can still be caught by the sourceId key above.
+            (!isUntitledNoDoi && tombstonedTitleYearKeys.has(titleYearKey));
           if (isTombstoned) {
             result.skippedDeleted += 1;
             totalSkippedDeleted += 1;
@@ -278,7 +310,11 @@ async function syncPublicationsFromOrcid() {
               title: work.title,
               journal: work.journal,
               year: work.year,
-              doi: work.doi,
+              // Don't let a detail-fetch-degraded work (doi:null) wipe a DOI we
+              // already have — DOI feeds dedup, so nulling it would re-key the
+              // row until the next good sync (B55/L4). A genuinely DOI-less work
+              // simply keeps whatever was there, which is harmless.
+              doi: work.doi ?? existing.doi,
               pubType: work.pubType,
               url: work.url,
               abstract: work.abstract,
@@ -299,6 +335,7 @@ async function syncPublicationsFromOrcid() {
             title: updated.title,
             year: updated.year,
             doi: updated.doi,
+            sourceId: existing.sourceId,
             authorsRaw: updated.authorsRaw,
             reviewedManually: updated.reviewedManually,
           };
@@ -320,7 +357,7 @@ async function syncPublicationsFromOrcid() {
               abstract: work.abstract,
               affiliation: resolvedAffiliation,
               sourceType: work.sourceType,
-              sourceId: `${orcidId}:${work.sourceId}`,
+              sourceId: candidateSourceId,
               orcidSource: orcidId,
               status: relevance.status,
               isVisible: true,
@@ -338,6 +375,7 @@ async function syncPublicationsFromOrcid() {
             title: created.title,
             year: created.year,
             doi: created.doi,
+            sourceId: created.sourceId,
             authorsRaw: created.authorsRaw,
             reviewedManually: created.reviewedManually,
           };
@@ -354,6 +392,9 @@ async function syncPublicationsFromOrcid() {
 
         if (existing.doi?.trim()) {
           publicationByDoi.set(existing.doi.trim().toLowerCase(), existing);
+        }
+        if (existing.sourceId) {
+          publicationBySourceId.set(existing.sourceId, existing);
         }
         publicationByTitleYear.set(
           buildPublicationDedupKey({
@@ -420,7 +461,19 @@ async function syncPublicationsFromOrcid() {
   };
 }
 
+// In-process guard so two overlapping syncs (e.g. a double-clicked button) can't
+// run against each other's stale in-memory snapshot. Single Render instance, so
+// a module-level flag is sufficient (B55/L2).
+let syncInProgress = false;
+
 export async function POST() {
+  if (syncInProgress) {
+    return NextResponse.json(
+      { error: "A publications sync is already in progress." },
+      { status: 409 },
+    );
+  }
+  syncInProgress = true;
   try {
     const result = await syncPublicationsFromOrcid();
     return NextResponse.json(result, { status: 200 });
@@ -430,5 +483,7 @@ export async function POST() {
       { error: "Failed to sync publications from ORCID." },
       { status: 500 },
     );
+  } finally {
+    syncInProgress = false;
   }
 }

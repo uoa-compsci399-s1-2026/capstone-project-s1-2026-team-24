@@ -13,7 +13,10 @@ export async function DELETE(
     const { id } = await params;
     const caseStudyId = Number(id);
 
-    if (Number.isNaN(caseStudyId)) {
+    // Match the repo-standard id guard. `Number.isNaN` alone lets a non-integer
+    // like 1.5 (or 0 / negative) through, and Prisma 7 then rejects the float
+    // `Int` arg and throws — surfacing as a 500 instead of a clean 400.
+    if (!Number.isInteger(caseStudyId) || caseStudyId <= 0) {
       return NextResponse.json(
         { error: "Invalid case study ID" },
         { status: 400 }
