@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import StudyCard from "@/components/ui/StudyCard";
 import Button from "../ui/Button";
 import type { StudyCardContent } from "@/lib/blocks/types";
@@ -31,6 +32,7 @@ export default function AcademicCollaborators({
       : ACADEMIC_COLLABORATORS_DEFAULTS.cards.map((card) => ({ ...card }));
   const rows = toRows(resolvedCards);
 
+  const { lang } = useLanguage();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -65,7 +67,11 @@ export default function AcademicCollaborators({
       <div className="md:hidden">
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto px-6 pb-4 snap-x snap-mandatory"
+          role="group"
+          aria-roledescription="carousel"
+          aria-label={heading}
+          tabIndex={0}
+          className="flex gap-6 overflow-x-auto px-6 pb-4 snap-x snap-mandatory rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48]"
           style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch", scrollPaddingLeft: "24px" }}
         >
           {resolvedCards.map((card, i) => (
@@ -93,12 +99,15 @@ export default function AcademicCollaborators({
             <button
               key={i}
               onClick={() => scrollTo(i)}
-              aria-label={`Go to card ${i + 1}`}
+              aria-label={
+                lang === "EN" ? `Go to card ${i + 1}` : `跳转到第 ${i + 1} 张`
+              }
+              className="focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c0c48]"
               style={{
                 width: i === activeIndex ? "24px" : "8px",
                 height: "8px",
                 borderRadius: "9999px",
-                backgroundColor: i === activeIndex ? "#0c0c48" : "#d1d5db",
+                backgroundColor: i === activeIndex ? "#0c0c48" : "#9ca3af",
                 border: "none",
                 cursor: "pointer",
                 transition: "all 0.3s ease",

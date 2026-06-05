@@ -18,9 +18,9 @@ export default function DiscoverFacilities() {
 
           {/* Text — right */}
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <h3 className="text-2xl sm:text-3xl lg:text-[48px] font-bold text-[#0a4479] leading-tight tracking-[0.96px] mb-4 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-[48px] font-bold text-[#0a4479] leading-tight tracking-[0.96px] mb-4 sm:mb-6">
               Facilities
-            </h3>
+            </h2>
             <p className="text-base sm:text-xl lg:text-[30px] font-normal text-[#0a4479] leading-relaxed tracking-[0.6px]">
               HNU offers a purpose-built research environment designed to support controlled
               human nutrition studies. Facilities include a clinical room for blood collection,
