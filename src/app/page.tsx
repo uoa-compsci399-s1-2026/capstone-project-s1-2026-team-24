@@ -2,17 +2,15 @@ import type { Metadata } from "next";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { renderPageBlocks } from "@/components/blocks/render-page";
-import { localizedMetadata } from "@/lib/localized-metadata";
+import { buildPageMetadata } from "@/lib/page-metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return localizedMetadata({
-    en: {
-      title: "Home | Human Nutrition Unit",
-      description: "The Human Nutrition Unit Homepage",
-    },
-    zh: {
-      title: "首页 | Human Nutrition Unit",
-      description: "Human Nutrition Unit 首页。",
+  return buildPageMetadata({
+    path: "/",
+    title: { en: "Home", zh: "首页" },
+    description: {
+      en: "The Human Nutrition Unit Homepage",
+      zh: "Human Nutrition Unit 首页。",
     },
   });
 }
