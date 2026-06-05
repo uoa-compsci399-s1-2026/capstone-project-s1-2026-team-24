@@ -298,8 +298,17 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Updates carousel",
     category: "Content",
     editable: true,
-    fields: [{ key: "updates", label: "Updates", type: "updatesList" }],
+    fields: [
+      { key: "updates", label: "Updates", type: "updatesList" },
+      {
+        key: "backgroundColor",
+        label: "Background colour / gradient",
+        type: "text",
+        help: "Any CSS background (e.g. #114488 or a linear-gradient). Leave empty for the default dark navy. Text and arrows stay white, so keep it dark.",
+      },
+    ],
     defaultContent: {
+      backgroundColor: "",
       updates: [
         {
           title: "NZ Synergy Study Now Recruiting",

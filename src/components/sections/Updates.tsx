@@ -10,9 +10,14 @@ interface Update {
 
 interface UpdatesProps {
   updates: Update[];
+  /** Any CSS background (colour or gradient). Defaults to the dark navy. */
+  backgroundColor?: string;
 }
 
-export default function Updates({ updates }: UpdatesProps) {
+export default function Updates({
+  updates,
+  backgroundColor = "#0c0c48f2",
+}: UpdatesProps) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("left");
   const [isHovered, setIsHovered] = useState(false);
@@ -65,7 +70,9 @@ export default function Updates({ updates }: UpdatesProps) {
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
             style={{
-              backgroundColor: "#0c0c48f2",
+              // `background` (not `backgroundColor`) so gradients work too.
+              // Text, arrows and dots stay white — light values reduce contrast.
+              background: backgroundColor,
               borderRadius: "clamp(40px, 8vw, 80px) 0 clamp(40px, 8vw, 80px) 0",
               padding: "clamp(28px, 5vw, 50px) clamp(24px, 6vw, 80px)",
               display: "flex",
