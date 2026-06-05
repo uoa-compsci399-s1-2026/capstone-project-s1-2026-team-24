@@ -1,6 +1,17 @@
 import type { NextConfig } from "next";
 import { buildSecurityHeaders } from "./src/lib/security-headers";
 
+// Host canonicalization (B08): 301 the temporary *.onrender.com host → the
+// custom domain so SEO signals consolidate and visitors don't land on the temp
+// URL. CANONICAL_HOST derives from the build-time NEXT_PUBLIC_SITE_URL, so the
+// redirect activates only in the production build that has the custom domain;
+// it is a no-op until that host is set AND differs from the onrender host, so
+// *.onrender.com previews keep working pre-launch (no redirect loop).
+const ONRENDER_HOST = process.env.RENDER_EXTERNAL_HOSTNAME;
+const CANONICAL_HOST = process.env.NEXT_PUBLIC_SITE_URL
+  ? new URL(process.env.NEXT_PUBLIC_SITE_URL).host
+  : undefined;
+
 const nextConfig: NextConfig = {
   // Serve images directly instead of through Next's on-the-fly optimizer.
   // The optimizer (sharp) OOMs on small hosts (e.g. Render's 512MB Starter) when
@@ -13,6 +24,19 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: buildSecurityHeaders(),
+      },
+    ];
+  },
+  async redirects() {
+    if (!ONRENDER_HOST || !CANONICAL_HOST || ONRENDER_HOST === CANONICAL_HOST) {
+      return [];
+    }
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: ONRENDER_HOST }],
+        destination: `https://${CANONICAL_HOST}/:path*`,
+        permanent: true, // 301
       },
     ];
   },
