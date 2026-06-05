@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { resetRateLimitStore } from "@/lib/rate-limit";
 import { POST as loginPost } from "@/app/api/admin/auth/login/route";
 
 // Use the REAL rate limiter, admin-session, and client-ip so this exercises the
@@ -18,6 +19,7 @@ function loginReq(password: unknown, ip: string) {
 
 describe("POST /api/admin/auth/login (B16)", () => {
   beforeEach(() => {
+    resetRateLimitStore();
     vi.stubEnv("ADMIN_PASSWORD", "correct-horse-battery");
     vi.stubEnv("ADMIN_SESSION_SECRET", "x".repeat(40));
   });

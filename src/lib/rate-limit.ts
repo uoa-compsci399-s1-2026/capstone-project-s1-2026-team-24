@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 type RateLimitEntry = {
   count: number;
   resetAt: number;
@@ -78,7 +80,28 @@ export function checkRateLimit(key: string, options: RateLimitOptions = {}) {
   return { allowed: true as const, remaining: max - 1 };
 }
 
+/**
+ * Standard 429 response for a blocked request, with Retry-After when known.
+ * Centralised so every limiter call site stays consistent.
+ */
+export function rateLimitResponse(
+  result: { retryAfterSeconds?: number },
+  message = "Too many requests. Please try again later.",
+) {
+  const response = NextResponse.json({ error: message }, { status: 429 });
+  if (result.retryAfterSeconds) {
+    response.headers.set("Retry-After", String(result.retryAfterSeconds));
+  }
+  return response;
+}
+
 /** Number of tracked keys. Exposed for tests asserting the memory ceiling. */
 export function rateLimitBucketCount() {
   return buckets.size;
+}
+
+/** Test-only: clears all limiter state so tests don't share buckets. */
+export function resetRateLimitStore() {
+  buckets.clear();
+  lastSweepAt = 0;
 }

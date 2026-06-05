@@ -15,7 +15,11 @@ vi.mock("@/lib/prisma", () => ({ prisma: mockPrisma }));
 const mockCheckRateLimit = vi.hoisted(() =>
   vi.fn(() => ({ allowed: true }) as { allowed: boolean; retryAfterSeconds?: number }),
 );
-vi.mock("@/lib/rate-limit", () => ({ checkRateLimit: mockCheckRateLimit }));
+// Keep the real rateLimitResponse; only stub checkRateLimit so we can force a 429.
+vi.mock("@/lib/rate-limit", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/rate-limit")>();
+  return { ...actual, checkRateLimit: mockCheckRateLimit };
+});
 
 import { GET as search, type SearchResult } from "@/app/api/search/route";
 

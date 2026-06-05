@@ -10,6 +10,10 @@ const AUDIENCE = "hnu-admin-users";
 // Minimum length for a machine-generated secret (e.g. ADMIN_SESSION_SECRET).
 const MIN_SECRET_LENGTH = 32;
 
+// Minimum length for the human-typed admin password (lower than a machine
+// secret, but still enforced in production alongside the placeholder check).
+const ADMIN_PASSWORD_MIN_LENGTH = 12;
+
 // Well-known placeholder values that must never reach a production deploy —
 // the .env.example default plus other obvious stand-ins.
 const PLACEHOLDER_SECRETS = new Set([
@@ -64,6 +68,20 @@ function getSecret() {
 
 export function getAdminSessionCookieName() {
   return COOKIE_NAME;
+}
+
+/**
+ * The configured admin password, validated by the same production guard as the
+ * session secret (fails closed on missing / too short / placeholder). Keeps the
+ * ADMIN_PASSWORD policy co-located with the other secret rules instead of inline
+ * at the login route.
+ */
+export function getAdminPassword(): string {
+  return requireStrongSecret(
+    process.env.ADMIN_PASSWORD,
+    "ADMIN_PASSWORD",
+    ADMIN_PASSWORD_MIN_LENGTH,
+  );
 }
 
 export async function createAdminSessionToken() {

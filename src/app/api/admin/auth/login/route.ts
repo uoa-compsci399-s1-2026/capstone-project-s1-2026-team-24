@@ -2,10 +2,10 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import {
   createAdminSessionToken,
+  getAdminPassword,
   getAdminSessionCookieName,
-  requireStrongSecret,
 } from "@/lib/admin-session";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
 
 // Per-IP brute-force throttle on the login endpoint.
@@ -31,23 +31,15 @@ export async function POST(request: Request) {
     windowMs: LOGIN_WINDOW_MS,
   });
   if (!rateLimit.allowed) {
-    const response = NextResponse.json(
-      { error: "Too many login attempts. Please try again later." },
-      { status: 429 },
+    return rateLimitResponse(
+      rateLimit,
+      "Too many login attempts. Please try again later.",
     );
-    if (rateLimit.retryAfterSeconds) {
-      response.headers.set("Retry-After", String(rateLimit.retryAfterSeconds));
-    }
-    return response;
   }
 
   let expectedPassword: string;
   try {
-    expectedPassword = requireStrongSecret(
-      process.env.ADMIN_PASSWORD,
-      "ADMIN_PASSWORD",
-      12,
-    );
+    expectedPassword = getAdminPassword();
   } catch (error) {
     // Error messages never contain the secret value, so they are safe to log.
     console.error("Admin login: ADMIN_PASSWORD misconfigured:", error);

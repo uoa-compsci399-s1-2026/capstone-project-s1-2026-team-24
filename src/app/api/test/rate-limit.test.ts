@@ -1,10 +1,15 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   checkRateLimit,
   MAX_BUCKETS,
   rateLimitBucketCount,
+  resetRateLimitStore,
 } from "@/lib/rate-limit";
+
+beforeEach(() => {
+  resetRateLimitStore();
+});
 
 afterEach(() => {
   vi.useRealTimers();

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSafeHttpUrl } from "@/lib/safe-url";
 import { parsePublishedSnapshot } from "@/lib/page-publish";
 import { publicPath } from "@/lib/blocks/page-paths";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
 
 // This handler reads the database on every request, so it must never be
@@ -178,14 +178,7 @@ export async function GET(request: NextRequest) {
     windowMs: SEARCH_RATE_LIMIT_WINDOW_MS,
   });
   if (!rateLimit.allowed) {
-    const response = NextResponse.json(
-      { error: "Too many requests. Please slow down." },
-      { status: 429 },
-    );
-    if (rateLimit.retryAfterSeconds) {
-      response.headers.set("Retry-After", String(rateLimit.retryAfterSeconds));
-    }
-    return response;
+    return rateLimitResponse(rateLimit, "Too many requests. Please slow down.");
   }
 
   try {

@@ -12,6 +12,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: mockPrisma }));
 // real composed throttle path (getClientIp -> checkRateLimit) through the handler,
 // which search.test.ts (which mocks rate-limit) cannot.
 
+import { resetRateLimitStore } from "@/lib/rate-limit";
 import { GET as search } from "@/app/api/search/route";
 
 // Matches SEARCH_RATE_LIMIT_MAX in the route.
@@ -25,6 +26,7 @@ function reqFrom(ip: string, q = "nutrition") {
 
 describe("GET /api/search rate limiting (B19, integration)", () => {
   beforeEach(() => {
+    resetRateLimitStore();
     vi.clearAllMocks();
     mockPrisma.study.findMany.mockResolvedValue([]);
     mockPrisma.teamMember.findMany.mockResolvedValue([]);
