@@ -34,6 +34,7 @@
     "@tiptap/react": "^3.23.6",
     "@tiptap/starter-kit": "^3.23.6",
     "better-sqlite3": "^12.9.0",
+    "fuse.js": "^7.4.1",
     "image-size": "^2.0.2",
     "jose": "^6.2.2",
     "next": "16.2.7",
