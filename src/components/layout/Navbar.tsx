@@ -7,18 +7,11 @@ import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavStudies } from "@/contexts/NavStudiesContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
 import type { SearchResult } from "@/app/api/search/route";
 import React from "react";
-
-// The slice of /api/studies the dropdown needs (the route returns more).
-type NavStudy = {
-  slug: string;
-  title: string;
-  imagePath: string | null;
-  status: string;
-};
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -48,33 +41,10 @@ export default function Navbar() {
   const wasSearchOpenRef = useRef(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [navStudies, setNavStudies] = useState<NavStudy[]>([]);
-
-  // Live studies for the Studies dropdown: every active, not-yet-completed
-  // study, order-sorted and title-localised by the route. Refetched on a
-  // language switch so the titles follow the toggle.
-  useEffect(() => {
-    const controller = new AbortController();
-    (async () => {
-      try {
-        const res = await fetch(`/api/studies?lang=${lang.toLowerCase()}`, {
-          signal: controller.signal,
-        });
-        if (!res.ok) throw new Error(`Studies request failed: ${res.status}`);
-        const data: NavStudy[] = await res.json();
-        setNavStudies(
-          (Array.isArray(data) ? data : []).filter(
-            (study) => study.status !== "Completed",
-          ),
-        );
-      } catch (error) {
-        if ((error as Error).name === "AbortError") return;
-        // Non-fatal: the dropdown just stays empty (the Studies link still works).
-        console.error("Navbar studies fetch failed:", error);
-      }
-    })();
-    return () => controller.abort();
-  }, [lang]);
+  // Studies for the dropdown, resolved on the server (getNavStudies) and seeded
+  // by the root layout — present on first paint (SSR, no client fetch) and
+  // re-localised on a language toggle, which triggers router.refresh().
+  const navStudies = useNavStudies();
 
   const ABOUT_ITEMS = [
     { label: t.navbar.discoverHnu, image: "Discover HNU", href: "/about" },
@@ -97,8 +67,8 @@ export default function Navbar() {
     { label: t.navbar.contact, href: "/contact" },
   ];
 
-  // Dropdown entries derived from the DB (was a hardcoded three-study list, so
-  // a fourth study never appeared anywhere in the nav). imagePath is a full
+  // Dropdown entries from the server-seeded studies (was a hardcoded three-study
+  // list, so a fourth study never appeared in the nav). imagePath is a full
   // public path on the Study row; entries without one render a placeholder.
   const studyNavItems = navStudies.map((study) => ({
     label: study.title,
@@ -855,8 +825,9 @@ export default function Navbar() {
                     </svg>
                   </span>
                 </button>
-                {/* max-h-96 (not 48) so more than three DB studies aren't clipped. */}
-                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${mobileStudiesOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}>
+                {/* Scrolls (overflow-y-auto, max-h-[60vh]) when open so a long study
+                    list isn't clipped; overflow-hidden only while collapsing. */}
+                <div className={`transition-all duration-300 ease-in-out ${mobileStudiesOpen ? "max-h-[60vh] overflow-y-auto opacity-100" : "max-h-0 overflow-hidden opacity-0"}`}>
                   <ul className="pl-4 pb-2 space-y-0">
                     {studyNavItems.map((item) => (
                       <li key={item.href}>

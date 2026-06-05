@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { NavStudiesProvider } from "@/contexts/NavStudiesContext";
 import { getServerLang } from "@/lib/lang";
+import { getNavStudies } from "@/lib/nav-studies";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +35,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const lang = await getServerLang();
+  const navStudies = await getNavStudies(lang);
   return (
     <html
       lang={lang === "ZH" ? "zh-Hans" : "en"}
@@ -40,7 +43,9 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <LanguageProvider initialLang={lang}>
-          {children}
+          <NavStudiesProvider studies={navStudies}>
+            {children}
+          </NavStudiesProvider>
         </LanguageProvider>
       </body>
     </html>
