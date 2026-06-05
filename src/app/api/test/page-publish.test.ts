@@ -9,6 +9,7 @@ const mockPrisma = vi.hoisted(() => ({
     deleteMany: vi.fn(),
     findFirst: vi.fn(),
     count: vi.fn(),
+    update: vi.fn(),
   },
   $transaction: vi.fn(),
 }));
@@ -24,6 +25,7 @@ import { POST as publish } from "@/app/api/admin/pages/[slug]/publish/route";
 import { POST as discard } from "@/app/api/admin/pages/[slug]/discard/route";
 import { GET as listRevisions } from "@/app/api/admin/pages/[slug]/revisions/route";
 import { POST as restore } from "@/app/api/admin/pages/[slug]/revisions/[id]/restore/route";
+import { POST as rebaseline } from "@/app/api/admin/pages/[slug]/rebaseline/route";
 
 const post = () => new Request("http://localhost/x", { method: "POST" });
 
@@ -251,5 +253,74 @@ describe("POST /api/admin/pages/[slug]/revisions/[id]/restore", () => {
         { pageId: 5, type: "a", content: "{}", position: 0, isVisible: true },
       ],
     });
+  });
+});
+
+describe("POST /api/admin/pages/[slug]/rebaseline", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("404 when the page is missing", async () => {
+    mockPrisma.page.findUnique.mockResolvedValueOnce(null);
+    const res = await rebaseline(post(), {
+      params: Promise.resolve({ slug: "nope" }),
+    });
+    expect(res.status).toBe(404);
+  });
+
+  it("400 when the page has never been published", async () => {
+    mockPrisma.page.findUnique.mockResolvedValueOnce({
+      id: 6,
+      createdAt: new Date("2026-01-01T00:00:00Z"),
+      publishedContent: null,
+    });
+    const res = await rebaseline(post(), {
+      params: Promise.resolve({ slug: "home" }),
+    });
+    expect(res.status).toBe(400);
+    expect(mockPrisma.pageRevision.update).not.toHaveBeenCalled();
+    expect(mockPrisma.pageRevision.create).not.toHaveBeenCalled();
+  });
+
+  it("replaces the existing Original's content with the published snapshot", async () => {
+    mockPrisma.page.findUnique.mockResolvedValueOnce({
+      id: 6,
+      createdAt: new Date("2026-01-01T00:00:00Z"),
+      publishedContent: '[{"type":"new","content":"{}"}]',
+    });
+    mockPrisma.pageRevision.findFirst.mockResolvedValueOnce({ id: 11 });
+
+    const res = await rebaseline(post(), {
+      params: Promise.resolve({ slug: "home" }),
+    });
+    expect(res.status).toBe(200);
+    expect(mockPrisma.pageRevision.update).toHaveBeenCalledWith({
+      where: { id: 11 },
+      data: { content: '[{"type":"new","content":"{}"}]' },
+    });
+    expect(mockPrisma.pageRevision.create).not.toHaveBeenCalled();
+  });
+
+  it("creates a backdated Original when none exists", async () => {
+    const createdAt = new Date("2026-01-01T00:00:00Z");
+    mockPrisma.page.findUnique.mockResolvedValueOnce({
+      id: 6,
+      createdAt,
+      publishedContent: '[{"type":"new","content":"{}"}]',
+    });
+    mockPrisma.pageRevision.findFirst.mockResolvedValueOnce(null);
+
+    const res = await rebaseline(post(), {
+      params: Promise.resolve({ slug: "home" }),
+    });
+    expect(res.status).toBe(200);
+    expect(mockPrisma.pageRevision.create).toHaveBeenCalledWith({
+      data: {
+        pageId: 6,
+        content: '[{"type":"new","content":"{}"}]',
+        label: "Original",
+        createdAt,
+      },
+    });
+    expect(mockPrisma.pageRevision.update).not.toHaveBeenCalled();
   });
 });
