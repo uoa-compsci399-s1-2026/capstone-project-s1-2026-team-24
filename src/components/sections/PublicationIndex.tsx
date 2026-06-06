@@ -39,6 +39,11 @@ export default function PublicationIndex({
   const [selectedYear, setSelectedYear] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
+  // pageSize comes from CMS block config, so coerce to a positive integer
+  // (capped) before it feeds the pagination math — guards against negative,
+  // zero, or fractional values producing Infinity/empty pages.
+  const size = Math.min(Math.max(Math.trunc(pageSize) || 10, 1), 100);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return publications.filter((p) => {
@@ -59,12 +64,12 @@ export default function PublicationIndex({
     });
   }, [publications, query, selectedYear]);
 
-  const totalPages = Math.ceil(filtered.length / pageSize);
+  const totalPages = Math.ceil(filtered.length / size);
 
   const paginatedPublications = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, currentPage, pageSize]);
+    const start = (currentPage - 1) * size;
+    return filtered.slice(start, start + size);
+  }, [filtered, currentPage, size]);
 
   const renderPagination = () => (
     <div className="flex items-center justify-center gap-3 py-4">
