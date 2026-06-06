@@ -6,9 +6,8 @@ import StudyDetail from "@/components/sections/StudyDetail";
 import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 import { getServerLang } from "@/lib/lang";
+import { getDictionary } from "@/lib/dictionaries";
 import { buildPageMetadata } from "@/lib/page-metadata";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata({
@@ -28,7 +27,7 @@ export default async function NZSynergyPage() {
   if (layout) {
     return <StudyLayoutView study={layout.study} blocks={layout.blocks} />;
   }
-  const t = (await getServerLang()) === "ZH" ? zh : en;
+  const t = await getDictionary(await getServerLang());
 
   return (
     <>

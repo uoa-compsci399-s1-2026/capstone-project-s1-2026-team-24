@@ -3,8 +3,6 @@
 import Button from "@/components/ui/Button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NewTabHint } from "@/components/ui/NewTabHint";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 import { publicationHref } from "@/lib/safe-url";
 
 type Publication = {
@@ -27,8 +25,7 @@ export default function RecentPublications({
 }: {
   publications?: Publication[];
 }) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
 
   return (
     <section className="relative w-full bg-[#f0f0f0] py-16 px-6 sm:px-12 lg:px-45">

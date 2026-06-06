@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import en from '@/messages/en';
-import zh from '@/messages/zh';
 // Type-only import — erased at compile time, so the server-side prisma code
 // in inquiry-types.ts never reaches the client bundle.
 import type { InquiryTypeOption } from '@/lib/inquiry-types';
@@ -30,8 +28,7 @@ export default function ContactEmailForm({
 }: {
   inquiryTypes?: InquiryTypeOption[];
 }) {
-  const { lang } = useLanguage();
-  const t = lang === 'EN' ? en : zh;
+  const { lang, t } = useLanguage();
   const noInquiryTypes = inquiryTypes.length === 0;
 
   const [name, setName] = useState('');

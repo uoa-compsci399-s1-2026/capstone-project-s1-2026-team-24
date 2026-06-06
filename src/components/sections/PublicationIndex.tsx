@@ -3,8 +3,6 @@
 import { useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NewTabHint } from "@/components/ui/NewTabHint";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 import { publicationHref } from "@/lib/safe-url";
 import { clampPositiveInt } from "@/lib/clamp";
 import type { IndexPublicationRecord } from "@/lib/data/publications";
@@ -26,8 +24,7 @@ export default function PublicationIndex({
   pageSize?: number;
   publications?: Publication[];
 }) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
   const [query, setQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);

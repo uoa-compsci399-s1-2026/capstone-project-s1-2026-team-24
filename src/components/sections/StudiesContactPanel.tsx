@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
-import en from '@/messages/en';
-import zh from '@/messages/zh';
 
 function PhoneIcon() {
   return (
@@ -69,8 +67,7 @@ function LocationIcon() {
 }
 
 export default function StudiesContactPanel() {
-  const { lang } = useLanguage();
-  const t = lang === 'EN' ? en : zh;
+  const { t } = useLanguage();
   return (
     <div className="flex flex-col gap-8">
       <div>

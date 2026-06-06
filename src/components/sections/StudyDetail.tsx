@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 interface StudyDetailProps {
   status: "Open" | "Closed" | "Coming Soon";
@@ -28,8 +26,7 @@ export default function StudyDetail({
   joinHref = "/contact",
   content,
 }: StudyDetailProps) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
   const statusStyle = statusColors[status];
   const statusLabel =
     status === "Open"

@@ -7,6 +7,7 @@ import { NavStudiesProvider } from "@/contexts/NavStudiesContext";
 import { getServerLang } from "@/lib/lang";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getNavStudies } from "@/lib/nav-studies";
+import { getDictionary } from "@/lib/dictionaries";
 import { SITE_NAME, SITE_URL, BRAND_COLORS } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { organizationSchema } from "@/lib/structured-data";
@@ -77,11 +78,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const lang = await getServerLang();
-  // Independent server reads — resolve them together. Both seed client
-  // providers so the Navbar renders the right logos and studies on first paint.
-  const [navStudies, siteSettings] = await Promise.all([
+  // Independent server reads — resolve them together. They seed the client
+  // providers: navbar logos + studies, and the active-language dictionary (so
+  // only one language's strings ship to the client, not both).
+  const [navStudies, siteSettings, dict] = await Promise.all([
     getNavStudies(lang),
     getSiteSettings(),
+    getDictionary(lang),
   ]);
   return (
     <html
@@ -98,7 +101,7 @@ export default async function RootLayout({
           {lang === "ZH" ? "跳到主要内容" : "Skip to content"}
         </a>
         <JsonLd data={organizationSchema()} />
-        <LanguageProvider initialLang={lang}>
+        <LanguageProvider initialLang={lang} dict={dict}>
           <SiteSettingsProvider settings={siteSettings}>
             <NavStudiesProvider studies={navStudies}>
               {children}
