@@ -118,18 +118,7 @@ export default function ContactEmailForm({
     }
   }
 
-  if (state === 'success') {
-    return (
-      <div role="status" className="flex flex-col gap-3 py-10">
-        <p className="text-[#0a4479] text-xl font-bold">
-          {t.contactPage.successTitle}
-        </p>
-        <p className="text-[#0a4479] text-base">{t.contactPage.successText}</p>
-      </div>
-    );
-  }
-
-  return (
+  const formMarkup = (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div>
         <label htmlFor="contact-name" className={labelClass}>
@@ -340,5 +329,24 @@ export default function ContactEmailForm({
         {state === 'loading' ? t.contactPage.sending : t.contactPage.sendMessage}
       </button>
     </form>
+  );
+
+  return (
+    <div>
+      {/* Live region kept in the DOM (empty) before success so screen readers
+          announce the text when it's injected — many only announce a region
+          that already existed before its content changed. */}
+      <div role="status">
+        {state === 'success' && (
+          <div className="flex flex-col gap-3 py-10">
+            <p className="text-[#0a4479] text-xl font-bold">
+              {t.contactPage.successTitle}
+            </p>
+            <p className="text-[#0a4479] text-base">{t.contactPage.successText}</p>
+          </div>
+        )}
+      </div>
+      {state !== 'success' && formMarkup}
+    </div>
   );
 }

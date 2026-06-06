@@ -113,6 +113,27 @@ export async function resolveBlockContents(
   return parsed.map((c) => serializeBlockContent(replaceRefs(c, paths, alts)));
 }
 
+/**
+ * Collects the library `altText` of every MediaAsset referenced by these parsed
+ * block contents (empties dropped). `replaceRefs` injects this altText into an
+ * empty `imageAlt` at READ time — which is after the 中文 translation warm pass —
+ * so the warm pass calls this to fold those strings into the cache; otherwise a
+ * ZH page would serve the untranslated English fallback. Returns [] (no query)
+ * when the contents hold no media refs.
+ */
+export async function collectAssetAltTexts(
+  contents: Record<string, unknown>[],
+): Promise<string[]> {
+  const ids = new Set<number>();
+  for (const c of contents) collectIds(c, ids);
+  if (ids.size === 0) return [];
+  const assets = await prisma.mediaAsset.findMany({
+    where: { id: { in: [...ids] } },
+    select: { altText: true },
+  });
+  return assets.map((a) => a.altText).filter((t) => t.trim() !== "");
+}
+
 export interface MediaUsage {
   /** Where the reference lives: page-builder content, or a DB-field consumer. */
   kind: "block" | "team" | "partner" | "study";

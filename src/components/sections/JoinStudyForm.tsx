@@ -106,18 +106,7 @@ export default function JoinStudyForm() {
     }
   }
 
-  if (state === 'success') {
-    return (
-      <div role="status" className="py-10">
-        <p className="text-[#0a4479] text-xl font-bold">Message sent!</p>
-        <p className="text-[#0a4479] text-base mt-2">
-          Thank you for your interest. We&apos;ll get back to you soon.
-        </p>
-      </div>
-    );
-  }
-
-  return (
+  const formMarkup = (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div>
         <label htmlFor="join-name" className={labelClass}>
@@ -256,5 +245,24 @@ export default function JoinStudyForm() {
         {state === 'loading' ? 'Sending…' : 'Send Message'}
       </button>
     </form>
+  );
+
+  return (
+    <div>
+      {/* Live region kept in the DOM (empty) before success so screen readers
+          announce the text when it's injected — many only announce a region
+          that already existed before its content changed. */}
+      <div role="status">
+        {state === 'success' && (
+          <div className="py-10">
+            <p className="text-[#0a4479] text-xl font-bold">Message sent!</p>
+            <p className="text-[#0a4479] text-base mt-2">
+              Thank you for your interest. We&apos;ll get back to you soon.
+            </p>
+          </div>
+        )}
+      </div>
+      {state !== 'success' && formMarkup}
+    </div>
   );
 }

@@ -11,6 +11,10 @@ const mockPrisma = vi.hoisted(() => ({
     count: vi.fn(),
     update: vi.fn(),
   },
+  // Publish warms 中文 translations, which collects referenced assets' altText
+  // via prisma.mediaAsset.findMany (default: no assets). The default survives
+  // clearAllMocks (which clears calls, not implementations).
+  mediaAsset: { findMany: vi.fn().mockResolvedValue([]) },
   $transaction: vi.fn(),
 }));
 
