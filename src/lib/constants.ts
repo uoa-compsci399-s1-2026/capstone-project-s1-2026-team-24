@@ -1,6 +1,10 @@
 // Site identity
 export const SITE_NAME = "HNU Auckland";
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+// `||` (not `??`) so an EMPTY NEXT_PUBLIC_SITE_URL (e.g. a blank line in .env)
+// still falls back — `new URL("")` in generateMetadata otherwise throws on every
+// page and silently strips ALL metadata (title, description, noindex).
+export const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
 
 
 // UoA brand colours (source: BRAND.md)
