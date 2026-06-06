@@ -2,6 +2,12 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/constants";
 
+// CMS-driven: study slugs come from the DB, which on Render only exists at
+// runtime (the persistent disk isn't mounted during builds — a static sitemap
+// fails the deploy trying to open /var/data/app.db). Generate per-request,
+// matching the force-dynamic convention used across this app's CMS pages.
+export const dynamic = "force-dynamic";
+
 // Static public routes. Excludes /admin/*, /api/*, and /collaborations/funding
 // (which 301s to /contact and has no content of its own).
 const STATIC_PATHS = [
