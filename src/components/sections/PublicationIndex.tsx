@@ -1,78 +1,41 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NewTabHint } from "@/components/ui/NewTabHint";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
+import { publicationHref } from "@/lib/safe-url";
+import { clampPositiveInt } from "@/lib/clamp";
+import type { IndexPublicationRecord } from "@/lib/data/publications";
 
-type PublicationAuthor = {
-  id: number;
-  order: number;
-  teamMember: {
-    id: number;
-    name: string;
-    title: string;
-    section: string;
-  };
-};
-
-type PublicationCategory = {
-  id: number;
-  name: string;
-  order: number;
-};
-
-type Publication = {
-  id: number;
-  title: string;
-  authorsRaw: string;
-  journal: string | null;
-  year: number | null;
-  doi: string | null;
-  pubType: string;
-  url: string | null;
-  abstract: string | null;
-  affiliation: string | null;
-  sourceType: string;
-  sourceId: string | null;
-  orcidSource: string | null;
-  status: string;
-  isVisible: boolean;
-  hiddenManually: boolean;
-  matchedKeywords: string;
-  lastSyncedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  categoryId: number | null;
-  category: PublicationCategory | null;
-  authors: PublicationAuthor[];
-};
-
-function buildPublicationUrl(publication: Publication) {
-  if (publication.url) return publication.url;
-  if (publication.doi) return `https://doi.org/${publication.doi}`;
-  return null;
-}
+type Publication = IndexPublicationRecord;
 
 function buildAuthorsText(publication: Publication) {
   if (publication.authorsRaw.trim()) return publication.authorsRaw;
   return publication.authors.map((author) => author.teamMember.name).join(", ");
 }
 
+// Publications are read on the server (getPublications: approved + visible,
+// narrow select) and passed in as props, so the research index is in the initial
+// HTML. Stays a client component for the search / year filter / pagination.
 export default function PublicationIndex({
   pageSize = 10,
+  publications = [],
 }: {
   pageSize?: number;
-} = {}) {
+  publications?: Publication[];
+}) {
   const { lang } = useLanguage();
   const t = lang === "EN" ? en : zh;
-  const [publications, setPublications] = useState<Publication[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedYear, setSelectedYear] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // pageSize comes from CMS block config, so coerce to a positive integer
+  // (capped) before it feeds the pagination math — guards against negative,
+  // zero, or fractional values producing Infinity/empty pages.
+  const size = clampPositiveInt(pageSize, { fallback: 10, max: 100 });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -94,50 +57,14 @@ export default function PublicationIndex({
     });
   }, [publications, query, selectedYear]);
 
-  const totalPages = Math.ceil(filtered.length / pageSize);
+  const totalPages = Math.ceil(filtered.length / size);
 
   const paginatedPublications = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, currentPage, pageSize]);
+    const start = (currentPage - 1) * size;
+    return filtered.slice(start, start + size);
+  }, [filtered, currentPage, size]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query, selectedYear]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadPublications() {
-      try {
-        setLoading(true);
-        setLoadError(false);
-
-        const response = await fetch("/api/publications", {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch publications");
-        }
-
-        const data: Publication[] = await response.json();
-        if (!cancelled) setPublications(data);
-      } catch (err) {
-        console.error(err);
-        if (!cancelled) setLoadError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    loadPublications();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const Pagination = () => (
+  const renderPagination = () => (
     <div className="flex items-center justify-center gap-3 py-4">
       <button
         onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
@@ -187,7 +114,10 @@ export default function PublicationIndex({
                   id="publication-search"
                   type="search"
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   placeholder={t.research.searchPlaceholder}
                   className="w-full px-4 py-2.5 border-2 border-[#cac7c7] rounded-full text-sm text-[#0c0c48] placeholder:text-[#8e8d8d] focus:outline-none focus:border-[#0a4479] transition-colors"
                 />
@@ -203,7 +133,10 @@ export default function PublicationIndex({
                 <select
                   id="publication-year"
                   value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedYear(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="w-full px-4 py-2.5 border-2 border-[#cac7c7] rounded-full text-sm text-[#0c0c48] focus:outline-none focus:border-[#0a4479] transition-colors"
                 >
                   {availableYears.map((year) => (
@@ -214,12 +147,10 @@ export default function PublicationIndex({
                 </select>
               </div>
 
-              {!loading && !loadError && (
-                <p className="text-sm font-semibold text-[#0a4479]/70 pb-2">
-                  {filtered.length}{" "}
-                  {filtered.length === 1 ? t.research.result : t.research.results}
-                </p>
-              )}
+              <p className="text-sm font-semibold text-[#0a4479]/70 pb-2">
+                {filtered.length}{" "}
+                {filtered.length === 1 ? t.research.result : t.research.results}
+              </p>
             </div>
           </div>
 
@@ -236,24 +167,16 @@ export default function PublicationIndex({
               </p>
             </header>
 
-            {!loading && !loadError && <Pagination />}
+            {renderPagination()}
 
-            {loading ? (
-              <div className="bg-[#f5f5f7] rounded-2xl px-6 py-12 text-center text-[#0a4479]/80">
-                {t.research.loadingPublications}
-              </div>
-            ) : loadError ? (
-              <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-6 text-sm text-red-700">
-                {t.research.publicationsLoadError}
-              </div>
-            ) : filtered.length === 0 ? (
+            {filtered.length === 0 ? (
               <div className="bg-[#f5f5f7] rounded-2xl px-6 py-12 text-center text-[#0a4479]/80">
                 {t.research.noPublications}
               </div>
             ) : (
               <div className="space-y-5">
                 {paginatedPublications.map((publication) => {
-                  const publicationUrl = buildPublicationUrl(publication);
+                  const publicationUrl = publicationHref(publication);
                   const authorsText = buildAuthorsText(publication);
 
                   return (
@@ -298,7 +221,7 @@ export default function PublicationIndex({
                               <a
                                 href={publicationUrl}
                                 target="_blank"
-                                rel="noreferrer"
+                                rel="noopener noreferrer"
                                 className="inline-flex items-center bg-[#0a4479] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors"
                               >
                                 {t.research.viewPublication}
@@ -322,7 +245,7 @@ export default function PublicationIndex({
                     </article>
                   );
                 })}
-                {!loading && !loadError && filtered.length > 0 && <Pagination />}
+                {filtered.length > 0 && renderPagination()}
               </div>
             )}
           </div>

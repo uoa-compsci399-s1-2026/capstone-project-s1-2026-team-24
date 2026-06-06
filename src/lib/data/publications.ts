@@ -52,3 +52,53 @@ export async function getRecentPublications(
     select: recentPublicationSelect,
   });
 }
+
+export type IndexPublicationRecord = {
+  id: number;
+  title: string;
+  authorsRaw: string;
+  journal: string | null;
+  year: number | null;
+  doi: string | null;
+  pubType: string;
+  url: string | null;
+  abstract: string | null;
+  category: { name: string } | null;
+  authors: { teamMember: { name: string } }[];
+};
+
+const indexPublicationSelect = {
+  id: true,
+  title: true,
+  authorsRaw: true,
+  journal: true,
+  year: true,
+  doi: true,
+  pubType: true,
+  url: true,
+  abstract: true,
+  category: { select: { name: true } },
+  authors: {
+    orderBy: { order: "asc" },
+    select: { teamMember: { select: { name: true } } },
+  },
+} as const;
+
+/**
+ * All approved/visible publications for the full /research index, narrow-selected
+ * to exactly the fields PublicationIndex renders (no sync/createdAt metadata, no
+ * nested author/category ids). Shared by the PublicationIndex server wrapper so
+ * the research page no longer HTTP-fetches the table on mount. Ordered newest
+ * first; the index paginates/filters client-side.
+ */
+export async function getPublications(): Promise<IndexPublicationRecord[]> {
+  return prisma.publication.findMany({
+    where: {
+      status: "Approved",
+      isVisible: true,
+      hiddenManually: false,
+    },
+    orderBy: [{ year: "desc" }, { updatedAt: "desc" }],
+    select: indexPublicationSelect,
+  });
+}
