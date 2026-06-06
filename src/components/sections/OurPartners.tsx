@@ -32,6 +32,8 @@ function PartnerMarquee({
                 <img
                   src={partner.logoPath}
                   alt={partner.name}
+                  loading="lazy"
+                  decoding="async"
                   className="max-w-full max-h-full object-contain"
                 />
                 <NewTabHint />
@@ -40,6 +42,8 @@ function PartnerMarquee({
               <img
                 src={partner.logoPath}
                 alt={partner.name}
+                loading="lazy"
+                decoding="async"
                 className="max-w-full max-h-full object-contain"
               />
             )}

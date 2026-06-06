@@ -64,7 +64,7 @@ export default function StudiesArchive() {
       >
         <h2
           style={{
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: "20px",
             fontWeight: 700,
             color: "#0c0c48",
@@ -78,7 +78,7 @@ export default function StudiesArchive() {
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <label
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "11px",
               fontWeight: 600,
               color: "#6b7280",
@@ -98,7 +98,7 @@ export default function StudiesArchive() {
               borderRadius: "8px",
               padding: "8px 12px",
               fontSize: "14px",
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               backgroundColor: "white",
               color: "#0c0c48",
               outline: "none",
@@ -110,7 +110,7 @@ export default function StudiesArchive() {
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <label
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "11px",
               fontWeight: 600,
               color: "#6b7280",
@@ -128,7 +128,7 @@ export default function StudiesArchive() {
                   display: "flex",
                   alignItems: "center",
                   gap: "8px",
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "14px",
                   color: "#374151",
                   cursor: "pointer",
@@ -152,7 +152,7 @@ export default function StudiesArchive() {
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <label
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "11px",
               fontWeight: 600,
               color: "#6b7280",
@@ -172,7 +172,7 @@ export default function StudiesArchive() {
               borderRadius: "8px",
               padding: "8px 12px",
               fontSize: "14px",
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               backgroundColor: "white",
               color: "#0c0c48",
               outline: "none",
@@ -194,7 +194,7 @@ export default function StudiesArchive() {
       >
         <h1
           style={{
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: "36px",
             fontWeight: 800,
             color: "#0c0c48",
@@ -205,7 +205,7 @@ export default function StudiesArchive() {
         </h1>
         <p
           style={{
-            fontFamily: "Inter, sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: "16px",
             color: "#9ca3af",
             margin: "0 0 28px 0",
@@ -246,7 +246,7 @@ export default function StudiesArchive() {
               style={{
                 border: "none",
                 outline: "none",
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: "16px",
                 color: "#374151",
                 backgroundColor: "transparent",
@@ -258,7 +258,7 @@ export default function StudiesArchive() {
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span
               style={{
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: "13px",
                 fontWeight: 600,
                 color: "#9ca3af",
@@ -277,7 +277,7 @@ export default function StudiesArchive() {
                   border: "1.5px solid #e5e7eb",
                   borderRadius: "9999px",
                   padding: "8px 36px 8px 16px",
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "14px",
                   color: "#6b7280",
                   backgroundColor: "white",
@@ -300,7 +300,7 @@ export default function StudiesArchive() {
 
         {/* Results */}
         {filtered.length === 0 ? (
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "16px", color: "#9ca3af", textAlign: "center", marginTop: "60px" }}>
+          <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "16px", color: "#9ca3af", textAlign: "center", marginTop: "60px" }}>
             No studies found.
           </p>
         ) : (
@@ -317,13 +317,13 @@ export default function StudiesArchive() {
                   gap: "6px",
                 }}
               >
-                <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "18px", fontWeight: 700, color: "#0c0c48", margin: 0 }}>
+                <h3 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "18px", fontWeight: 700, color: "#0c0c48", margin: 0 }}>
                   {study.title}
                 </h3>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "14px", color: "#6b7280", margin: 0 }}>
+                <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "14px", color: "#6b7280", margin: 0 }}>
                   {study.author} · {study.date} · {study.publicationType}
                 </p>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "15px", color: "#374151", margin: 0 }}>
+                <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "15px", color: "#374151", margin: 0 }}>
                   {study.description}
                 </p>
               </div>

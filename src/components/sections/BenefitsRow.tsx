@@ -94,10 +94,10 @@ function BenefitGrid({ benefits }: { benefits: Benefit[] }) {
           <div style={{ width: "64px", height: "64px", borderRadius: "50%", backgroundColor: "#0a4379", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
             {benefit.icon}
           </div>
-          <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "18px", fontWeight: 700, color: "#0c0c48", marginBottom: "8px" }}>
+          <h3 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "18px", fontWeight: 700, color: "#0c0c48", marginBottom: "8px" }}>
             {benefit.title}
           </h3>
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "15px", color: "#4b5563", lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "15px", color: "#4b5563", lineHeight: 1.6, margin: 0 }}>
             {benefit.description}
           </p>
         </div>
@@ -119,7 +119,7 @@ function BenefitAccordion({ benefits }: { benefits: Benefit[] }) {
               onClick={() => setOpenIndex(isOpen ? null : i)}
               style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
             >
-              <span style={{ fontFamily: "Inter, sans-serif", fontSize: "16px", fontWeight: 700, color: "#0c0c48" }}>
+              <span style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "16px", fontWeight: 700, color: "#0c0c48" }}>
                 {benefit.title}
               </span>
               <span style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: "#0c0c48", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transform: isOpen ? "rotate(45deg)" : "rotate(0deg)" }}>
@@ -136,7 +136,7 @@ function BenefitAccordion({ benefits }: { benefits: Benefit[] }) {
                     {benefit.icon}
                   </div>
                 </div>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "14px", color: "#4b5563", lineHeight: 1.6, margin: 0, textAlign: "center" }}>
+                <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "14px", color: "#4b5563", lineHeight: 1.6, margin: 0, textAlign: "center" }}>
                   {benefit.description}
                 </p>
               </div>
@@ -160,7 +160,7 @@ export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
       {/* Desktop */}
       <div className="hidden lg:block" style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 45px" }}>
         {title && (
-          <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "36px", fontWeight: 800, color: "#0c0c48", textAlign: "center", marginBottom: "40px" }}>
+          <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "36px", fontWeight: 800, color: "#0c0c48", textAlign: "center", marginBottom: "40px" }}>
             {title}
           </h2>
         )}
@@ -168,12 +168,12 @@ export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
         {variant === "industry" && <BenefitGrid benefits={industryBenefits} />}
         {variant === "both" && (
           <>
-            <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "28px", fontWeight: 700, color: "#0c0c48", textAlign: "center", marginBottom: "32px" }}>
+            <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "28px", fontWeight: 700, color: "#0c0c48", textAlign: "center", marginBottom: "32px" }}>
               {t.collaborations.academicBenefitsTitle}
             </h2>
             <BenefitGrid benefits={academicBenefits} />
             <div style={{ height: "48px" }} />
-            <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "28px", fontWeight: 700, color: "#0c0c48", textAlign: "center", marginBottom: "32px" }}>
+            <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "28px", fontWeight: 700, color: "#0c0c48", textAlign: "center", marginBottom: "32px" }}>
               {t.collaborations.industryBenefitsTitle}
             </h2>
             <BenefitGrid benefits={industryBenefits} />
@@ -184,7 +184,7 @@ export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
       {/* Mobile */}
       <div className="lg:hidden px-6">
         {title && (
-          <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "26px", fontWeight: 800, color: "#0c0c48", textAlign: "center", marginBottom: "24px" }}>
+          <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "26px", fontWeight: 800, color: "#0c0c48", textAlign: "center", marginBottom: "24px" }}>
             {title}
           </h2>
         )}
@@ -192,12 +192,12 @@ export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
         {variant === "industry" && <BenefitAccordion benefits={industryBenefits} />}
         {variant === "both" && (
           <>
-            <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "22px", fontWeight: 700, color: "#0c0c48", textAlign: "center", marginBottom: "20px" }}>
+            <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "22px", fontWeight: 700, color: "#0c0c48", textAlign: "center", marginBottom: "20px" }}>
               {t.collaborations.academicBenefitsTitle}
             </h2>
             <BenefitAccordion benefits={academicBenefits} />
             <div style={{ height: "36px" }} />
-            <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "22px", fontWeight: 700, color: "#0c0c48", textAlign: "center", marginBottom: "20px" }}>
+            <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "22px", fontWeight: 700, color: "#0c0c48", textAlign: "center", marginBottom: "20px" }}>
               {t.collaborations.industryBenefitsTitle}
             </h2>
             <BenefitAccordion benefits={industryBenefits} />

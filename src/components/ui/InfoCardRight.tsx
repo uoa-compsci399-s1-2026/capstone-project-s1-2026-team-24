@@ -40,7 +40,7 @@ export default function InfoCardRight({
       <RichText
         html={body}
         className={`flex flex-col ${gap} text-white/85 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5`}
-        style={{ fontFamily: "Inter, sans-serif", fontSize, lineHeight: 1.6 }}
+        style={{ fontFamily: "var(--font-inter), sans-serif", fontSize, lineHeight: 1.6 }}
       />
     ) : (
       <div className={`flex flex-col ${gap}`}>
@@ -48,7 +48,7 @@ export default function InfoCardRight({
           <p
             key={i}
             className="text-white/85"
-            style={{ fontFamily: "Inter, sans-serif", fontSize, lineHeight: 1.6 }}
+            style={{ fontFamily: "var(--font-inter), sans-serif", fontSize, lineHeight: 1.6 }}
           >
             {para}
           </p>
@@ -78,7 +78,7 @@ export default function InfoCardRight({
           >
             <h2
               className="text-white font-bold"
-              style={{ fontFamily: "Inter, sans-serif", fontSize: "28px", lineHeight: 1.2 }}
+              style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "28px", lineHeight: 1.2 }}
             >
               {title}
             </h2>
@@ -115,7 +115,7 @@ export default function InfoCardRight({
             >
               <h2
                 className="text-white font-bold"
-                style={{ fontFamily: "Inter, sans-serif", fontSize: "32px", lineHeight: 1.2 }}
+                style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "32px", lineHeight: 1.2 }}
               >
                 {title}
               </h2>

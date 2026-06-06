@@ -64,7 +64,7 @@ export default function InfoCard({
           <h2
             className="text-white font-bold"
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "28px",
               lineHeight: 1.2,
             }}
@@ -77,7 +77,7 @@ export default function InfoCard({
               html={body}
               className="flex flex-col gap-3 text-white/85 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
               style={{
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: "15px",
                 lineHeight: 1.6,
               }}
@@ -89,7 +89,7 @@ export default function InfoCard({
                   key={i}
                   className="text-white/85"
                   style={{
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "15px",
                     lineHeight: 1.6,
                   }}
@@ -126,7 +126,7 @@ export default function InfoCard({
               <h2
                 className="text-white font-bold"
                 style={{
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "32px",
                   lineHeight: 1.2,
                 }}
@@ -139,7 +139,7 @@ export default function InfoCard({
                   html={body}
                   className="flex flex-col gap-4 text-white/85 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
                   style={{
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "16px",
                     lineHeight: 1.6,
                   }}
@@ -151,7 +151,7 @@ export default function InfoCard({
                       key={i}
                       className="text-white/85"
                       style={{
-                        fontFamily: "Inter, sans-serif",
+                        fontFamily: "var(--font-inter), sans-serif",
                         fontSize: "16px",
                         lineHeight: 1.6,
                       }}

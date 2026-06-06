@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -21,7 +22,11 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-async function fetchStudy(slug: string) {
+// Wrapped in React cache() so the two reads in one request — generateMetadata
+// and the page component — share a single query instead of hitting SQLite twice.
+// Request-scoped only: nothing persists across requests, so admin edits to a
+// study still appear on the next load (the page stays force-dynamic).
+const fetchStudy = cache(async (slug: string) => {
   return prisma.study.findFirst({
     where: { slug },
     include: {
@@ -30,7 +35,7 @@ async function fetchStudy(slug: string) {
       },
     },
   });
-}
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;

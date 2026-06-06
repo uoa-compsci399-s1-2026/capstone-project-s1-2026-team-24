@@ -199,48 +199,6 @@ export default function Navbar() {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (!searchOpen) {
-      setSearchQuery("");
-      setSearchResults([]);
-      setSearchLoading(false);
-      setSearchPerformed(false);
-      setActiveIndex(-1);
-    }
-  }, [searchOpen]);
-
-  useEffect(() => {
-    const trimmed = searchQuery.trim();
-    if (trimmed.length < 2) {
-      setSearchResults([]);
-      setSearchLoading(false);
-      setSearchPerformed(false);
-      setActiveIndex(-1);
-      return;
-    }
-    const controller = new AbortController();
-    setSearchLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal });
-        if (!res.ok) throw new Error(`Search request failed: ${res.status}`);
-        const data: { results?: SearchResult[] } = await res.json();
-        setSearchResults(Array.isArray(data.results) ? data.results : []);
-        setSearchPerformed(true);
-        setActiveIndex(-1);
-      } catch (error) {
-        if ((error as Error).name === "AbortError") return;
-        console.error("Search failed:", error);
-        setSearchResults([]);
-        setSearchPerformed(true);
-        setActiveIndex(-1);
-      } finally {
-        if (!controller.signal.aborted) setSearchLoading(false);
-      }
-    }, 250);
-    return () => { clearTimeout(timer); controller.abort(); };
-  }, [searchQuery]);
-
-  useEffect(() => {
     // Lock background scroll while either modal overlay is open (the search
     // dialog or the focus-trapped mobile drawer).
     if (searchOpen || mobileOpen) {
@@ -891,7 +849,7 @@ export default function Navbar() {
                   key={l}
                   onClick={() => setLang(l)}
                   aria-pressed={lang === l}
-                  className={`px-6 py-2.5 rounded-[30px] text-sm tracking-widest transition-colors border-[3px] font-bold font-['Inter'] ${lang === l ? "border-white text-white" : "border-white/15 text-white/50"}`}
+                  className={`px-6 py-2.5 rounded-[30px] text-sm tracking-widest transition-colors border-[3px] font-bold font-[var(--font-inter)] ${lang === l ? "border-white text-white" : "border-white/15 text-white/50"}`}
                 >
                   {l === "EN" ? "EN" : "中文"}
                 </button>

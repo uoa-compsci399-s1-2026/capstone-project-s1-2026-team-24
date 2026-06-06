@@ -41,7 +41,7 @@ export default function BoardOfDirectors({
     <section style={{ backgroundColor: "white", padding: "60px 0" }}>
       <h2
         style={{
-          fontFamily: "Inter, sans-serif",
+          fontFamily: "var(--font-inter), sans-serif",
           fontSize: "clamp(28px, 5vw, 48px)",
           fontWeight: 800,
           color: "#0c0c48",
