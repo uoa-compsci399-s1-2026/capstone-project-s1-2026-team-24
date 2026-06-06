@@ -89,18 +89,27 @@ db-push-built prod under launch pressure.
 
 ```
 # build phase (no disk needed): generate the client only
-npx prisma generate && next build
+npx prisma generate && npm run build
 
 # start phase (disk mounted at /var/data): sync schema, then serve
-npx prisma db push --skip-generate && next start
+npx prisma db push --skip-generate && npm run start
 ```
 
-(Commands use `npx prisma` for consistency with `docs/deployment.md` and because the `prisma`
-binary is not reliably on `PATH` on Render outside an npm script.)
+(`npx prisma` for the CLI — consistent with `docs/deployment.md` and because the `prisma`
+binary isn't reliably on `PATH` on Render outside an npm script. `npm run build` / `npm run
+start` invoke the package's `next build` / `next start` bins for the same PATH reason.)
 
 - `npx prisma generate` stays in **build** — it needs the schema, not the DB.
 - **Do not pass `--accept-data-loss`.** A destructive diff then *aborts the deploy* instead of
   nuking data. (See the manual escape hatch below for intentional destructive changes.)
+- **Caveat — SQLite classifies more changes as data-loss than "additive" suggests.** Because
+  SQLite lacks most `ALTER`s, Prisma rebuilds the table (create-copy-drop-rename) for changes
+  that *look* additive — e.g. adding a `NOT NULL` column without a default, or changing a
+  column's type/default. Such a deploy hits the data-loss guard, `db push` exits non-zero,
+  `&&` blocks `npm run start`, and the instance fails to boot until resolved. So treat *any*
+  non-trivial schema change as deploy-affecting: rehearse the `db push` against a prod snapshot
+  copy **before** merging (merging deploys prod), and reach for the manual pre-deploy step
+  below when the diff isn't cleanly additive.
 - **Never** put `db push` in build or pre-deploy — no disk there, so it silently no-ops
   against a scratch DB.
 - Implementation check: confirm the `prisma` CLI and `prisma/schema.prisma` are present in the
@@ -193,8 +202,19 @@ PublicationCategory → TeamMember → Study → StudyPdf → Publication → Pu
 
 ### Media & optional includes
 
-- **Media:** export `MediaAsset` metadata **and verify each `filePath` exists under
-  `/public`** — fail loud on a missing file. `npm run catalog:media` remains the fallback.
+- **Media:** export `MediaAsset` metadata, but **split verification by path class** — the
+  files split into two homes:
+  - **Git-tracked assets** (`/images/…`, committed in `/public`): verify each `filePath`
+    exists and **fail loud** on a miss (a real broken reference).
+  - **Runtime uploads** (`/uploads/…`, e.g. `/uploads/media/x.png`): these live under
+    `public/uploads/`, which is **gitignored** (`.gitignore:67`) and exists only on the prod
+    persistent disk — so they are absent from a fresh clone *by design*. A hard "fail on
+    missing file" here would abort on the normal case. Instead: pull `public/uploads/`
+    alongside the DB snapshot when a faithful media set is wanted (rsync from the instance to
+    a local, also-gitignored `public/uploads/`), and otherwise **downgrade a missing upload to
+    a warning** (the metadata row still seeds; the image renders once uploads are present).
+
+  `npm run catalog:media` remains the fallback for the git-tracked set.
 - **Optional:** include `TranslationCache` (so 中文 isn't cold on first run) and
   `DeletedPublication` (so the next ORCID/OpenAlex sync doesn't resurrect deleted works).
 
@@ -220,17 +240,21 @@ change materially. Snapshot filenames carry the date so staleness is visible.
 
 ## 5. Risks & mitigations
 
-- **Start-time `db push` aborts on a destructive diff** → deploy fails *with no data loss*.
-  Mitigation: the manual pre-deploy backfill step (§2) for intentional destructive changes.
+- **Start-time `db push` aborts the deploy** → fails *with no data loss*, but a rebuild-class
+  diff (even a "looks additive" one on SQLite, §2 caveat) takes the instance down until
+  resolved. Mitigation: rehearse `db push` against a snapshot before merging; manual pre-deploy
+  step (§2) for non-additive changes.
 - **Stale snapshot** → seed diverges from prod. Mitigation: documented refresh cadence +
   dated snapshot filenames.
 - **Accidental prod seed** → layered guards + read-only dump + denylist assertion (§3).
-- **`MediaAsset` references a missing file** → fail-loud verification during dump.
+- **`MediaAsset` references a file absent from the clone** → hard-fail for git-tracked
+  `/images/…`, but **warn (not fail)** for disk-only `/uploads/…` (gitignored); optionally
+  pull `public/uploads/` with the snapshot (§3 Media).
 - **Someone runs `migrate deploy` later** → archived folder + README + explicit doc warning.
 
 ## 6. Rollback
 
-- **B41:** the start command is one line — revert to `next start`; un-archive
+- **B41:** the start command is one line — revert to `npm run start`; un-archive
   `prisma/migrations/` if reversing the decision.
 - **B48:** `dump-to-seed.ts` and `seed-data/*.json` are additive new files. Keep the existing
   hand-written seed path alongside until the regenerated seed is trusted, then remove it in a
@@ -242,8 +266,9 @@ change materially. Snapshot filenames carry the date so staleness is visible.
   mounted), not in build/pre-deploy — deploy, then check a newly-added column exists in
   `/var/data/app.db`.
 - **`dump-to-seed`:** run against a snapshot copy → assert `ContactSubmission` rows are absent
-  from `seed-data/`, staff/admin emails are scrubbed, all `MediaAsset` paths resolve, and a
-  fresh local `npx prisma db push && npm run seed` reproduces a site that matches production.
+  from `seed-data/`, staff/admin emails are scrubbed, git-tracked `/images/…` `MediaAsset`
+  paths resolve (disk-only `/uploads/…` may warn), and a fresh local `npx prisma db push &&
+  npm run seed` reproduces a site that matches production.
 - **Guards:** confirm `seed.ts` throws when `DATABASE_URL` points at a `/var/data` or
   `app.db` path, and when `NODE_ENV=production`.
 
