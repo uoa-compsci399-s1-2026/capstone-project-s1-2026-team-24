@@ -64,15 +64,17 @@ landed, see the per-row **Status** column and the roll-up below.)*
 | ⏳ External / launch-day | 5 | B09, B10, B12 (ops half — overlaps a shipped code half), B13, B44 — ops actions, not code. |
 | 🔭 Deferred post-launch | 15 | B41, B45–B52, B57, B58, B59–B62. |
 
-All 63 items are accounted for (B12 carries both a shipped code half and an external ops half).
+**63 distinct items** are accounted for. The rows above sum to 64 because **B12 spans two
+statuses** — a shipped `#178` code half *and* an `⏳ ext` ops half — so it is counted in
+both rows.
 
 **Coverage:** 95 raw findings across 8 reports → **63 de-duplicated backlog items**
 (+ 6 verified-resolved, + a false-positive register).
 
 ### Top 8 to do first (highest leverage, mostly S, launch-or-crash)
 
-*(All eight have shipped — see the per-row **Status** column; B09 remains an `⏳ ext`
-launch-day ops action.)*
+*(All of these have shipped **except B09**, which remains an `⏳ ext` launch-day ops
+action — see the per-row **Status** column.)*
 
 1. **B01** — set `NEXT_PUBLIC_SITE_URL` at *build* time (prereq for all SEO below).
 2. **B02–B04** — `metadataBase` + per-page canonical (one `buildPageMetadata` helper) + `sitemap.ts`.
