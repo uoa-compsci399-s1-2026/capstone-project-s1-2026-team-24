@@ -38,21 +38,41 @@ post-launch** split.
 - **✓** column: `✅` = confirmed against current source (lead and/or subagent read the
   code) · `≈` = confirmed with minor line drift / not every cited line re-opened ·
   `ext` = external/ops action, not source-verifiable.
+- **Status** column: `✅ #NNN` = shipped, citing the merged PR · `⏳ ext` =
+  external / launch-day ops action (not code) · `🔭 defer` = deferred post-launch.
+  Statuses were reconciled **2026-06-06** against merged PRs **#177, #178, #189–#194**;
+  the item IDs are unchanged (they are stable cross-references).
 - **ID** is this backlog's stable id; **Source** cites the originating report finding(s).
 
 ## At a glance
 
-| Severity | Open items | Notes |
+| Severity | Items | Notes |
 |---|---:|---|
 | Critical | 0 | No anon-exploitable / data-loss / crash bug found reproducibly. |
 | High | 26 | 12 are launch go-live blockers; the rest are security front-door, a11y-critical, perf-P1, and the partner-logos crash. |
 | Medium | 18 | |
 | Low | 19 | Grouped at the bottom; nothing dropped. |
 
+*(Severity counts describe the original triage and are unchanged. For where each item
+landed, see the per-row **Status** column and the roll-up below.)*
+
+### Status roll-up (reconciled 2026-06-06)
+
+| Status | Items | Notes |
+|---|---:|---|
+| ✅ Shipped (code waves) | 44 | PRs **#177** (B14, B29–B31, B55–B56), **#178** (B12 code, B15–B19), **#189** (B01–B08, B11, B20–B23, B32–B40, B53–B54), **#190** (B24–B28, B63), **#191** (B42), **#192** (B43) — with **#193** follow-up refinements (B20/B22/B23) and **#194** deploy fix (B04 sitemap → `force-dynamic`). |
+| ⏳ External / launch-day | 5 | B09, B10, B12 (ops half — overlaps a shipped code half), B13, B44 — ops actions, not code. |
+| 🔭 Deferred post-launch | 15 | B41, B45–B52, B57, B58, B59–B62. |
+
+All 63 items are accounted for (B12 carries both a shipped code half and an external ops half).
+
 **Coverage:** 95 raw findings across 8 reports → **63 de-duplicated backlog items**
 (+ 6 verified-resolved, + a false-positive register).
 
 ### Top 8 to do first (highest leverage, mostly S, launch-or-crash)
+
+*(All eight have shipped — see the per-row **Status** column; B09 remains an `⏳ ext`
+launch-day ops action.)*
 
 1. **B01** — set `NEXT_PUBLIC_SITE_URL` at *build* time (prereq for all SEO below).
 2. **B02–B04** — `metadataBase` + per-page canonical (one `buildPageMetadata` helper) + `sitemap.ts`.
@@ -71,100 +91,117 @@ post-launch** split.
 
 #### Launch go-live blockers (from the launch-readiness audit)
 
-| ID | Task | Eff | Source | Files | ✓ |
-|---|---|---|---|---|---|
-| B01 | Set `NEXT_PUBLIC_SITE_URL` to the custom domain **at production build time** (it is inlined, not read at runtime) | S | launch L4 | `src/lib/constants.ts:3`, build env | ✅ |
-| B02 | Add `metadataBase: new URL(SITE_URL)` to root metadata so canonical/OG resolve absolute | M | launch L1 | `src/app/layout.tsx:17-28` | ✅ |
-| B03 | Emit per-page `alternates.canonical` on every public page via a new `buildPageMetadata` helper | M | launch L2 | `src/lib/page-metadata.ts` (new), all `page.tsx`, `localized-metadata.ts` | ✅ |
-| B04 | Create `src/app/sitemap.ts` = static routes ∪ permanent study slugs ∪ active DB slugs, **deduped by URL**; exclude `/admin`,`/api`,`/collaborations/funding` | M | launch L3 (+ debt DEBT-9) | `src/app/sitemap.ts` (new); `prisma/seed.ts:62,91,119` | ✅ |
-| B05 | Add default + per-page Open Graph / Twitter card metadata (root defaults + helper) | M | launch L5 | `src/app/layout.tsx`, `page-metadata.ts` | ✅ |
-| B06 | Add the `Sitemap:`/`host:` directive to `robots.ts` (leave the deny-all gate untouched) | S | launch L6 | `src/app/robots.ts:8-15` | ✅ |
-| B07 | Add branded bilingual `not-found.tsx`, `error.tsx`, `global-error.tsx` | M | launch L7 | `src/app/{not-found,error,global-error}.tsx` (new) | ✅ |
-| B08 | Add the `.onrender.com` → custom-domain **301** (declarative `redirects()` in `next.config`, gated on the custom host being live) | S | launch L8 | `next.config.ts:3-10` | ✅ |
-| B09 | Verify the Resend sending domain (SPF/DKIM/DMARC) and set `EMAIL_FROM` off the `onboarding@resend.dev` default — **else the contact form only emails the account owner in prod** | S | launch L17 | `src/lib/email.ts:21-22`, DNS | ✅ |
-| B10 | Provision the custom domain + DNS/TLS in Render — **start early**, UoA-IT-controlled records have lead time | S | launch L20 | external infra/DNS | ext |
-| B11 | Fix the root title brand: `"UoA Research"` → a brand `title.default` + a per-page title template ending in "HNU Auckland" | S | launch L13 | `src/app/layout.tsx:18`, `constants.ts:2` | ✅ |
-| B12 | Set strong, high-entropy `ADMIN_PASSWORD` + `ADMIN_SESSION_SECRET` in Render env (no defaults reach the deploy) | S | sec F11 + arch #3 | Render env | ext |
-| B13 | **Launch-day trigger:** flip `ALLOW_INDEXING=1`, then verify robots Allow + no `noindex` + canonical + sitemap 200 | S | launch L19 | host env; `robots.ts:9`, `layout.tsx:25` | ✅ |
+| ID | Task | Eff | Source | Files | ✓ | Status |
+|---|---|---|---|---|---|---|
+| B01 | Set `NEXT_PUBLIC_SITE_URL` to the custom domain **at production build time** (it is inlined, not read at runtime) | S | launch L4 | `src/lib/constants.ts:3`, build env | ✅ | ✅ #189 |
+| B02 | Add `metadataBase: new URL(SITE_URL)` to root metadata so canonical/OG resolve absolute | M | launch L1 | `src/app/layout.tsx:17-28` | ✅ | ✅ #189 |
+| B03 | Emit per-page `alternates.canonical` on every public page via a new `buildPageMetadata` helper | M | launch L2 | `src/lib/page-metadata.ts` (new), all `page.tsx`, `localized-metadata.ts` | ✅ | ✅ #189 |
+| B04 | Create `src/app/sitemap.ts` = static routes ∪ permanent study slugs ∪ active DB slugs, **deduped by URL**; exclude `/admin`,`/api`,`/collaborations/funding` | M | launch L3 (+ debt DEBT-9) | `src/app/sitemap.ts` (new); `prisma/seed.ts:62,91,119` | ✅ | ✅ #189 (+#194 deploy fix: sitemap → `force-dynamic`) |
+| B05 | Add default + per-page Open Graph / Twitter card metadata (root defaults + helper) | M | launch L5 | `src/app/layout.tsx`, `page-metadata.ts` | ✅ | ✅ #189 |
+| B06 | Add the `Sitemap:`/`host:` directive to `robots.ts` (leave the deny-all gate untouched) | S | launch L6 | `src/app/robots.ts:8-15` | ✅ | ✅ #189 |
+| B07 | Add branded bilingual `not-found.tsx`, `error.tsx`, `global-error.tsx` | M | launch L7 | `src/app/{not-found,error,global-error}.tsx` (new) | ✅ | ✅ #189 |
+| B08 | Add the `.onrender.com` → custom-domain **301** (declarative `redirects()` in `next.config`, gated on the custom host being live) | S | launch L8 | `next.config.ts:3-10` | ✅ | ✅ #189 |
+| B09 | Verify the Resend sending domain (SPF/DKIM/DMARC) and set `EMAIL_FROM` off the `onboarding@resend.dev` default — **else the contact form only emails the account owner in prod** | S | launch L17 | `src/lib/email.ts:21-22`, DNS | ✅ | ⏳ ext |
+| B10 | Provision the custom domain + DNS/TLS in Render — **start early**, UoA-IT-controlled records have lead time | S | launch L20 | external infra/DNS | ext | ⏳ ext |
+| B11 | Fix the root title brand: `"UoA Research"` → a brand `title.default` + a per-page title template ending in "HNU Auckland" | S | launch L13 | `src/app/layout.tsx:18`, `constants.ts:2` | ✅ | ✅ #189 |
+| B12 | Set strong, high-entropy `ADMIN_PASSWORD` + `ADMIN_SESSION_SECRET` in Render env (no defaults reach the deploy) | S | sec F11 + arch #3 | Render env | ext | ✅ #178 (code) / ⏳ ext (ops) |
+| B13 | **Launch-day trigger:** flip `ALLOW_INDEXING=1`, then verify robots Allow + no `noindex` + canonical + sitemap 200 | S | launch L19 | host env; `robots.ts:9`, `layout.tsx:25` | ✅ | ⏳ ext |
 
 #### Security front-door & correctness crashers
 
-| ID | Task | Eff | Source | Files | ✓ |
-|---|---|---|---|---|---|
-| B14 | Wrap the partner-logos auto-increment `order` fallback in `clampOrder` so `MAX_ORDER+1` can't be written (it later **crashes the admin list read**) | S | bugs H1 + arch #8 | `src/app/api/admin/partner-logos/route.ts:150-151,162`; `src/lib/order.ts` | ✅ |
-| B15 | Bump `next` + `eslint-config-next` 16.2.2 → 16.2.7 in lockstep (run `verify` **and** `build`); clears the App-Router **middleware-bypass** advisory — and 100% of admin authz is middleware | S | sec F2 + deps DEPS-1 | `package.json:38,62` | ✅ |
-| B16 | Add brute-force/rate-limiting (+ constant-time compare) to the admin login — reuse the existing `src/lib/rate-limit.ts` | S | sec F1 | `src/app/api/admin/auth/login/route.ts:26` | ✅ |
-| B17 | Remove (or `NODE_ENV`/middleware-gate) the unauthenticated `/api/test/{prisma,orcid}` debug endpoints — anon DB-count + outbound ORCID amplifier on the 512 MB box | S | sec F6 + debt DEBT-3 + arch #1 | `src/app/api/test/{prisma,orcid}/route.ts`; `src/middleware.ts:44-46` | ✅ |
-| B18 | Add HTTP security headers (CSP, X-Frame-Options, nosniff, Referrer-Policy, HSTS, Permissions-Policy) via `next.config.ts` | S | sec F3 | `next.config.ts` | ✅ |
-| B19 | Add per-IP rate-limiting (+ optional short-TTL cache) to `GET /api/search` (DoS on 512 MB) | S | sec F4 | `src/app/api/search/route.ts:9,166-245` | ✅ |
+| ID | Task | Eff | Source | Files | ✓ | Status |
+|---|---|---|---|---|---|---|
+| B14 | Wrap the partner-logos auto-increment `order` fallback in `clampOrder` so `MAX_ORDER+1` can't be written (it later **crashes the admin list read**) | S | bugs H1 + arch #8 | `src/app/api/admin/partner-logos/route.ts:150-151,162`; `src/lib/order.ts` | ✅ | ✅ #177 |
+| B15 | Bump `next` + `eslint-config-next` 16.2.2 → 16.2.7 in lockstep (run `verify` **and** `build`); clears the App-Router **middleware-bypass** advisory — and 100% of admin authz is middleware | S | sec F2 + deps DEPS-1 | `package.json:38,62` | ✅ | ✅ #178 |
+| B16 | Add brute-force/rate-limiting (+ constant-time compare) to the admin login — reuse the existing `src/lib/rate-limit.ts` | S | sec F1 | `src/app/api/admin/auth/login/route.ts:26` | ✅ | ✅ #178 |
+| B17 | Remove (or `NODE_ENV`/middleware-gate) the unauthenticated `/api/test/{prisma,orcid}` debug endpoints — anon DB-count + outbound ORCID amplifier on the 512 MB box | S | sec F6 + debt DEBT-3 + arch #1 | `src/app/api/test/{prisma,orcid}/route.ts`; `src/middleware.ts:44-46` | ✅ | ✅ #178 |
+| B18 | Add HTTP security headers (CSP, X-Frame-Options, nosniff, Referrer-Policy, HSTS, Permissions-Policy) via `next.config.ts` | S | sec F3 | `next.config.ts` | ✅ | ✅ #178 |
+| B19 | Add per-IP rate-limiting (+ optional short-TTL cache) to `GET /api/search` (DoS on 512 MB) | S | sec F4 | `src/app/api/search/route.ts:9,166-245` | ✅ | ✅ #178 |
 
 #### Accessibility — WCAG-critical on core flows
 
-| ID | Task | Eff | Source | Files | ✓ |
-|---|---|---|---|---|---|
-| B20 | Wire contact/join form errors: `required`/`aria-required`, `aria-invalid`+`aria-describedby` per field, `role="status"` on success, non-colour error cues | M | a11y A11Y-04 | `ContactEmailForm.tsx:124,238-242`; `JoinStudyForm.tsx:119,218-222` | ✅ |
-| B21 | Fix form-UI contrast: input borders ≥3:1, error red → red-600+, helper text; treat `#00caef` as decorative-only | M | a11y A11Y-03 | `globals.css:37,41,42`; `ContactEmailForm.tsx:22,28`; `AdminForm.tsx:111,182` | ✅ |
-| B22 | Give the mobile nav drawer a focus-trap + Escape (reuse the search-dialog trap) and add `aria-expanded` to the toggle/accordions | M | a11y A11Y-02 | `src/components/layout/Navbar.tsx:737-739,758-764,256-284` | ✅ |
-| B23 | Stop block images defaulting to `alt=""`: propagate `MediaAsset.altText` through media-resolve, and label/warn on empty alt in the editor *(stageable: quick "warn + stop silent empty" now; full propagation is L)* | L | a11y A11Y-01 (+ A11Y-14) | `BlockRenderer.tsx:76,88,257`; `media/route.ts:68`; `schema.prisma:314`; `fields.tsx:251-256` | ✅ |
+| ID | Task | Eff | Source | Files | ✓ | Status |
+|---|---|---|---|---|---|---|
+| B20 | Wire contact/join form errors: `required`/`aria-required`, `aria-invalid`+`aria-describedby` per field, `role="status"` on success, non-colour error cues | M | a11y A11Y-04 | `ContactEmailForm.tsx:124,238-242`; `JoinStudyForm.tsx:119,218-222` | ✅ | ✅ #189 (+#193) |
+| B21 | Fix form-UI contrast: input borders ≥3:1, error red → red-600+, helper text; treat `#00caef` as decorative-only | M | a11y A11Y-03 | `globals.css:37,41,42`; `ContactEmailForm.tsx:22,28`; `AdminForm.tsx:111,182` | ✅ | ✅ #189 |
+| B22 | Give the mobile nav drawer a focus-trap + Escape (reuse the search-dialog trap) and add `aria-expanded` to the toggle/accordions | M | a11y A11Y-02 | `src/components/layout/Navbar.tsx:737-739,758-764,256-284` | ✅ | ✅ #189 (+#193) |
+| B23 | Stop block images defaulting to `alt=""`: propagate `MediaAsset.altText` through media-resolve, and label/warn on empty alt in the editor *(stageable: quick "warn + stop silent empty" now; full propagation is L)* | L | a11y A11Y-01 (+ A11Y-14) | `BlockRenderer.tsx:76,88,257`; `media/route.ts:68`; `schema.prisma:314`; `fields.tsx:251-256` | ✅ | ✅ #189 (+#193) |
 
 #### Performance — P1 (every page / memory)
 
-| ID | Task | Eff | Source | Files | ✓ |
-|---|---|---|---|---|---|
-| B24 | Convert Inter to WOFF2 via `next/font/local` (gets `font-display: swap`) and drop the redundant second font family — ~2.4 MB of OTF on every page | S | perf P2-fonts | `globals.css:3-29,59-63`; `layout.tsx:7-15`; `public/fonts/Inter-*.otf` | ✅ |
-| B25 | Delete the duplicated debounced-search effect in Navbar so each keystroke fires `/api/search` **once**, not twice | S | perf P1a | `src/components/layout/Navbar.tsx:136-180,192-222` | ✅ |
-| B26 | Server-render `RecentPublications` with `take:N` + narrow `select`; add a bounded `?take=` to `/api/publications` (homepage currently ships the **whole** publications table to show 2 cards) | S | perf P3-pubs | `RecentPublications.tsx:22-42`; `src/app/api/publications/route.ts:6-34` | ✅ |
+| ID | Task | Eff | Source | Files | ✓ | Status |
+|---|---|---|---|---|---|---|
+| B24 | Convert Inter to WOFF2 via `next/font/local` (gets `font-display: swap`) and drop the redundant second font family — ~2.4 MB of OTF on every page | S | perf P2-fonts | `globals.css:3-29,59-63`; `layout.tsx:7-15`; `public/fonts/Inter-*.otf` | ✅ | ✅ #190 |
+| B25 | Delete the duplicated debounced-search effect in Navbar so each keystroke fires `/api/search` **once**, not twice | S | perf P1a | `src/components/layout/Navbar.tsx:136-180,192-222` | ✅ | ✅ #190 |
+| B26 | Server-render `RecentPublications` with `take:N` + narrow `select`; add a bounded `?take=` to `/api/publications` (homepage currently ships the **whole** publications table to show 2 cards) | S | perf P3-pubs | `RecentPublications.tsx:22-42`; `src/app/api/publications/route.ts:6-34` | ✅ | ✅ #190 |
 
 ### 🟠 Medium (B27–B44)
 
-| ID | Task | Eff | Source | Files | ✓ |
-|---|---|---|---|---|---|
-| B27 | Recompress/resize oversized source assets (logos <50 KB, photos <200 KB, prefer WebP; SVGO the 2 big SVGs) — source size == wire size (optimizer off) | S | perf P4-img | `public/images/partners/PFR-print.jpg` (722 KB) + 7 others | ✅ |
-| B28 | Add `loading="lazy"`/`decoding="async"`/intrinsic dims to partner-marquee `<img>`s; drop the blanket `priority={i<8}` | S | perf P4-marquee | `OurPartners.tsx:11,31-43`; `PartnerImageGrid.tsx:70` | ✅ |
-| B29 | Strengthen the case-studies DELETE id guard to `Number.isInteger && >0` (400, not a 500) | S | bugs M3 | `src/app/api/admin/case-studies/[id]/route.ts:14-21` | ✅ |
-| B30 | Emit a prod-visible signal (log/telemetry/admin placeholder) for unknown block types instead of silent `null` | S | bugs M2 | `BlockRenderer.tsx:372-376` | ✅ |
-| B31 | Localise the study date badge with `lang` instead of hardcoded `en-NZ` | S | bugs M1 | `StudyBlocks.tsx:33-39` | ✅ |
-| B32 | Add a web manifest, favicon.ico + PWA icons (192/512/maskable + apple-icon) and `theme-color` via the `viewport` export | M | launch L10,L11,L12 | `src/app/{manifest.ts,favicon.ico,icon.svg,apple-icon.png}` (new) | ✅ |
-| B33 | Add the 5 highest-value unit tests: admin-session (login/logout/expiry), `safe-url`, `sanitize`, `rate-limit`, partner-logos `order` | M | debt DEBT-36/37/38/40 (+ bugs H1) | `src/lib/{admin-session,safe-url,sanitize,rate-limit,order}.ts` | ✅ |
-| B34 | Add a focusable "Skip to content" link → `#main-content` (the target already exists) | S | a11y A11Y-05 | `render-page.tsx:75`; `src/app/layout.tsx` | ✅ |
-| B35 | Make the admin media picker a real dialog: `role="dialog" aria-modal`, name, focus-trap, Escape, focus-restore | M | a11y A11Y-07 + arch #15 | `src/components/admin/media/MediaPicker.tsx:93-95` | ✅ |
-| B36 | Enforce one `<h1>` per page (hero → h1), fix skipped levels & duplicate responsive headings | M | a11y A11Y-06 | `HomepageHero.tsx:61`; `PublicationIndex.tsx:228`; +5 sections | ≈ |
-| B37 | Carousel a11y: `aria-roledescription="carousel"` + label, hide off-screen slides from AT, focus-visible/touch-reachable controls | L | a11y A11Y-09 | `AcademicCollaborators.tsx:64-109`; `Updates.tsx:82-128` | ✅ |
-| B38 | Add `focus-visible:ring` everywhere `focus:outline-none` is used | S | a11y A11Y-08 | `AdminForm.tsx:111`; `MediaLibrary.tsx:256,384,395`; `ContactEmailForm.tsx:22,28` | ≈ |
-| B39 | Add Organization + BreadcrumbList structured data (JsonLd component; WebSite/MedicalStudy/Person optional) | M | launch L9 | `src/components/seo/JsonLd.tsx` (new); layout, study pages | ✅ |
-| B40 | Add a default OG share image via `next/og` `ImageResponse` (`next/og` is unaffected by `images.unoptimized`) | M | launch L14 | `src/app/opengraph-image.tsx` (new) | ✅ |
-| B41 | Reconcile Prisma **migration drift**: `schema.prisma` has `DeletedPublication` + the filter route/affiliation columns that are in **no migration** (applied via `db push`). Decide & document: commit to `db push`, or backfill migrations for `migrate deploy` | M | arch #11 | `prisma/migrations/*` vs `schema.prisma:188,206-226` | ✅ |
-| B42 | Server-render the fetch-on-mount client sections (`RecentPublications`, `PublicationIndex`, `StudiesOverview`, `JoinStudyForm` dropdown) from `src/lib/data/*` | M | perf P3-fetch (+ arch #19) | `PublicationIndex.tsx:115`; `StudiesOverview.tsx:59`; `JoinStudyForm.tsx:44` | ≈ |
-| B43 | Feed only the active-language dictionary from the server so both `en`+`zh` (~48 KB) aren't bundled on every page | M | perf P2-dict | `src/messages/{en,zh}.ts`; `layout.tsx:42` + 16 importers | ✅ |
-| B44 | Set up Google Search Console: verify property, submit `sitemap.xml`, request indexing of home + key study pages | S | launch L18 | external (needs B04, B06) | ext |
+| ID | Task | Eff | Source | Files | ✓ | Status |
+|---|---|---|---|---|---|---|
+| B27 | Recompress/resize oversized source assets (logos <50 KB, photos <200 KB, prefer WebP; SVGO the 2 big SVGs) — source size == wire size (optimizer off) | S | perf P4-img | `public/images/partners/PFR-print.jpg` (722 KB) + 7 others | ✅ | ✅ #190 |
+| B28 | Add `loading="lazy"`/`decoding="async"`/intrinsic dims to partner-marquee `<img>`s; drop the blanket `priority={i<8}` | S | perf P4-marquee | `OurPartners.tsx:11,31-43`; `PartnerImageGrid.tsx:70` | ✅ | ✅ #190 |
+| B29 | Strengthen the case-studies DELETE id guard to `Number.isInteger && >0` (400, not a 500) | S | bugs M3 | `src/app/api/admin/case-studies/[id]/route.ts:14-21` | ✅ | ✅ #177 |
+| B30 | Emit a prod-visible signal (log/telemetry/admin placeholder) for unknown block types instead of silent `null` | S | bugs M2 | `BlockRenderer.tsx:372-376` | ✅ | ✅ #177 |
+| B31 | Localise the study date badge with `lang` instead of hardcoded `en-NZ` | S | bugs M1 | `StudyBlocks.tsx:33-39` | ✅ | ✅ #177 |
+| B32 | Add a web manifest, favicon.ico + PWA icons (192/512/maskable + apple-icon) and `theme-color` via the `viewport` export | M | launch L10,L11,L12 | `src/app/{manifest.ts,favicon.ico,icon.svg,apple-icon.png}` (new) | ✅ | ✅ #189 |
+| B33 | Add the 5 highest-value unit tests: admin-session (login/logout/expiry), `safe-url`, `sanitize`, `rate-limit`, partner-logos `order` | M | debt DEBT-36/37/38/40 (+ bugs H1) | `src/lib/{admin-session,safe-url,sanitize,rate-limit,order}.ts` | ✅ | ✅ #189 |
+| B34 | Add a focusable "Skip to content" link → `#main-content` (the target already exists) | S | a11y A11Y-05 | `render-page.tsx:75`; `src/app/layout.tsx` | ✅ | ✅ #189 |
+| B35 | Make the admin media picker a real dialog: `role="dialog" aria-modal`, name, focus-trap, Escape, focus-restore | M | a11y A11Y-07 + arch #15 | `src/components/admin/media/MediaPicker.tsx:93-95` | ✅ | ✅ #189 |
+| B36 | Enforce one `<h1>` per page (hero → h1), fix skipped levels & duplicate responsive headings | M | a11y A11Y-06 | `HomepageHero.tsx:61`; `PublicationIndex.tsx:228`; +5 sections | ≈ | ✅ #189 |
+| B37 | Carousel a11y: `aria-roledescription="carousel"` + label, hide off-screen slides from AT, focus-visible/touch-reachable controls | L | a11y A11Y-09 | `AcademicCollaborators.tsx:64-109`; `Updates.tsx:82-128` | ✅ | ✅ #189 |
+| B38 | Add `focus-visible:ring` everywhere `focus:outline-none` is used | S | a11y A11Y-08 | `AdminForm.tsx:111`; `MediaLibrary.tsx:256,384,395`; `ContactEmailForm.tsx:22,28` | ≈ | ✅ #189 |
+| B39 | Add Organization + BreadcrumbList structured data (JsonLd component; WebSite/MedicalStudy/Person optional) | M | launch L9 | `src/components/seo/JsonLd.tsx` (new); layout, study pages | ✅ | ✅ #189 |
+| B40 | Add a default OG share image via `next/og` `ImageResponse` (`next/og` is unaffected by `images.unoptimized`) | M | launch L14 | `src/app/opengraph-image.tsx` (new) | ✅ | ✅ #189 |
+| B41 | Reconcile Prisma **migration drift**: `schema.prisma` has `DeletedPublication` + the filter route/affiliation columns that are in **no migration** (applied via `db push`). Decide & document: commit to `db push`, or backfill migrations for `migrate deploy` | M | arch #11 | `prisma/migrations/*` vs `schema.prisma:188,206-226` | ✅ | 🔭 defer |
+| B42 | Server-render the fetch-on-mount client sections (`RecentPublications`, `PublicationIndex`, `StudiesOverview`, `JoinStudyForm` dropdown) from `src/lib/data/*` | M | perf P3-fetch (+ arch #19) | `PublicationIndex.tsx:115`; `StudiesOverview.tsx:59`; `JoinStudyForm.tsx:44` | ≈ | ✅ #191 |
+| B43 | Feed only the active-language dictionary from the server so both `en`+`zh` (~48 KB) aren't bundled on every page | M | perf P2-dict | `src/messages/{en,zh}.ts`; `layout.tsx:42` + 16 importers | ✅ | ✅ #192 |
+| B44 | Set up Google Search Console: verify property, submit `sitemap.xml`, request indexing of home + key study pages | S | launch L18 | external (needs B04, B06) | ext | ⏳ ext |
 
 ### 🟡 Low (B45–B63) — grouped; nothing dropped
 
-| ID | Task | Eff | Source | Files | ✓ |
-|---|---|---|---|---|---|
-| B45 | Split the two ~1000-line files: `admin/publications/page.tsx` (1041) and **Navbar** (1003, → server chrome + client island) — dedupe Navbar search into a hook | L | perf P1b + debt DEBT-5 + arch #17 | `admin/publications/page.tsx`; `src/components/layout/Navbar.tsx` | ✅ |
-| B46 | Delete the orphaned pre-blocks section layer (~17 dead components + their stories + the assets only they reference); **grep each before deleting** (`findAssetUsage` can't see hardcoded paths) | L | debt DEBT-2/13/19-35 + arch #7 | `src/components/sections/*` (Appendix A of debt report); `media-resolve.ts:105` | ✅ |
-| B47 | Decide & document the data-access rule; migrate the 54 direct `prisma` imports toward `src/lib/data/*` (only 2 modules today) | L | debt DEBT-6 (+ arch #19) | `src/lib/data/`; 54 importers | ✅ |
-| B48 | Regenerate the seed from a live DB dump (build `prisma/dump-to-seed.ts`); make the destructive `deleteMany` seed PII-safe; resolve seed TODO placeholders | L | debt DEBT-4/17 (+ arch #12) | `prisma/seed.ts:50-57,134,151-156` | ✅ |
-| B49 | Broaden test coverage to the ~30 untested API routes + remaining libs (`page-draft-ops`, `translate/*`) and the thin admin e2e happy-path | L | debt DEBT-39/41-47 + arch #16 | Appendix B of debt report | ≈ |
-| B50 | Decompose `PageEditor.tsx` (extract `usePageEditorApi` + `PublishBar`) | M | debt DEBT-18 | `PageEditor.tsx` (569) | ✅ |
-| B51 | Collapse the 3 static study pages (`ferdinand`,`food-beverage`,`nz-synergy`) into the `[slug]` route (they already exist as DB studies) | M | debt DEBT-9 | `src/app/studies/{...}/page.tsx` | ✅ |
-| B52 | Retire the `StudyContent` fallback once every study has a saved layout (tracked debt — don't delete yet) | M | debt DEBT-10 | `studies/[slug]/StudyContent.tsx` | ✅ |
-| B53 | Reduced-motion: global `prefers-reduced-motion` guard + pause control on marquee/autoplay carousels; expose `DiscoverVideo` controls | M | a11y A11Y-10/11 | `globals.css:100-106`; `Updates.tsx:31-38`; `DiscoverVideo.tsx:128` | ✅ |
-| B54 | a11y refinements: `<html lang="zh-Hans">`; `aria-pressed`/`aria-current` on mobile language toggle; warn on new-tab external links | S | a11y A11Y-12/13/14 | `layout.tsx:38`; `Navbar.tsx:847-857` | ✅ |
-| B55 | Harden publications-sync robustness: wrap summary fetch (L1), add a transaction/re-read (L2), unique key for DOI-less works (L3), don't null a known DOI on detail-fetch fail (L4) | S–M | bugs L1-L4 | `src/lib/orcid.ts`; `publications/sync/route.ts` | ✅ |
-| B56 | Log block JSON parse failures (slug + block id) instead of silently dropping from the search index | S | bugs L5 | `src/app/api/search/route.ts:90-100` | ✅ |
-| B57 | Security hardening (defence-in-depth, admin-only): require MIME **and** extension on uploads (F5); trusted-proxy client IP (F7); validate ORCID id on the fetch path (F8); keep the translate API key out of any query string if that provider is enabled (F9) | S | sec F5/F7/F8/F9 | `media-upload.ts`; `contact/route.ts:35`; `orcid.ts`; `translate/provider.ts:80` | ✅ |
-| B58 | Clear the residual `npm audit` noise: patch the vitest stack (dev-only) and refresh the lockfile for `postcss`/`brace-expansion` — **no `package.json` change, and never `npm audit fix --force`** | S | deps DEPS-2/3 + sec F10 | lockfile | ≈ |
-| B59 | Record the Node pin in-repo: `.nvmrc` = `22.17.1` + permissive `engines: { node: ">=22.17.1" }` (a floor, not an exact pin); widen `@types/node` `^20`→`^22` | S | deps DEPS-4/5/6 | `.nvmrc` (new); `package.json` | ✅ |
-| B60 | Remove the dead `prisma.seed` package.json key; wire (or drop) `@vitest/coverage-v8`; drop `@storybook/addon-onboarding` | S | deps DEPS-7/8 + debt DEBT-14 | `package.json`; `vitest.config.ts` | ✅ |
-| B61 | Incremental strictness, **one flag per PR** (each surfaces real errors): `noUncheckedIndexedAccess` etc. (tsconfig); type-aware ESLint; bring Storybook a11y into the gate | M | deps DEPS-9/10 + debt DEBT-8 | `tsconfig.json`; `eslint.config.mjs` | ≈ |
-| B62 | Repo hygiene: delete committed dead assets (`zzz/` = 35 PNGs, `top-screenshot.png`); move colocated `*.test.ts` out of `src/app/api/test/`; label one-shot `prisma/*.ts` scripts in docs; review the lone exhaustive-deps suppression; fix the homepage CTA default drift; remove the `BlockRenderer` `ourPartners` case (mind merge order) | S | debt DEBT-7/11/12/15/16/48 | `zzz/`, `top-screenshot.png`; `HomepageHero.tsx:16`; `BlockRenderer.tsx:308` | ✅ |
-| B63 | Deferred/contextual: commit Linux visual-regression baselines (`-linux.png`); detect & report broken media rows before pruning (verify vs live DB); audit for hardcoded-English/untranslated block fields (never overwrite native ZH); document the single-shared-password auth trade-off; (optional) cache shared render-path reads + `cache()` the double study read; re-enable CI if org billing is restored | S–M | arch #13/#9/#20/#2 + perf P4-cache/study2x + arch #10 | `e2e/*-snapshots/`; `media-resolve.ts`; `docs/` | ✅ |
+| ID | Task | Eff | Source | Files | ✓ | Status |
+|---|---|---|---|---|---|---|
+| B45 | Split the two ~1000-line files: `admin/publications/page.tsx` (1041) and **Navbar** (1003, → server chrome + client island) — dedupe Navbar search into a hook | L | perf P1b + debt DEBT-5 + arch #17 | `admin/publications/page.tsx`; `src/components/layout/Navbar.tsx` | ✅ | 🔭 defer |
+| B46 | Delete the orphaned pre-blocks section layer (~17 dead components + their stories + the assets only they reference); **grep each before deleting** (`findAssetUsage` can't see hardcoded paths) | L | debt DEBT-2/13/19-35 + arch #7 | `src/components/sections/*` (Appendix A of debt report); `media-resolve.ts:105` | ✅ | 🔭 defer |
+| B47 | Decide & document the data-access rule; migrate the 54 direct `prisma` imports toward `src/lib/data/*` (only 2 modules today) | L | debt DEBT-6 (+ arch #19) | `src/lib/data/`; 54 importers | ✅ | 🔭 defer |
+| B48 | Regenerate the seed from a live DB dump (build `prisma/dump-to-seed.ts`); make the destructive `deleteMany` seed PII-safe; resolve seed TODO placeholders | L | debt DEBT-4/17 (+ arch #12) | `prisma/seed.ts:50-57,134,151-156` | ✅ | 🔭 defer |
+| B49 | Broaden test coverage to the ~30 untested API routes + remaining libs (`page-draft-ops`, `translate/*`) and the thin admin e2e happy-path | L | debt DEBT-39/41-47 + arch #16 | Appendix B of debt report | ≈ | 🔭 defer |
+| B50 | Decompose `PageEditor.tsx` (extract `usePageEditorApi` + `PublishBar`) | M | debt DEBT-18 | `PageEditor.tsx` (569) | ✅ | 🔭 defer |
+| B51 | Collapse the 3 static study pages (`ferdinand`,`food-beverage`,`nz-synergy`) into the `[slug]` route (they already exist as DB studies) | M | debt DEBT-9 | `src/app/studies/{...}/page.tsx` | ✅ | 🔭 defer |
+| B52 | Retire the `StudyContent` fallback once every study has a saved layout (tracked debt — don't delete yet) | M | debt DEBT-10 | `studies/[slug]/StudyContent.tsx` | ✅ | 🔭 defer |
+| B53 | Reduced-motion: global `prefers-reduced-motion` guard + pause control on marquee/autoplay carousels; expose `DiscoverVideo` controls | M | a11y A11Y-10/11 | `globals.css:100-106`; `Updates.tsx:31-38`; `DiscoverVideo.tsx:128` | ✅ | ✅ #189 |
+| B54 | a11y refinements: `<html lang="zh-Hans">`; `aria-pressed`/`aria-current` on mobile language toggle; warn on new-tab external links | S | a11y A11Y-12/13/14 | `layout.tsx:38`; `Navbar.tsx:847-857` | ✅ | ✅ #189 |
+| B55 | Harden publications-sync robustness: wrap summary fetch (L1), add a transaction/re-read (L2), unique key for DOI-less works (L3), don't null a known DOI on detail-fetch fail (L4) | S–M | bugs L1-L4 | `src/lib/orcid.ts`; `publications/sync/route.ts` | ✅ | ✅ #177 |
+| B56 | Log block JSON parse failures (slug + block id) instead of silently dropping from the search index | S | bugs L5 | `src/app/api/search/route.ts:90-100` | ✅ | ✅ #177 |
+| B57 | Security hardening (defence-in-depth, admin-only): require MIME **and** extension on uploads (F5); trusted-proxy client IP (F7); validate ORCID id on the fetch path (F8); keep the translate API key out of any query string if that provider is enabled (F9) | S | sec F5/F7/F8/F9 | `media-upload.ts`; `contact/route.ts:35`; `orcid.ts`; `translate/provider.ts:80` | ✅ | 🔭 defer |
+| B58 | Clear the residual `npm audit` noise: patch the vitest stack (dev-only) and refresh the lockfile for `postcss`/`brace-expansion` — **no `package.json` change, and never `npm audit fix --force`** | S | deps DEPS-2/3 + sec F10 | lockfile | ≈ | 🔭 defer |
+| B59 | Record the Node pin in-repo: `.nvmrc` = `22.17.1` + permissive `engines: { node: ">=22.17.1" }` (a floor, not an exact pin); widen `@types/node` `^20`→`^22` | S | deps DEPS-4/5/6 | `.nvmrc` (new); `package.json` | ✅ | 🔭 defer |
+| B60 | Remove the dead `prisma.seed` package.json key; wire (or drop) `@vitest/coverage-v8`; drop `@storybook/addon-onboarding` | S | deps DEPS-7/8 + debt DEBT-14 | `package.json`; `vitest.config.ts` | ✅ | 🔭 defer |
+| B61 | Incremental strictness, **one flag per PR** (each surfaces real errors): `noUncheckedIndexedAccess` etc. (tsconfig); type-aware ESLint; bring Storybook a11y into the gate | M | deps DEPS-9/10 + debt DEBT-8 | `tsconfig.json`; `eslint.config.mjs` | ≈ | 🔭 defer |
+| B62 | Repo hygiene: delete committed dead assets (`zzz/` = 35 PNGs, `top-screenshot.png`); move colocated `*.test.ts` out of `src/app/api/test/`; label one-shot `prisma/*.ts` scripts in docs; review the lone exhaustive-deps suppression; fix the homepage CTA default drift; remove the `BlockRenderer` `ourPartners` case (mind merge order) | S | debt DEBT-7/11/12/15/16/48 | `zzz/`, `top-screenshot.png`; `HomepageHero.tsx:16`; `BlockRenderer.tsx:308` | ✅ | 🔭 defer |
+| B63 | Deferred/contextual: commit Linux visual-regression baselines (`-linux.png`); detect & report broken media rows before pruning (verify vs live DB); audit for hardcoded-English/untranslated block fields (never overwrite native ZH); document the single-shared-password auth trade-off; (optional) cache shared render-path reads + `cache()` the double study read; re-enable CI if org billing is restored | S–M | arch #13/#9/#20/#2 + perf P4-cache/study2x + arch #10 | `e2e/*-snapshots/`; `media-resolve.ts`; `docs/` | ✅ | ✅ #190 |
+
+---
+
+## New follow-ups (accrued during the waves)
+
+*Net-new work surfaced while landing the fixes above — not part of the original B01–B63
+triage. Numbered `N#` so they don't collide with the stable B-IDs.*
+
+| ID | Follow-up | Origin |
+|---|---|---|
+| N1 | Add an **ESLint guard** flagging `prisma` imports in `app/**/{sitemap,manifest,opengraph-image,icon}.*` files that lack `export const dynamic = "force-dynamic"`. A statically-built metadata route reading the DB killed deploy `f753bc7` (fixed in #194); the guard makes the failure mode un-shippable rather than a deploy-time surprise. | #194 / B04 |
+| N2 | `JoinStudyForm` **has no render site in the repo** (noted in PR #191). **Investigate where the PROD DB's page blocks reference it before concluding it's dead — do NOT delete it.** The seeds are stale; prod page blocks may still render it, so repo grep alone is not authoritative. | #191 / B42 |
+| N3 | **Decorative-image `alt` flag:** distinguishing an *intentionally-empty* `imageAlt` (decorative) from a *not-yet-described* one needs a **schema-level flag** — the current empty-string heuristic can't tell them apart. | #189 known-limitations comment / B23 |
 
 ---
 
 ## Proposed split: next sprint vs post-launch
+
+*Status note: the pre-launch ("Next sprint") work below has **shipped** in the fix waves
+(see the per-row **Status** column); the lists are retained as the record of the split.
+Remaining open work is the `🔭 deferred` post-launch set plus the `⏳ ext` launch-day ops.*
 
 **Rule:** with no CI and merge-to-`main` = prod, *next sprint* = everything that must be
 true for a safe public launch **plus** small high-leverage security/correctness/perf/a11y
