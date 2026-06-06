@@ -77,6 +77,25 @@ body {
   animation: marquee 28s linear infinite;
 }
 
+/* Respect prefers-reduced-motion (B53 / A11Y-10/11): make animations and
+   transitions near-instant globally, and fully stop the continuously-scrolling
+   partner marquee so it doesn't loop forever. Components that auto-advance
+   (Updates carousel) also read this preference in JS to pause themselves. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .marquee-track {
+    animation: none !important;
+  }
+}
+
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
   appearance: none;

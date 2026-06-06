@@ -7,18 +7,15 @@ import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-l
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 import { getServerLang } from "@/lib/lang";
 import { getDictionary } from "@/lib/dictionaries";
-import { localizedMetadata } from "@/lib/localized-metadata";
+import { buildPageMetadata } from "@/lib/page-metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return localizedMetadata({
-    en: {
-      title: "NZ Synergy | HNU Auckland",
-      description:
-        "A two-week residential nutrition study investigating dietary effects on diabetes risk markers.",
-    },
-    zh: {
-      title: "NZ Synergy 研究 | HNU Auckland",
-      description: "一项为期两周的住院式营养研究，探讨饮食对糖尿病风险指标的影响。",
+  return buildPageMetadata({
+    path: "/studies/nz-synergy",
+    title: { en: "NZ Synergy", zh: "NZ Synergy 研究" },
+    description: {
+      en: "A two-week residential nutrition study investigating dietary effects on diabetes risk markers.",
+      zh: "一项为期两周的住院式营养研究，探讨饮食对糖尿病风险指标的影响。",
     },
   });
 }

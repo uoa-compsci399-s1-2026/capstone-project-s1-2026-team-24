@@ -3,9 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { NewTabHint } from "@/components/ui/NewTabHint";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useNavStudies } from "@/contexts/NavStudiesContext";
@@ -37,6 +39,8 @@ export default function Navbar() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const searchDialogRef = useRef<HTMLDivElement>(null);
+  const mobileDrawerRef = useRef<HTMLDivElement>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const previousBodyOverflowRef = useRef<string | null>(null);
   const wasSearchOpenRef = useRef(false);
   const [scrolled, setScrolled] = useState(false);
@@ -45,6 +49,11 @@ export default function Navbar() {
   // by the root layout — present on first paint (SSR, no client fetch) and
   // re-localised on a language toggle, which triggers router.refresh().
   const navStudies = useNavStudies();
+
+  // Mobile drawer accessibility (B22): trap Tab focus inside the open drawer,
+  // close on Escape, and restore focus to the hamburger toggle on close.
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+  useFocusTrap(mobileOpen, mobileDrawerRef, closeMobile, mobileToggleRef);
 
   const ABOUT_ITEMS = [
     { label: t.navbar.discoverHnu, image: "Discover HNU", href: "/about" },
@@ -187,7 +196,9 @@ export default function Navbar() {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (searchOpen) {
+    // Lock background scroll while either modal overlay is open (the search
+    // dialog or the focus-trapped mobile drawer).
+    if (searchOpen || mobileOpen) {
       previousBodyOverflowRef.current = document.body.style.overflow;
       document.body.style.overflow = "hidden";
     } else if (previousBodyOverflowRef.current !== null) {
@@ -200,7 +211,7 @@ export default function Navbar() {
         previousBodyOverflowRef.current = null;
       }
     };
-  }, [searchOpen]);
+  }, [searchOpen, mobileOpen]);
 
   useEffect(() => {
     const updateOffset = () => setSearchContentTopOffset(headerRef.current?.offsetHeight ?? 0);
@@ -350,6 +361,7 @@ export default function Navbar() {
                 className="px-3 text-[14px] font-bold tracking-[0.28px] text-[#0c0c48] hover:opacity-70 transition-opacity whitespace-nowrap"
               >
                 {link.label}
+                {link.target === "_blank" && <NewTabHint />}
               </Link>
             ))}
 
@@ -710,8 +722,11 @@ export default function Navbar() {
                 </Link>
 
                 <button
+                  ref={mobileToggleRef}
                   onClick={() => { if (mobileOpen) { setMobileOpen(false); } else { setSearchOpen(false); setMobileOpen(true); } }}
                   aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={mobileOpen}
+                  aria-controls={mobileOpen ? "mobile-menu" : undefined}
                   className={`w-14 h-14 flex items-center justify-center transition-colors duration-300 ${mobileNavActive ? "text-white" : "text-[#0c0c48]"}`}
                 >
                   <div className="relative w-8 h-8">
@@ -732,10 +747,13 @@ export default function Navbar() {
       {/* Mobile menu overlay */}
       {mobileOpen && (
         <div
+          id="mobile-menu"
+          ref={mobileDrawerRef}
           className="fixed inset-x-0 bottom-0 z-[39] flex flex-col animate-[slideDown_0.5s_ease-out] lg:hidden"
           style={{ top: `${searchContentTopOffset}px`, backgroundColor: "#0c0c48" }}
           role="dialog"
           aria-modal="true"
+          aria-label={lang === "EN" ? "Main menu" : "主菜单"}
         >
           <div className="flex-1 overflow-y-auto px-6 py-5">
             <ul className="space-y-0 mb-10">
@@ -748,7 +766,7 @@ export default function Navbar() {
 
               {/* About accordion */}
               <li>
-                <button onClick={() => setMobileAboutOpen((v) => !v)} className="w-full flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
+                <button onClick={() => setMobileAboutOpen((v) => !v)} aria-expanded={mobileAboutOpen} className="w-full flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
                   <span className="flex items-center gap-2">
                     <span className={mobileAboutOpen ? "underline underline-offset-4" : ""}>{t.navbar.about}</span>
                     <svg className={`w-3 h-3 transition-transform duration-300 ${mobileAboutOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -775,7 +793,7 @@ export default function Navbar() {
 
               {/* Studies accordion */}
               <li>
-                <button onClick={() => setMobileStudiesOpen((v) => !v)} className="w-full flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
+                <button onClick={() => setMobileStudiesOpen((v) => !v)} aria-expanded={mobileStudiesOpen} className="w-full flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
                   <span className="flex items-center gap-2">
                     <span className={mobileStudiesOpen ? "underline underline-offset-4" : ""}>{t.navbar.studies}</span>
                     <svg className={`w-3 h-3 transition-transform duration-300 ${mobileStudiesOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -809,6 +827,7 @@ export default function Navbar() {
               <li>
                 <Link href="https://www.auckland.ac.nz/en/giving/donate.html" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
                   {lang === "EN" ? "Donations" : "捐赠"}
+                  <NewTabHint />
                 </Link>
               </li>
 

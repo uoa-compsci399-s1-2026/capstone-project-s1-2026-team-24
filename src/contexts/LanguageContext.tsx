@@ -50,7 +50,9 @@ export function LanguageProvider({
     // <html lang> for accessibility.
     localStorage.setItem("lang", lang);
     document.cookie = `lang=${lang}; path=/; max-age=31536000`;
-    document.documentElement.lang = lang === "ZH" ? "zh" : "en";
+    // Use the precise BCP-47 subtag for Simplified Chinese (matches the
+    // server-rendered <html lang> in src/app/layout.tsx — B54.1).
+    document.documentElement.lang = lang === "ZH" ? "zh-Hans" : "en";
 
     // Skip the initial mount — the server already rendered in `initialLang`, so
     // there's nothing to re-fetch. On a genuine change, refresh re-renders the

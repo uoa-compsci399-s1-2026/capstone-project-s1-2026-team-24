@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { NewTabHint } from "@/components/ui/NewTabHint";
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -58,6 +59,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                 >
                   {link.label}
+                  <NewTabHint />
                 </a>
               </li>
             ))}

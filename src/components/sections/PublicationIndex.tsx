@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { NewTabHint } from "@/components/ui/NewTabHint";
 import { getSafeHttpUrl } from "@/lib/safe-url";
 import type { IndexPublicationRecord } from "@/lib/data/publications";
 
@@ -161,9 +162,11 @@ export default function PublicationIndex({
           {/* Main content card */}
           <div className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.18)] p-8 sm:p-10">
             <header className="mb-8">
-              <h1 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold text-[#0c0c48] tracking-[0.96px]">
+              {/* h2, not h1: the only page that renders this block (/research)
+                  already has its h1 in researchHero — avoid a second page h1. */}
+              <h2 className="text-3xl sm:text-4xl lg:text-[48px] font-extrabold text-[#0c0c48] tracking-[0.96px]">
                 {t.research.publicationsTitle}
-              </h1>
+              </h2>
               <p className="mt-3 text-base text-[#0a4479]/80 max-w-2xl">
                 {t.research.publicationsIntro}
               </p>
@@ -227,6 +230,7 @@ export default function PublicationIndex({
                                 className="inline-flex items-center bg-[#0a4479] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors"
                               >
                                 {t.research.viewPublication}
+                                <NewTabHint />
                               </a>
                             )}
                             {publication.doi && (

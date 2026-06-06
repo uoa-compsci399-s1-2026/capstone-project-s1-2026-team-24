@@ -2,6 +2,7 @@
 
 import Button from "@/components/ui/Button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { NewTabHint } from "@/components/ui/NewTabHint";
 import { getSafeHttpUrl } from "@/lib/safe-url";
 
 type Publication = {
@@ -130,6 +131,7 @@ export default function RecentPublications({
                   }}
                 >
                   {t.research.viewPublicationArrow}
+                  <NewTabHint />
                 </a>
               )}
             </div>
