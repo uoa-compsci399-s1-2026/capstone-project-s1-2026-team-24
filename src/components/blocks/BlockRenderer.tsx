@@ -6,7 +6,7 @@ import StudiesOverviewBlock from "@/components/sections/StudiesOverviewBlock";
 import TrialDesign from "@/components/sections/TrialDesign";
 import RecentPublicationsBlock from "@/components/sections/RecentPublicationsBlock";
 import OurPartners from "@/components/sections/OurPartners";
-import PublicationIndex from "@/components/sections/PublicationIndex";
+import PublicationIndexBlock from "@/components/sections/PublicationIndexBlock";
 import AcademicCollaborators from "@/components/sections/AcademicCollaborators";
 import IndustryCollaborators from "@/components/sections/IndustryCollaborators";
 import BenefitsRow from "@/components/sections/BenefitsRow";
@@ -316,7 +316,7 @@ export default function BlockRenderer({
     case "ourPartners":
       return <OurPartners group={partnerGroup(c.group)} />;
     case "publicationIndex":
-      return <PublicationIndex pageSize={Number(c.pageSize) || undefined} />;
+      return <PublicationIndexBlock pageSize={Number(c.pageSize) || undefined} />;
     case "academicCollaborators": {
       const cards = studyCards(c.cards);
       return (
