@@ -89,13 +89,16 @@ db-push-built prod under launch pressure.
 
 ```
 # build phase (no disk needed): generate the client only
-prisma generate && next build
+npx prisma generate && next build
 
 # start phase (disk mounted at /var/data): sync schema, then serve
-prisma db push --skip-generate && next start
+npx prisma db push --skip-generate && next start
 ```
 
-- `prisma generate` stays in **build** — it needs the schema, not the DB.
+(Commands use `npx prisma` for consistency with `docs/deployment.md` and because the `prisma`
+binary is not reliably on `PATH` on Render outside an npm script.)
+
+- `npx prisma generate` stays in **build** — it needs the schema, not the DB.
 - **Do not pass `--accept-data-loss`.** A destructive diff then *aborts the deploy* instead of
   nuking data. (See the manual escape hatch below for intentional destructive changes.)
 - **Never** put `db push` in build or pre-deploy — no disk there, so it silently no-ops
@@ -113,7 +116,7 @@ There are **no `migrate dev` reset prompts** (the pain the team hit before disap
 **Future schema changes.** The workflow becomes:
 
 1. Edit `prisma/schema.prisma`.
-2. `prisma db push` locally → `prisma generate`.
+2. `npx prisma db push` locally → `npx prisma generate`.
 3. Commit `schema.prisma` (and the generated client if committed). **PR review reviews the
    schema diff** — that is the change record, in lieu of migration files.
 
@@ -126,7 +129,10 @@ way the start-time `db push` only ever sees a safe, additive diff and won't abor
 
 - Move the folder to `prisma/migrations-archive/` with a `README.md` pointing to this doc, so
   nobody runs `migrate deploy` against the drifted history.
-- Keep the `migrations.seed` key in `prisma.config.ts` (the seed command still works).
+- **Update `prisma.config.ts`:** it currently hard-codes `migrations.path = "prisma/migrations"`.
+  When the folder is archived, point this at `prisma/migrations-archive/` (or drop the `path`
+  key) so Prisma CLI commands don't break on a missing directory. Keep the `migrations.seed`
+  key (the seed command still works).
 - Document that `prisma migrate dev` / `prisma migrate deploy` are **off-limits** for this repo.
 
 ### Doc cleanup (part of the B41 slice)
@@ -201,8 +207,9 @@ change materially. Snapshot filenames carry the date so staleness is visible.
 
 ## 4. Slices (incremental, each reviewable & independently shippable)
 
-1. **B41 docs + config** — archive `prisma/migrations/`, change the Render start command to
-   `prisma db push --skip-generate && next start`, fix `docs/database.md` and
+1. **B41 docs + config** — archive `prisma/migrations/` and update `migrations.path` in
+   `prisma.config.ts` accordingly, change the Render start command to
+   `npx prisma db push --skip-generate && next start`, fix `docs/database.md` and
    `docs/deployment.md`. *Lowest risk; unblocks the deploy story.*
 2. **Seed safety guards** — prod-path + `NODE_ENV` guards and removal of the silent
    `dev.db` fallback in `seed.ts` and `seed-page-blocks.ts`.
@@ -236,7 +243,7 @@ change materially. Snapshot filenames carry the date so staleness is visible.
   `/var/data/app.db`.
 - **`dump-to-seed`:** run against a snapshot copy → assert `ContactSubmission` rows are absent
   from `seed-data/`, staff/admin emails are scrubbed, all `MediaAsset` paths resolve, and a
-  fresh local `prisma db push && npm run seed` reproduces a site that matches production.
+  fresh local `npx prisma db push && npm run seed` reproduces a site that matches production.
 - **Guards:** confirm `seed.ts` throws when `DATABASE_URL` points at a `/var/data` or
   `app.db` path, and when `NODE_ENV=production`.
 
