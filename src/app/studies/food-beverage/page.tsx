@@ -6,21 +6,17 @@ import StudyDetail from "@/components/sections/StudyDetail";
 import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 import { getServerLang } from "@/lib/lang";
-import { localizedMetadata } from "@/lib/localized-metadata";
+import { buildPageMetadata } from "@/lib/page-metadata";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return localizedMetadata({
-    en: {
-      title: "NZ Food and Beverage | HNU Auckland",
-      description:
-        "A short-term study investigating how different foods and beverages affect your metabolic rate, fat burn, blood sugar levels, and appetite.",
-    },
-    zh: {
-      title: "新西兰食品与饮料研究 | HNU Auckland",
-      description:
-        "一项短期研究，探讨不同食品和饮料如何影响代谢率、脂肪燃烧、血糖水平和食欲。",
+  return buildPageMetadata({
+    path: "/studies/food-beverage",
+    title: { en: "NZ Food and Beverage", zh: "新西兰食品与饮料研究" },
+    description: {
+      en: "A short-term study investigating how different foods and beverages affect your metabolic rate, fat burn, blood sugar levels, and appetite.",
+      zh: "一项短期研究，探讨不同食品和饮料如何影响代谢率、脂肪燃烧、血糖水平和食欲。",
     },
   });
 }

@@ -107,8 +107,10 @@ interface FormFieldProps {
   step?: number;
 }
 
+// Border #cac7c7 (1.7:1) -> #767676 (>=3:1); placeholder #8e8d8d (3.3:1) ->
+// #6b6b6b (>=4.5:1); add a keyboard focus-visible ring (B21, B38).
 const inputClass =
-  "w-full px-4 py-2.5 bg-white border-2 border-[#cac7c7] rounded-2xl text-base text-[#0c0c48] placeholder:text-[#8e8d8d] focus:outline-none focus:border-[#0a4479] transition-colors";
+  "w-full px-4 py-2.5 bg-white border-2 border-[#767676] rounded-2xl text-base text-[#0c0c48] placeholder:text-[#6b6b6b] focus:outline-none focus:border-[#0a4479] focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-1 transition-colors";
 
 export function FormField({
   label,
@@ -179,7 +181,7 @@ export function FormField({
         />
       )}
       {helper && (
-        <p className="text-xs text-[#0a4479]/70 mt-1.5">{helper}</p>
+        <p className="text-xs text-[#0a4479]/80 mt-1.5">{helper}</p>
       )}
     </div>
   );
@@ -269,7 +271,7 @@ export function FormFileField({
         className="block w-full text-sm text-[#0c0c48] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[#0a4479] file:text-white hover:file:bg-[#083559] file:cursor-pointer"
       />
       {helper && (
-        <p className="text-xs text-[#0a4479]/70 mt-1.5">{helper}</p>
+        <p className="text-xs text-[#0a4479]/80 mt-1.5">{helper}</p>
       )}
     </div>
   );

@@ -248,12 +248,39 @@ function StudyCardsField({
               value={asString(card.imageSrc)}
               onChange={(v) => update(i, { imageSrc: v })}
             />
-            <input
-              className={inputClass}
-              placeholder="Image alt text"
-              value={asString(card.imageAlt)}
-              onChange={(e) => update(i, { imageAlt: e.target.value })}
-            />
+            <div>
+              <label
+                htmlFor={`card-alt-${i}`}
+                className="block text-xs font-semibold text-[#0c0c48] mb-1"
+              >
+                Image alt text{" "}
+                <span className="font-normal text-gray-500">
+                  (describe the image for screen readers; leave empty only if it’s purely decorative)
+                </span>
+              </label>
+              <input
+                id={`card-alt-${i}`}
+                className={inputClass}
+                placeholder="e.g. Researcher preparing a meal in the metabolic kitchen"
+                value={asString(card.imageAlt)}
+                onChange={(e) => update(i, { imageAlt: e.target.value })}
+                aria-describedby={
+                  asString(card.imageSrc) && !asString(card.imageAlt).trim()
+                    ? `card-alt-warn-${i}`
+                    : undefined
+                }
+              />
+              {asString(card.imageSrc) && !asString(card.imageAlt).trim() && (
+                <p
+                  id={`card-alt-warn-${i}`}
+                  className="mt-1 text-xs text-amber-700"
+                >
+                  ⚠ This image has no alt text. Add a description, or confirm it’s
+                  purely decorative. (The media library’s alt text is used as a
+                  fallback if set.)
+                </p>
+              )}
+            </div>
           </div>
         ))}
         <button
