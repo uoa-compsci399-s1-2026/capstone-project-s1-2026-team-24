@@ -19,7 +19,9 @@ export default function DiscoverVideo({
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [videoHovered, setVideoHovered] = useState(false);
-  const src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&rel=0&modestbranding=1`;
+  // enablejsapi=1 is required for the postMessage commands below (play/pause/
+  // mute) — and for the scroll-into-view unmute — to be honoured by the player.
+  const src = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&rel=0&modestbranding=1`;
 
   function postMessage(command: string) {
     iframeRef.current?.contentWindow?.postMessage(
@@ -124,12 +126,15 @@ export default function DiscoverVideo({
             </p>
             <p>{cardParagraph2}</p>
 
-            {/* Controls */}
-            <div className="flex items-center gap-3 hidden">
+            {/* Controls — exposed so users can pause/mute the autoplaying,
+                scroll-unmuting video (B53 / WCAG 2.2.2, 1.4.2). The YouTube
+                embed also keeps its native controls. */}
+            <div className="flex items-center gap-3">
               {/* Play/Pause */}
               <button
+                type="button"
                 onClick={togglePlay}
-                className="flex items-center gap-2 w-fit bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-full"
+                className="flex items-center gap-2 w-fit bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a4379]"
               >
                 {playing ? (
                   <svg
@@ -153,8 +158,9 @@ export default function DiscoverVideo({
 
               {/* Mute/Unmute */}
               <button
+                type="button"
                 onClick={toggleMute}
-                className="flex items-center gap-2 w-fit bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-full"
+                className="flex items-center gap-2 w-fit bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-semibold px-4 py-2 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a4379]"
               >
                 {muted ? (
                   <>

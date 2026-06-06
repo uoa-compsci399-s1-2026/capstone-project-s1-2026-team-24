@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Update {
   title: string;
@@ -84,9 +85,15 @@ export default function Updates({
   updates,
   backgroundColor = "#0c0c48f2",
 }: UpdatesProps) {
+  const { lang } = useLanguage();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("left");
   const [isHovered, setIsHovered] = useState(false);
+  // Pause autoplay while a keyboard user is interacting, when the user has
+  // pressed the pause control, or when the OS asks for reduced motion (B53).
+  const [isFocused, setIsFocused] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
   // Modulo wrap so the index self-heals even if `updates` shrinks at
@@ -102,13 +109,28 @@ export default function Updates({
   };
 
   useEffect(() => {
-    if (isHovered) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  // Pauses on hover, on an explicit user pause, and under reduced motion. It
+  // deliberately does NOT pause on keyboard focus — focusing the Pause/Play
+  // toggle would otherwise prevent it from ever resuming (the announced state
+  // would contradict the behaviour). Keyboard users still have the explicit
+  // Pause control. (isFocused is still used to reveal the prev/next arrows.)
+  const autoplayPaused = isHovered || isPaused || reducedMotion;
+
+  useEffect(() => {
+    if (autoplayPaused) return;
     const timer = setInterval(() => {
       setDirection("left");
       setCurrent((i) => (i + 1) % updates.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [updates.length, current, isHovered]);
+  }, [updates.length, current, autoplayPaused]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -118,7 +140,8 @@ export default function Updates({
     if (touchStartX.current === null) return;
     const delta = e.changedTouches[0].clientX - touchStartX.current;
     if (Math.abs(delta) > 40) {
-      delta < 0 ? next() : prev();
+      if (delta < 0) next();
+      else prev();
     }
     touchStartX.current = null;
   };
@@ -134,8 +157,17 @@ export default function Updates({
       <div className="max-w-[1200px] mx-auto sm:px-12 flex justify-end">
         <div
           className="w-full max-w-[750px]"
+          role="group"
+          aria-roledescription="carousel"
+          aria-label={lang === "EN" ? "Updates" : "动态"}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+              setIsFocused(false);
+            }
+          }}
         >
           {/* Card */}
           <div
@@ -157,10 +189,12 @@ export default function Updates({
               userSelect: "none",
             }}
           >
-            {/* Prev button */}
+            {/* Prev button — kept focusable (pointerEvents always on) and made
+                visible on hover OR keyboard focus, with a visible focus ring. */}
             <button
               onClick={prev}
-              aria-label="Previous update"
+              aria-label={lang === "EN" ? "Previous update" : "上一条"}
+              className="updates-arrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               style={{
                 position: "absolute",
                 left: "20px",
@@ -168,13 +202,16 @@ export default function Updates({
                 transform: "translateY(-50%)",
                 border: "none",
                 background: "transparent",
-                color: "rgba(255,255,255,0.7)",
+                color: "rgba(255,255,255,0.9)",
                 fontSize: "32px",
                 fontWeight: 300,
                 cursor: "pointer",
                 lineHeight: 1,
-                opacity: isHovered ? 1 : 0,
-                pointerEvents: isHovered ? "auto" : "none",
+                opacity: isHovered || isFocused ? 1 : 0,
+                // Not clickable while invisible (avoids accidental clicks on an
+                // unseen control); keyboard Tab still reaches it, which flips
+                // isFocused and makes it visible + interactive.
+                pointerEvents: isHovered || isFocused ? "auto" : "none",
                 transition: "opacity 0.2s ease",
                 zIndex: 2,
               }}
@@ -185,7 +222,8 @@ export default function Updates({
             {/* Next button */}
             <button
               onClick={next}
-              aria-label="Next update"
+              aria-label={lang === "EN" ? "Next update" : "下一条"}
+              className="updates-arrow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               style={{
                 position: "absolute",
                 right: "20px",
@@ -193,14 +231,18 @@ export default function Updates({
                 transform: "translateY(-50%)",
                 border: "none",
                 background: "transparent",
-                color: "rgba(255,255,255,0.7)",
+                color: "rgba(255,255,255,0.9)",
                 fontSize: "32px",
                 fontWeight: 300,
                 cursor: "pointer",
                 lineHeight: 1,
-                opacity: isHovered ? 1 : 0,
-                pointerEvents: isHovered ? "auto" : "none",
+                opacity: isHovered || isFocused ? 1 : 0,
+                // Not clickable while invisible (avoids accidental clicks on an
+                // unseen control); keyboard Tab still reaches it, which flips
+                // isFocused and makes it visible + interactive.
+                pointerEvents: isHovered || isFocused ? "auto" : "none",
                 transition: "opacity 0.2s ease",
+                zIndex: 2,
               }}
             >
               →
@@ -249,12 +291,15 @@ export default function Updates({
               <button
                 key={i}
                 onClick={() => setCurrent(i)}
-                aria-label={`Go to update ${i + 1}`}
+                aria-label={
+                  lang === "EN" ? `Go to update ${i + 1}` : `跳转到第 ${i + 1} 条`
+                }
+                className="focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c0c48]"
                 style={{
                   width: i === current ? "24px" : "8px",
                   height: "8px",
                   borderRadius: "9999px",
-                  backgroundColor: i === current ? "#0c0c48" : "#d1d5db",
+                  backgroundColor: i === current ? "#0c0c48" : "#9ca3af",
                   border: "none",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
@@ -262,6 +307,45 @@ export default function Updates({
                 }}
               />
             ))}
+          </div>
+
+          {/* Autoplay pause/resume control (B53 / WCAG 2.2.2). */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "10px",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => setIsPaused((p) => !p)}
+              aria-pressed={isPaused}
+              aria-label={
+                isPaused
+                  ? lang === "EN"
+                    ? "Resume automatic rotation"
+                    : "继续自动轮播"
+                  : lang === "EN"
+                    ? "Pause automatic rotation"
+                    : "暂停自动轮播"
+              }
+              className="rounded-full px-3 py-1 text-xs font-semibold text-[#0c0c48] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48]"
+              style={{
+                background: "transparent",
+                border: "1px solid #9ca3af",
+                cursor: "pointer",
+              }}
+            >
+              <span aria-hidden="true">{isPaused ? "▶ " : "❚❚ "}</span>
+              {isPaused
+                ? lang === "EN"
+                  ? "Play"
+                  : "播放"
+                : lang === "EN"
+                  ? "Pause"
+                  : "暂停"}
+            </button>
           </div>
         </div>
       </div>
@@ -276,8 +360,9 @@ export default function Updates({
           to { opacity: 1; transform: translateX(0); }
         }
         @media (max-width: 640px) {
-          button[aria-label="Previous update"],
-          button[aria-label="Next update"] {
+          /* Hide the arrows on small screens via a stable class (not the now
+             localized aria-label); dots + swipe handle touch navigation. */
+          .updates-arrow {
             display: none !important;
           }
         }

@@ -1,5 +1,6 @@
 import { getPartnerLogos, type PartnerLogoRecord } from "@/lib/data/partner-logos";
 import PartnerSectionTitle from "./PartnerSectionTitle";
+import { NewTabHint } from "@/components/ui/NewTabHint";
 
 function PartnerMarquee({
   partners,
@@ -33,6 +34,7 @@ function PartnerMarquee({
                   alt={partner.name}
                   className="max-w-full max-h-full object-contain"
                 />
+                <NewTabHint />
               </a>
             ) : (
               <img
