@@ -20,9 +20,9 @@ export default function DiscoverServicesExpertise() {
 
           {/* Text — right */}
           <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <h3 className="text-2xl sm:text-3xl lg:text-[48px] font-bold text-[#0a4479] leading-tight tracking-[0.96px] mb-4 sm:mb-6">
+            <h2 className="text-2xl sm:text-3xl lg:text-[48px] font-bold text-[#0a4479] leading-tight tracking-[0.96px] mb-4 sm:mb-6">
               Services &amp; Expertise
-            </h3>
+            </h2>
             <p className="text-base sm:text-xl lg:text-[30px] font-normal text-[#0a4479] leading-relaxed tracking-[0.6px]">
               The Human Nutrition Unit provides a comprehensive range of services across both
               academic and commercially funded research. These include consultancy on nutrition

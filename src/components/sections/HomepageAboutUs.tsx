@@ -33,7 +33,7 @@ export default function HomepageAboutUs() {
           {/* Text container */}
           <div className="absolute inset-0 z-10 flex items-center pl-[90px] text-white">
             <div className="h-[550px] w-[450px] flex flex-col gap-5">
-              <h3
+              <h2
                 style={{
                   fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "54px",
@@ -41,7 +41,7 @@ export default function HomepageAboutUs() {
                 }}
               >
                 About Us
-              </h3>
+              </h2>
 
               <p
                 className="mt-8 max-w-[620px] leading-[1.35]"
