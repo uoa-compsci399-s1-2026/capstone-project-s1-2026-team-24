@@ -9,10 +9,11 @@ export async function GET(request: Request) {
   try {
     const takeParam = new URL(request.url).searchParams.get("take");
     const parsedTake = takeParam !== null ? Number.parseInt(takeParam, 10) : NaN;
-    const take =
-      Number.isFinite(parsedTake) && parsedTake > 0
-        ? Math.min(parsedTake, MAX_TAKE)
-        : MAX_TAKE;
+    // Clamp any finite value into [1, MAX_TAKE]; only fall back to MAX_TAKE when
+    // the param is missing or non-numeric.
+    const take = Number.isFinite(parsedTake)
+      ? Math.min(Math.max(Math.trunc(parsedTake), 1), MAX_TAKE)
+      : MAX_TAKE;
 
     const publications = await prisma.publication.findMany({
       where: {

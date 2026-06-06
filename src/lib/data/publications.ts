@@ -36,6 +36,9 @@ const recentPublicationSelect = {
 export async function getRecentPublications(
   limit: number,
 ): Promise<RecentPublicationRecord[]> {
+  // `limit` originates from CMS block config (Number(c.limit)), so clamp to a
+  // safe integer range before it reaches Prisma's take.
+  const take = Math.min(Math.max(Math.trunc(limit) || 0, 1), 100);
   return prisma.publication.findMany({
     where: {
       status: "Approved",
@@ -44,7 +47,7 @@ export async function getRecentPublications(
       year: { not: null },
     },
     orderBy: [{ year: "desc" }, { updatedAt: "desc" }],
-    take: limit,
+    take,
     select: recentPublicationSelect,
   });
 }

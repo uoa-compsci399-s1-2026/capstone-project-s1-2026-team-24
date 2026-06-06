@@ -4,6 +4,7 @@ import Button from "@/components/ui/Button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import en from "@/messages/en";
 import zh from "@/messages/zh";
+import { getSafeHttpUrl } from "@/lib/safe-url";
 
 type Publication = {
   id: number;
@@ -15,6 +16,16 @@ type Publication = {
   url: string | null;
   doi: string | null;
 };
+
+// Builds a safe outbound link: a validated http(s) url, else the DOI as an
+// https://doi.org/ link, else none. getSafeHttpUrl rejects empty/non-http(s)
+// values (so an empty-string url falls through to the DOI).
+function pubHref(pub: Publication): string | null {
+  return (
+    getSafeHttpUrl(pub.url) ??
+    (pub.doi ? getSafeHttpUrl(`https://doi.org/${pub.doi}`) : null)
+  );
+}
 
 // Publications are read on the server (getRecentPublications: narrow select +
 // take) and passed in as props, so the homepage no longer downloads the whole
@@ -38,7 +49,9 @@ export default function RecentPublications({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
-          {publications.map((pub) => (
+          {publications.map((pub) => {
+            const href = pubHref(pub);
+            return (
             <div
               key={pub.id}
               style={{
@@ -105,11 +118,11 @@ export default function RecentPublications({
                 {[pub.journal, pub.year].filter(Boolean).join(" · ")}
               </p>
 
-              {(pub.url || pub.doi) && (
+              {href && (
                 <a
-                  href={pub.url ?? `https://doi.org/${pub.doi}`}
+                  href={href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   style={{
                     alignSelf: "flex-start",
                     marginTop: "8px",
@@ -123,7 +136,8 @@ export default function RecentPublications({
                 </a>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="flex justify-center mt-10">
