@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
+import { clampPositiveInt } from "@/lib/clamp";
 
 export type RecentPublicationRecord = {
   id: number;
@@ -38,7 +39,7 @@ export async function getRecentPublications(
 ): Promise<RecentPublicationRecord[]> {
   // `limit` originates from CMS block config (Number(c.limit)), so clamp to a
   // safe integer range before it reaches Prisma's take.
-  const take = Math.min(Math.max(Math.trunc(limit) || 0, 1), 100);
+  const take = clampPositiveInt(limit, { fallback: 1, max: 100 });
   return prisma.publication.findMany({
     where: {
       status: "Approved",

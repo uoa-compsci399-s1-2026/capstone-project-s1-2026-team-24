@@ -3,19 +3,11 @@
 import { useMemo, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NewTabHint } from "@/components/ui/NewTabHint";
-import { getSafeHttpUrl } from "@/lib/safe-url";
+import { publicationHref } from "@/lib/safe-url";
+import { clampPositiveInt } from "@/lib/clamp";
 import type { IndexPublicationRecord } from "@/lib/data/publications";
 
 type Publication = IndexPublicationRecord;
-
-function buildPublicationUrl(publication: Publication) {
-  return (
-    getSafeHttpUrl(publication.url) ??
-    (publication.doi
-      ? getSafeHttpUrl(`https://doi.org/${publication.doi}`)
-      : null)
-  );
-}
 
 function buildAuthorsText(publication: Publication) {
   if (publication.authorsRaw.trim()) return publication.authorsRaw;
@@ -40,7 +32,7 @@ export default function PublicationIndex({
   // pageSize comes from CMS block config, so coerce to a positive integer
   // (capped) before it feeds the pagination math — guards against negative,
   // zero, or fractional values producing Infinity/empty pages.
-  const size = Math.min(Math.max(Math.trunc(pageSize) || 10, 1), 100);
+  const size = clampPositiveInt(pageSize, { fallback: 10, max: 100 });
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -181,7 +173,7 @@ export default function PublicationIndex({
             ) : (
               <div className="space-y-5">
                 {paginatedPublications.map((publication) => {
-                  const publicationUrl = buildPublicationUrl(publication);
+                  const publicationUrl = publicationHref(publication);
                   const authorsText = buildAuthorsText(publication);
 
                   return (

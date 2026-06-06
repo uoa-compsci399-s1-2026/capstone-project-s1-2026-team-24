@@ -3,7 +3,7 @@
 import Button from "@/components/ui/Button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { NewTabHint } from "@/components/ui/NewTabHint";
-import { getSafeHttpUrl } from "@/lib/safe-url";
+import { publicationHref } from "@/lib/safe-url";
 
 type Publication = {
   id: number;
@@ -15,16 +15,6 @@ type Publication = {
   url: string | null;
   doi: string | null;
 };
-
-// Builds a safe outbound link: a validated http(s) url, else the DOI as an
-// https://doi.org/ link, else none. getSafeHttpUrl rejects empty/non-http(s)
-// values (so an empty-string url falls through to the DOI).
-function pubHref(pub: Publication): string | null {
-  return (
-    getSafeHttpUrl(pub.url) ??
-    (pub.doi ? getSafeHttpUrl(`https://doi.org/${pub.doi}`) : null)
-  );
-}
 
 // Publications are read on the server (getRecentPublications: narrow select +
 // take) and passed in as props, so the homepage no longer downloads the whole
@@ -48,7 +38,7 @@ export default function RecentPublications({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-[1400px] mx-auto">
           {publications.map((pub) => {
-            const href = pubHref(pub);
+            const href = publicationHref(pub);
             return (
             <div
               key={pub.id}
