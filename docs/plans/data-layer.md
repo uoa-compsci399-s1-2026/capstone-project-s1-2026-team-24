@@ -52,7 +52,7 @@ This matches the audit's recommendation and bounds B47 to the **banned-zone call
 |---|---|
 | `src/components/blocks/render-page.tsx` | `page.findUnique` (+ blocks) |
 | `src/components/blocks/study/resolve-study-layout.ts` | `page.findUnique` ×2 (override/template), `study.findFirst` |
-| `src/app/studies/[slug]/page.tsx` | `study.findFirst` (+ pdfs), wrapped in `React.cache()` |
+| `src/app/studies/[slug]/page.tsx` | `study.findFirst` (+ pdfs), wrapped in `cache()` (from `react`) |
 | `src/app/sitemap.ts` | `study.findMany` |
 | `src/app/admin/pages/page.tsx` | `page.findMany` (+ `_count`) |
 | `src/app/admin/pages/[slug]/page.tsx` | `page.findUnique` |
@@ -61,8 +61,8 @@ This matches the audit's recommendation and bounds B47 to the **banned-zone call
 
 Accessors follow the **`src/lib/data/team.ts` pattern**: `import "server-only"`, named
 `{ prisma }` import, a `…Select as const` projection, exported `…Record`/`…Data` types,
-plain async functions, errors bubble. Request-level dedup uses `React.cache()` where the
-current call site does (e.g. `studies/[slug]/page.tsx`).
+plain async functions, errors bubble. Request-level dedup uses `cache()` (imported from
+`react`) where the current call site does (e.g. `studies/[slug]/page.tsx`).
 
 **Explicitly out of scope (by rule):** the 43 `src/app/api/**` handlers keep `prisma`;
 existing `src/lib` data-ish helpers (`nav-studies.ts`, `site-settings.ts`,
@@ -171,8 +171,8 @@ if DB ≠ the old hardcoded copy. The prod census is the safety; verify on a pre
 **Goal:** finish the public render path now that it's simpler (post-B51).
 
 **Tests first (extend Slice 1 suites):**
-- `data-study.test.ts`: add `getStudyBySlug(slug)` (with `pdfs` include/order; `React.cache`
-  dedups the metadata+render reads).
+- `data-study.test.ts`: add `getStudyBySlug(slug)` (with `pdfs` include/order; `cache()` from
+  `react` dedups the metadata+render reads).
 - `data-page.test.ts`: add `getPageWithBlocks(slug)`, `getStudyOverridePage(slug)`,
   `getStudyTemplatePage()` (visible-blocks filter, `position` order).
 
