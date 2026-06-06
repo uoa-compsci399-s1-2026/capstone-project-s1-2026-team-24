@@ -13,11 +13,11 @@ tracked as **B45** and **B50** in
 defines the module boundaries, the client/server split, and a strictly ordered
 sequence of slices where **every intermediate PR leaves behaviour identical**.
 
-| File | Current size | Item | Decompose into |
+| File | Approx. size | Item | Decompose into |
 |---|---|---|---|
-| `src/app/admin/publications/page.tsx` | 1042 lines (`"use client"`) | B45 | `src/components/admin/publications/*` (table, panel, leaves) |
-| `src/components/layout/Navbar.tsx` | 977 lines (`"use client"`) | B45 | TopBar, DesktopNav, MobileMenu, SearchDialog + `useNavbarSearch` |
-| `src/components/admin/page-editor/PageEditor.tsx` | 619 lines (`"use client"`) | B50 | `PublishBar` + `usePageEditorApi` |
+| `src/app/admin/publications/page.tsx` | ~1040 lines (`"use client"`) | B45 | `src/components/admin/publications/*` (table, panel, leaves) |
+| `src/components/layout/Navbar.tsx` | ~975 lines (`"use client"`) | B45 | TopBar, DesktopNav, MobileMenu, SearchDialog + `useNavbarSearch` |
+| `src/components/admin/page-editor/PageEditor.tsx` | ~620 lines (`"use client"`) | B50 | `PublishBar` + `usePageEditorApi` |
 
 `src/lib/blocks/registry.ts` (680 lines) is **explicitly out of scope** — the
 audit marks it "leave as-is: it's data, and keeping it unified is correct."
