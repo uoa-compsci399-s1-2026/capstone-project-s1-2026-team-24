@@ -4,16 +4,13 @@ import { useRef, useState, useEffect } from "react";
 import DirectorCard from "@/components/team/DirectorCard";
 import type { TeamMemberRecord } from "@/lib/data/team";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 export default function BoardOfDirectors({
   members,
 }: {
   members: TeamMemberRecord[];
 }) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);

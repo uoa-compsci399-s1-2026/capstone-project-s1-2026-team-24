@@ -4,16 +4,13 @@ import Image from "next/image";
 import { getSafeHttpUrl } from "@/lib/safe-url";
 import type { TeamMemberRecord } from "@/lib/data/team";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 export default function AlumniSection({
   members,
 }: {
   members: TeamMemberRecord[];
 }) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
   if (members.length === 0) {
     return null;
   }

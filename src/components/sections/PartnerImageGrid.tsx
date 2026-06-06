@@ -3,8 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 // Breadcrumbed grid of partner logos used on the Academic / Industry partner
 // pages. Images are editable via the page builder. The two pages differ only in
@@ -18,8 +16,7 @@ export default function PartnerImageGrid({
   images: string[];
   variant?: "academic" | "industry";
 }) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
   const containerStyle =
     variant === "academic"
       ? { borderRadius: "30px", border: "1px solid #e5e7eb", padding: "10px" }

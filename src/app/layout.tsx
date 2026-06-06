@@ -7,6 +7,7 @@ import { NavStudiesProvider } from "@/contexts/NavStudiesContext";
 import { getServerLang } from "@/lib/lang";
 import { getSiteSettings } from "@/lib/site-settings";
 import { getNavStudies } from "@/lib/nav-studies";
+import { getDictionary } from "@/lib/dictionaries";
 
 // Inter is the site's body font. next/font self-hosts a WOFF2 latin subset at
 // build time with font-display: swap (no FOIT, no ~2.4MB of OTF on every page),
@@ -46,11 +47,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const lang = await getServerLang();
-  // Independent server reads — resolve them together. Both seed client
-  // providers so the Navbar renders the right logos and studies on first paint.
-  const [navStudies, siteSettings] = await Promise.all([
+  // Independent server reads — resolve them together. They seed the client
+  // providers: navbar logos + studies, and the active-language dictionary (so
+  // only one language's strings ship to the client, not both).
+  const [navStudies, siteSettings, dict] = await Promise.all([
     getNavStudies(lang),
     getSiteSettings(),
+    getDictionary(lang),
   ]);
   return (
     <html
@@ -58,7 +61,7 @@ export default async function RootLayout({
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <LanguageProvider initialLang={lang}>
+        <LanguageProvider initialLang={lang} dict={dict}>
           <SiteSettingsProvider settings={siteSettings}>
             <NavStudiesProvider studies={navStudies}>
               {children}

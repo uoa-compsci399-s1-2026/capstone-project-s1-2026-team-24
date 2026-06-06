@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import type { Dictionary } from "@/lib/dictionaries";
 
 type Benefit = {
   icon: React.ReactNode;
@@ -11,7 +10,7 @@ type Benefit = {
   description: string;
 };
 
-const getAcademicBenefits = (t: typeof en): Benefit[] => [
+const getAcademicBenefits = (t: Dictionary): Benefit[] => [
   {
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -48,7 +47,7 @@ const getAcademicBenefits = (t: typeof en): Benefit[] => [
   },
 ];
 
-const getIndustryBenefits = (t: typeof en): Benefit[] => [
+const getIndustryBenefits = (t: Dictionary): Benefit[] => [
   {
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -149,8 +148,7 @@ function BenefitAccordion({ benefits }: { benefits: Benefit[] }) {
 }
 
 export default function BenefitsRow({ variant, title }: BenefitsRowProps) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
 
   const academicBenefits = getAcademicBenefits(t);
   const industryBenefits = getIndustryBenefits(t);

@@ -9,8 +9,6 @@ import { NAVBAR_HEIGHT } from "./SubpageHero";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSiteSettings } from "@/contexts/SiteSettingsContext";
 import { useNavStudies } from "@/contexts/NavStudiesContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 import type { SearchResult } from "@/app/api/search/route";
 import React from "react";
 
@@ -26,10 +24,9 @@ export default function Navbar() {
   const [studiesOpen, setStudiesOpen] = React.useState(false);
   const [searchStudiesOpen, setSearchStudiesOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const { lang, setLang } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
   // Admin-set logos (defaults when unset), seeded server-side by the layout.
   const { logoLightPath, logoDarkPath } = useSiteSettings();
-  const t = lang === "EN" ? en : zh;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileStudiesOpen, setMobileStudiesOpen] = useState(false);

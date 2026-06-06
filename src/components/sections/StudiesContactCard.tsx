@@ -2,14 +2,11 @@
 
 import StudiesContactPanel from "@/components/sections/StudiesContactPanel";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 // The "Contact us" card on the Studies page. Fixed copy, translated via the
 // shared dictionary.
 export default function StudiesContactCard() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
   return (
     <section className="bg-white px-4 sm:px-8 lg:px-[71px] pb-16 lg:pb-24">
       <div className="max-w-[920px] mx-auto">
