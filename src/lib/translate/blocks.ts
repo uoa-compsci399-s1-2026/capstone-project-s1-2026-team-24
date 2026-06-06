@@ -17,6 +17,7 @@ import { prisma } from "@/lib/prisma";
 import { getBlockDefinition } from "@/lib/blocks/registry";
 import { readRowContent } from "@/lib/blocks/row";
 import { sanitizeRichHtml } from "@/lib/sanitize";
+import { collectAssetAltTexts } from "@/lib/media-resolve";
 import {
   getProvider,
   type TargetLang,
@@ -284,6 +285,11 @@ export async function warmBlockTranslations(
 ): Promise<void> {
   const items: Item[] = [];
   for (const b of blocks) items.push(...collectBlockStrings(b.type, b.content));
+  // Asset-fallback alt text: media-resolve injects an asset's library altText
+  // into an empty imageAlt at read time — *after* this warm pass — so fold those
+  // strings in now, or a 中文 page would serve the untranslated English alt.
+  const altTexts = await collectAssetAltTexts(blocks.map((b) => b.content));
+  for (const text of altTexts) items.push({ text, format: "text" });
   await warmTranslations(items, targetLang);
 }
 
