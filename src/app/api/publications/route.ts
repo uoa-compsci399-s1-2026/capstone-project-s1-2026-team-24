@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+// Hard cap so the endpoint can never stream the whole publications table into
+// memory on the 512MB box; ?take= may request fewer.
+const MAX_TAKE = 1000;
+
+export async function GET(request: Request) {
   try {
+    const takeParam = new URL(request.url).searchParams.get("take");
+    const parsedTake = takeParam !== null ? Number.parseInt(takeParam, 10) : NaN;
+    const take =
+      Number.isFinite(parsedTake) && parsedTake > 0
+        ? Math.min(parsedTake, MAX_TAKE)
+        : MAX_TAKE;
+
     const publications = await prisma.publication.findMany({
       where: {
         status: "Approved",
@@ -13,6 +24,7 @@ export async function GET() {
         { year: "desc" },
         { updatedAt: "desc" },
       ],
+      take,
       include: {
         category: true,
         authors: {

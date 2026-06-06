@@ -4,7 +4,7 @@ import HomepageHero from "@/components/sections/HomepageHero";
 import DiscoverVideo from "@/components/sections/DiscoverVideo";
 import StudiesOverview from "@/components/sections/StudiesOverview";
 import TrialDesign from "@/components/sections/TrialDesign";
-import RecentPublications from "@/components/sections/RecentPublications";
+import RecentPublicationsBlock from "@/components/sections/RecentPublicationsBlock";
 import OurPartners from "@/components/sections/OurPartners";
 import PublicationIndex from "@/components/sections/PublicationIndex";
 import AcademicCollaborators from "@/components/sections/AcademicCollaborators";
@@ -309,7 +309,7 @@ export default function BlockRenderer({
 
     // Dynamic (live data, with optional display config)
     case "recentPublications":
-      return <RecentPublications limit={Number(c.limit) || undefined} />;
+      return <RecentPublicationsBlock limit={Number(c.limit) || undefined} />;
     // TODO: remove once carousel-deletion PR lands (Karendeep). The OurPartners
     // marquee + its home-page seed + the OurPartners component go together —
     // coordinate merge order so this case isn't deleted before the seed is.
