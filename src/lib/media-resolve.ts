@@ -122,7 +122,7 @@ export async function resolveBlockContents(
  * when the contents hold no media refs.
  */
 export async function collectAssetAltTexts(
-  contents: unknown[],
+  contents: Record<string, unknown>[],
 ): Promise<string[]> {
   const ids = new Set<number>();
   for (const c of contents) collectIds(c, ids);
