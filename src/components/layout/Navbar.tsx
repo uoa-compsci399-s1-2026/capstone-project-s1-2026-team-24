@@ -58,6 +58,13 @@ export default function Navbar() {
   const closeMobile = useCallback(() => setMobileOpen(false), []);
   useFocusTrap(mobileOpen, mobileDrawerRef, closeMobile, mobileToggleRef);
 
+  // Search dialog: trap Tab focus and close on Escape (same hook — it was
+  // modelled on this dialog's original inline trap). Initial focus and restoring
+  // focus to the trigger are also driven by the searchOpen effect below; passing
+  // searchTriggerRef keeps the hook's own restore on that same element.
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+  useFocusTrap(searchOpen, searchDialogRef, closeSearch, searchTriggerRef);
+
   const ABOUT_ITEMS = [
     { label: t.navbar.discoverHnu, image: "Discover HNU", href: "/about" },
     { label: t.navbar.team, image: "Our Team", href: "/team" },
@@ -273,36 +280,6 @@ export default function Navbar() {
       resizeObserver?.disconnect();
     };
   }, []);
-
-  useEffect(() => {
-    if (!searchOpen) return;
-    function handleSearchDialogKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") { event.preventDefault(); setSearchOpen(false); return; }
-      if (event.key !== "Tab") return;
-      const dialogElement = searchDialogRef.current;
-      if (!dialogElement) return;
-      const focusableElements = Array.from(
-        dialogElement.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((el) => el.getAttribute("aria-hidden") !== "true");
-      if (focusableElements.length === 0) { event.preventDefault(); return; }
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
-      const activeElement = document.activeElement as HTMLElement | null;
-      if (event.shiftKey) {
-        if (activeElement === firstElement || !dialogElement.contains(activeElement)) {
-          event.preventDefault(); lastElement.focus();
-        }
-        return;
-      }
-      if (activeElement === lastElement || !dialogElement.contains(activeElement)) {
-        event.preventDefault(); firstElement.focus();
-      }
-    }
-    document.addEventListener("keydown", handleSearchDialogKeyDown);
-    return () => document.removeEventListener("keydown", handleSearchDialogKeyDown);
-  }, [searchOpen]);
 
   // Activate a result by index by clicking its rendered <Link> anchor. Routing
   // through the real anchor keeps Next.js client-side navigation (and the
