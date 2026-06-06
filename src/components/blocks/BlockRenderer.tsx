@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import HomepageHero from "@/components/sections/HomepageHero";
 import DiscoverVideo from "@/components/sections/DiscoverVideo";
-import StudiesOverview from "@/components/sections/StudiesOverview";
+import StudiesOverviewBlock from "@/components/sections/StudiesOverviewBlock";
 import TrialDesign from "@/components/sections/TrialDesign";
 import RecentPublicationsBlock from "@/components/sections/RecentPublicationsBlock";
 import OurPartners from "@/components/sections/OurPartners";
@@ -269,7 +269,7 @@ export default function BlockRenderer({
     case "studiesContactCard":
       return <StudiesContactCard />;
     case "studiesOverview":
-      return <StudiesOverview />;
+      return <StudiesOverviewBlock />;
     case "trialDesign":
       return (
         <TrialDesign

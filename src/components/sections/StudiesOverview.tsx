@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -22,65 +22,19 @@ function studyImageSrc(imagePath: string | null): string {
   return trimmed ? trimmed : STUDY_IMAGE_FALLBACK;
 }
 
-function isStudy(data: unknown): data is Study {
-  if (typeof data !== 'object' || data === null) {
-    return false;
-  }
-
-  const study = data as Record<string, unknown>;
-
-  return (
-    typeof study.id === 'number' &&
-    typeof study.slug === 'string' &&
-    typeof study.title === 'string' &&
-    'shortDescription' in study &&
-    (typeof study.shortDescription === 'string' || study.shortDescription === null) &&
-    'imagePath' in study &&
-    (typeof study.imagePath === 'string' || study.imagePath === null)
-  );
-}
-
-export default function StudiesOverview() {
+// Studies are read on the server (getStudies: active + ordered, 中文 localized)
+// and passed in as props, so the listing is in the initial HTML. A language
+// toggle re-renders this via router.refresh() (re-localized server-side), so no
+// fetch-on-mount and no loading skeleton are needed. Stays a client component
+// for the search box + labels.
+export default function StudiesOverview({
+  studies = [],
+}: {
+  studies?: Study[];
+}) {
   const { lang } = useLanguage();
   const t = lang === 'EN' ? en : zh;
-  const [studies, setStudies] = useState<Study[]>([]);
   const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  // Re-fetch when the language changes so the listing's titles/descriptions pick
-  // up the auto-translated versions. The lang is passed explicitly (not relied on
-  // via cookie) to avoid the cookie-write timing of a fresh toggle.
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadStudies() {
-      setLoading(true);
-      try {
-        const res = await fetch(
-          `/api/studies?lang=${lang === 'ZH' ? 'zh' : 'en'}`,
-        );
-        if (!res.ok) {
-          throw new Error('Failed to fetch studies');
-        }
-
-        const data: unknown = await res.json();
-        if (!Array.isArray(data) || !data.every(isStudy)) {
-          throw new Error('Invalid studies response');
-        }
-
-        if (!cancelled) setStudies(data);
-      } catch {
-        if (!cancelled) setStudies([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
-    loadStudies();
-    return () => {
-      cancelled = true;
-    };
-  }, [lang]);
 
   const filtered = studies.filter(s =>
     s.title.toLowerCase().includes(query.toLowerCase())
@@ -121,19 +75,7 @@ export default function StudiesOverview() {
 
       {/* Study cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-[1330px] mx-auto">
-        {loading ? (
-          Array.from({ length: 3 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-[30px] shadow-[0px_0px_30px_0px_rgba(0,0,0,0.25)] overflow-hidden h-[400px] animate-pulse"
-            >
-              <div className="bg-gray-200 h-[311px] mx-5 mt-5 rounded-[10px]" />
-              <div className="py-6 px-4 flex justify-center">
-                <div className="bg-gray-200 h-8 w-40 rounded-full" />
-              </div>
-            </div>
-          ))
-        ) : filtered.length === 0 ? (
+        {filtered.length === 0 ? (
           <p className="col-span-full text-center text-[#8e8d8d] text-xl py-12">
             {studies.length === 0 ? t.studies.noStudiesAvailable : t.studies.noStudiesMatch}
           </p>
