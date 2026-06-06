@@ -29,8 +29,9 @@ audit marks it "leave as-is: it's data, and keeping it unified is correct."
   It runs the **API test project only** — it does **not** execute the
   component/Storybook suite, so it will **not** catch UI or a11y regressions in
   any of these three files. Type/lint safety is covered; behaviour is not.
-- **Merging to `main` deploys production.** Never push to `main`. Each slice is
-  its own small branch + PR, individually verifiable, merged on its own merits.
+- **Merging to `main` deploys production.** Never push **directly** to `main` —
+  changes reach it only via a reviewed PR merge. Each slice is its own small
+  branch + PR, individually verifiable, merged on its own merits.
 - **512 MB Render Starter** is the real ceiling — decomposition must not add
   runtime cost; these are structural moves, not new abstractions on the hot path.
 - Stack: Next.js 16.2.7 (App Router) · React 19.2.4 · Prisma 7.7 +
