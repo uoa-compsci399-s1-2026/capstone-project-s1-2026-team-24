@@ -52,7 +52,7 @@ describe("GET /api/studies", () => {
       },
     ]);
     expect(mockPrisma.study.findMany).toHaveBeenCalledWith({
-      where: { isActive: true },
+      where: { isActive: true, status: { not: "Completed" } },
       orderBy: { order: "asc" },
       select: {
         id: true,

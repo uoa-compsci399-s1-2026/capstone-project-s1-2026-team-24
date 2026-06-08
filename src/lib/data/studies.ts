@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { localizeStrings } from "@/lib/translate/blocks";
+import { PUBLIC_STUDY_WHERE } from "@/lib/data/study-filters";
 
 export type StudyListItem = {
   id: number;
@@ -33,7 +34,7 @@ export async function getStudies(
   lang: "EN" | "ZH",
 ): Promise<StudyListItem[]> {
   const studies = await prisma.study.findMany({
-    where: { isActive: true },
+    where: PUBLIC_STUDY_WHERE,
     orderBy: { order: "asc" },
     select: studyListSelect,
   });

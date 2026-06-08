@@ -187,10 +187,7 @@ const zh = {
     findUsContact: "查找位置并联系我们 →",
   },
   studies: {
-    search: "搜索",
-    searchStudies: "搜索研究项目",
     noStudiesAvailable: "暂无研究项目。",
-    noStudiesMatch: "没有符合搜索条件的研究项目。",
     contactUs: "联系我们",
     panelHours: "周一至周五 9:00–17:00",
     panelEnquiriesTitle: "咨询与机会",
