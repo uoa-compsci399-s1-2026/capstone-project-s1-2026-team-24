@@ -3,7 +3,7 @@ import Fuse, { type FuseResultMatch, type IFuseOptions } from "fuse.js";
 import { prisma } from "@/lib/prisma";
 import { getSafeHttpUrl } from "@/lib/safe-url";
 import { parsePublishedSnapshot } from "@/lib/page-publish";
-import { publicPath } from "@/lib/blocks/page-paths";
+import { publicPath, isPubliclyRoutable } from "@/lib/blocks/page-paths";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
 
@@ -33,14 +33,6 @@ const PAGES: { title: string; snippet: string; href: string; keywords: string[] 
 function matchesPage(query: string, page: (typeof PAGES)[number]) {
   const haystack = [page.title, page.snippet, ...page.keywords].join(" ").toLowerCase();
   return haystack.includes(query.toLowerCase());
-}
-
-// Pages with no public route — the retired /studies overview (reworked into the
-// homepage `#studies` section) and the internal study-layout pages. Their
-// content must never surface as a clickable page-content result, since
-// publicPath() would point at a URL that 404s. Mirrors the admin pages filter.
-function isPubliclyRoutable(slug: string): boolean {
-  return slug !== "studies" && !slug.startsWith("studylayout-");
 }
 
 // How many of each dynamic source we pull from the DB. The final response is

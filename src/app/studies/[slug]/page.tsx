@@ -86,7 +86,11 @@ export default async function StudyPage({ params }: Props) {
       <Navbar />
       <JsonLd
         data={breadcrumbSchema([
-          { name: "Studies", path: "/#studies" },
+          // The visible breadcrumb links to /#studies (the homepage studies
+          // section), but structured data needs a canonical, fragment-free URL
+          // or crawlers may drop the BreadcrumbList — so point this item at the
+          // homepage root instead.
+          { name: "Studies", path: "/" },
           { name: study.title, path: `/studies/${slug}` },
         ])}
       />
