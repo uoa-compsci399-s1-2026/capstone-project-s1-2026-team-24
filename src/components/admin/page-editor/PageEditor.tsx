@@ -23,7 +23,6 @@ import type { BlockScope } from "@/lib/blocks/types";
 import { publicPath } from "@/lib/blocks/page-paths";
 import SortableBlock, { type EditorBlock } from "./SortableBlock";
 import AddBlockButton from "./AddBlockButton";
-import PreviewPane from "./PreviewPane";
 
 type RevisionMeta = {
   id: number;
@@ -74,10 +73,6 @@ export default function PageEditor({
   const [blocks, setBlocks] = useState<EditorBlock[]>(initialBlocks);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
-  // Bumped after each successful change to reload the preview iframe.
-  const [previewVersion, setPreviewVersion] = useState(0);
-  const bumpPreview = () => setPreviewVersion((v) => v + 1);
 
   // Draft/publish state (only meaningful when `publishable`).
   const [dirty, setDirty] = useState(initialDirty);
@@ -87,11 +82,12 @@ export default function PageEditor({
   const [revisions, setRevisions] = useState<RevisionMeta[] | null>(null);
   const [revisionsLoading, setRevisionsLoading] = useState(false);
   const [rebaselining, setRebaselining] = useState(false);
+  const [clearingHistory, setClearingHistory] = useState(false);
 
-  // Call after any successful block mutation: refresh the preview and (for
-  // publishable pages) mark the draft as having unpublished changes.
+  // Call after any successful block mutation: for publishable pages, mark the
+  // draft as having unpublished changes. (The preview opens in its own tab, so
+  // there's no in-editor pane to refresh.)
   const onChanged = () => {
-    bumpPreview();
     if (publishable) setDirty(true);
   };
 
@@ -250,7 +246,6 @@ export default function PageEditor({
       setDirty(false);
       setPublishedAtState(data.publishedAt ?? new Date().toISOString());
       if (revisions !== null) setRevisions(null); // force reload next time
-      bumpPreview();
     } catch {
       setError("Failed to publish the page.");
     } finally {
@@ -347,7 +342,50 @@ export default function PageEditor({
     }
   }
 
+  // Delete every saved version except the "Original" baseline. History fills up
+  // fast when an admin publishes repeatedly to view a full draft; this clears
+  // the clutter without touching the recoverable Original.
+  async function handleClearHistory() {
+    if (
+      !window.confirm(
+        'Clear the version history? Every saved version except "Original" is permanently deleted. This cannot be undone.',
+      )
+    ) {
+      return;
+    }
+    setClearingHistory(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/pages/${slug}/revisions`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("clear failed");
+      await loadRevisions();
+    } catch {
+      setError("Failed to clear the version history.");
+    } finally {
+      setClearingHistory(false);
+    }
+  }
+
   const liveHref = viewHref ?? publicPath(slug);
+
+  // Split History once into the clearable versions and the "Original" baseline,
+  // then pin Original to the bottom so it stays the visual anchor even though a
+  // rebaseline now stamps it with the current date (which would otherwise sort
+  // it to the top).
+  const { clearable, original } = (revisions ?? []).reduce<{
+    clearable: RevisionMeta[];
+    original: RevisionMeta[];
+  }>(
+    (acc, r) => {
+      (r.label === "Original" ? acc.original : acc.clearable).push(r);
+      return acc;
+    },
+    { clearable: [], original: [] },
+  );
+  const orderedRevisions = revisions ? [...clearable, ...original] : null;
+  const clearableCount = clearable.length;
 
   const editorPane = (
     <>
@@ -394,13 +432,11 @@ export default function PageEditor({
     </>
   );
 
-  const previewing = Boolean(showPreview && previewHref);
-
   return (
     // At lg+ the editor is a fixed-height app canvas: the toolbar stays in view
-    // while the block list scrolls on its own and the preview sits beside it.
-    // (5rem = the admin shell's vertical padding around this content.) When not
-    // filling the viewport it falls back to natural flow.
+    // while the block list scrolls on its own. (5rem = the admin shell's vertical
+    // padding around this content.) When not filling the viewport it falls back
+    // to natural flow.
     <div
       className={
         fillViewport
@@ -448,18 +484,15 @@ export default function PageEditor({
               </button>
             )}
             {previewHref && (
-              <button
-                type="button"
-                onClick={() => setShowPreview((s) => !s)}
-                aria-pressed={showPreview}
-                className={`rounded-lg border px-4 py-2 text-sm font-medium ${
-                  showPreview
-                    ? "border-[#0c0c48] bg-[#0c0c48] text-white"
-                    : "border-gray-300 text-[#0c0c48] hover:bg-gray-100"
-                }`}
+              <Link
+                href={previewHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Open the unpublished draft full-width in a new tab"
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-[#0c0c48] hover:bg-gray-100"
               >
-                {showPreview ? "Hide preview" : "Show preview"}
-              </button>
+                Show preview ↗
+              </Link>
             )}
             <Link
               href={liveHref}
@@ -513,27 +546,42 @@ export default function PageEditor({
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
                 Version history
               </p>
-              {publishedAtState && (
+              <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
+                {publishedAtState && (
+                  <button
+                    type="button"
+                    onClick={handleRebaseline}
+                    disabled={dirty || rebaselining}
+                    title={
+                      dirty
+                        ? "Publish your changes first — this stamps the published version."
+                        : 'Replace the "Original" entry with the currently published version.'
+                    }
+                    className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {rebaselining ? "Updating…" : "Set current as Original"}
+                  </button>
+                )}
                 <button
                   type="button"
-                  onClick={handleRebaseline}
-                  disabled={dirty || rebaselining}
+                  onClick={handleClearHistory}
+                  disabled={clearableCount === 0 || clearingHistory}
                   title={
-                    dirty
-                      ? "Publish your changes first — this stamps the published version."
-                      : 'Replace the "Original" entry with the currently published version.'
+                    clearableCount === 0
+                      ? "Nothing to clear — only the Original baseline remains."
+                      : 'Delete every saved version except "Original".'
                   }
-                  className="flex-shrink-0 rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {rebaselining ? "Updating…" : "Set current as Original"}
+                  {clearingHistory ? "Clearing…" : "Clear history"}
                 </button>
-              )}
+              </div>
             </div>
             {revisionsLoading ? (
               <p className="text-sm text-gray-400">Loading…</p>
-            ) : revisions && revisions.length > 0 ? (
+            ) : orderedRevisions && orderedRevisions.length > 0 ? (
               <ul className="max-h-60 space-y-1 overflow-y-auto">
-                {revisions.map((r) => (
+                {orderedRevisions.map((r) => (
                   <li
                     key={r.id}
                     className="flex items-center justify-between gap-2 text-sm"
@@ -586,33 +634,16 @@ export default function PageEditor({
         )}
       </div>
 
-      {/*
-        Body. The editor column is always the same element in the same position
-        (only its classes change, and the preview is a conditional sibling), so
-        toggling the preview never remounts the editor — open block editors,
-        in-progress edits, and scroll position are all preserved.
-      */}
+      {/* Body — the block list. "Show preview" opens the draft full-width in a
+          new tab, so there's no in-editor preview pane to lay out beside it. */}
       <div
         className={
           fillViewport
-            ? "flex min-h-0 flex-1 flex-col gap-6 lg:flex-row lg:items-stretch"
-            : "flex flex-col gap-6 lg:flex-row lg:items-start"
+            ? "min-h-0 flex-1 min-w-0 lg:overflow-y-auto lg:pr-1"
+            : "min-w-0"
         }
       >
-        <div
-          className={`min-w-0 ${fillViewport ? "lg:overflow-y-auto lg:pr-1 " : ""}${
-            previewing ? "lg:w-[460px] lg:flex-shrink-0" : "lg:flex-1"
-          }`}
-        >
-          {editorPane}
-        </div>
-        {previewing && previewHref && (
-          <div className={fillViewport ? "min-h-0 lg:flex-1" : "min-w-0 lg:flex-1"}>
-            <div className={fillViewport ? "h-[70vh] lg:h-full" : "h-[75vh]"}>
-              <PreviewPane src={previewHref} version={previewVersion} />
-            </div>
-          </div>
-        )}
+        {editorPane}
       </div>
     </div>
   );
