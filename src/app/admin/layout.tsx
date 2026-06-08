@@ -23,7 +23,7 @@ const NAV_LINKS = [
   },
   {
     href: "/admin/site-settings",
-    label: "Site Settings",
+    label: "Logos",
     icon: SiteSettingsIcon,
   },
 ];

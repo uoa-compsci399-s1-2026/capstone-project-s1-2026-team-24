@@ -104,6 +104,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Homepage hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: [
       {
         key: "title",
@@ -134,6 +135,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Discover hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: SUBPAGE_HERO_FIELDS,
     defaultContent: {
       title: "Discover HNU",
@@ -147,6 +149,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Research hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: SUBPAGE_HERO_FIELDS,
     defaultContent: {
       title: "Our Research",
@@ -160,6 +163,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Team hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: SUBPAGE_HERO_FIELDS,
     defaultContent: {
       title: "Our Team",
@@ -173,6 +177,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Contact hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: SUBPAGE_HERO_FIELDS,
     defaultContent: {
       title: "Contact Us",
@@ -185,12 +190,13 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Studies hero",
     category: "Hero",
     editable: false,
+    hidden: true,
     fields: [],
     defaultContent: {},
   },
   {
     type: "subpageHero",
-    label: "Subpage hero",
+    label: "Blank hero",
     category: "Hero",
     editable: true,
     fields: [
@@ -212,21 +218,27 @@ const DEFINITIONS: BlockDefinition[] = [
   },
 
   // ---- Content ----
+  // NOTE: the InfoCardLeft/InfoCardRight components' desktop layouts are
+  // historically swapped — the `infoCardLeft` type renders the image on the
+  // RIGHT and `infoCardRight` renders it on the LEFT. The labels (and the
+  // default image crop) below match what actually renders, so the picker is
+  // truthful; the internal type names are kept as-is to avoid migrating the
+  // existing stored blocks across draft/published/revision snapshots.
   {
     type: "infoCardLeft",
-    label: "Info card (image left)",
-    category: "Content",
-    editable: true,
-    fields: INFO_CARD_FIELDS,
-    defaultContent: { ...INFO_CARD_DEFAULT, imagePosition: "left" },
-  },
-  {
-    type: "infoCardRight",
     label: "Info card (image right)",
     category: "Content",
     editable: true,
     fields: INFO_CARD_FIELDS,
     defaultContent: { ...INFO_CARD_DEFAULT, imagePosition: "right" },
+  },
+  {
+    type: "infoCardRight",
+    label: "Info card (image left)",
+    category: "Content",
+    editable: true,
+    fields: INFO_CARD_FIELDS,
+    defaultContent: { ...INFO_CARD_DEFAULT, imagePosition: "left" },
   },
   {
     type: "calloutBannerRight",
@@ -377,6 +389,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Partner logo grid",
     category: "Content",
     editable: true,
+    hidden: true,
     fields: [
       { key: "breadcrumbLabel", label: "Breadcrumb label", type: "text" },
       { key: "images", label: "Logos", type: "imageArray" },
@@ -392,9 +405,11 @@ const DEFINITIONS: BlockDefinition[] = [
     defaultContent: {},
   },
   {
+    // Dynamic: renders the live list of active studies (getStudies), so it
+    // belongs with the other live-data blocks.
     type: "studiesOverview",
     label: "Studies overview",
-    category: "Content",
+    category: "Dynamic",
     editable: false,
     fields: [],
     defaultContent: {},
@@ -449,6 +464,19 @@ const DEFINITIONS: BlockDefinition[] = [
       mapUrl:
         "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3191.62085243865!2d174.74999331301763!3d-36.87549318088687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d0d4771e23b727d%3A0x90ba816391e739dc!2sHuman%20Nutrition%20Unit!5e0!3m2!1sen!2snz!4v1777374580042!5m2!1sen!2snz",
     },
+  },
+  {
+    // Registered only so the editor shows a friendly name ("Contact details")
+    // instead of the raw type for the existing block on the Contact page.
+    // Hidden from the picker and content-frozen — its content is rendered from
+    // what's already stored (see BlockRenderer's "contactDetails" case).
+    type: "contactDetails",
+    label: "Contact details",
+    category: "Content",
+    editable: false,
+    hidden: true,
+    fields: [],
+    defaultContent: {},
   },
 
   // ---- Dynamic (pull live data from existing admin sections) ----

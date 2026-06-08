@@ -136,7 +136,7 @@ export default function AdminSiteSettings() {
     <div>
       <header className="mb-6">
         <p className="text-xs uppercase tracking-[2px] text-[#0a4479]/70">
-          Site Settings
+          Logos
         </p>
         <h1 className="text-4xl font-extrabold text-[#0c0c48] mt-1 tracking-tight">
           Branding

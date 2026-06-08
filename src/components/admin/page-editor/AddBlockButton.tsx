@@ -30,7 +30,7 @@ export default function AddBlockButton({
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const defs = listBlockDefinitions(scope).filter(
-    (d) => !exclude.includes(d.type),
+    (d) => !d.hidden && !exclude.includes(d.type),
   );
 
   return (
