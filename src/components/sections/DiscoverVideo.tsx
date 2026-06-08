@@ -4,16 +4,25 @@ import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { DISCOVER_VIDEO_DEFAULTS } from "@/lib/blocks/default-content";
 
+// The YouTube embed's origin — postMessage commands target this exact origin
+// (not "*") so a player command can't be delivered to an unexpected document.
+const YOUTUBE_ORIGIN = "https://www.youtube.com";
+
 // Subscribe to a media query without setState-in-effect (SSR-safe: false on the
-// server and the first client paint, then corrected once mounted).
+// server and the first client paint, then corrected once mounted). Guards for
+// environments without matchMedia (very old browsers / a jsdom test runner).
 function useMediaQuery(query: string): boolean {
   return useSyncExternalStore(
     (onChange) => {
+      if (typeof window === "undefined" || !window.matchMedia) return () => {};
       const mq = window.matchMedia(query);
       mq.addEventListener("change", onChange);
       return () => mq.removeEventListener("change", onChange);
     },
-    () => window.matchMedia(query).matches,
+    () =>
+      typeof window !== "undefined" && window.matchMedia
+        ? window.matchMedia(query).matches
+        : false,
     () => false,
   );
 }
@@ -44,7 +53,7 @@ export default function DiscoverVideo({
   function postMessage(command: string) {
     iframeRef.current?.contentWindow?.postMessage(
       JSON.stringify({ event: "command", func: command, args: [] }),
-      "*",
+      YOUTUBE_ORIGIN,
     );
   }
 

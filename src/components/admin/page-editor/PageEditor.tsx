@@ -565,11 +565,15 @@ export default function PageEditor({
                 <button
                   type="button"
                   onClick={handleClearHistory}
-                  disabled={clearableCount === 0 || clearingHistory}
+                  disabled={
+                    revisions === null || clearableCount === 0 || clearingHistory
+                  }
                   title={
-                    clearableCount === 0
-                      ? "Nothing to clear — only the Original baseline remains."
-                      : 'Delete every saved version except "Original".'
+                    revisions === null
+                      ? "Loading version history…"
+                      : clearableCount === 0
+                        ? "Nothing to clear — only the Original baseline remains."
+                        : 'Delete every saved version except "Original".'
                   }
                   className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
