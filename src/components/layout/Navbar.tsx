@@ -753,11 +753,7 @@ export default function Navbar() {
                 </button>
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${mobileAboutOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"}`}>
                   <ul className="pl-4 pb-2 space-y-0">
-                    {[
-                      { label: "Discover HNU", href: "/about" },
-                      { label: "Our Team", href: "/team" },
-                      { label: "Our Research", href: "/research" },
-                    ].map((item) => (
+                    {ABOUT_ITEMS.map((item) => (
                       <li key={item.href}>
                         <Link href={item.href} onClick={() => setMobileOpen(false)} className="block py-2.5 text-white text-[15px] font-medium hover:opacity-70 transition-opacity">
                           {item.label}
@@ -852,7 +848,7 @@ export default function Navbar() {
                   onChange={(event) => setSearchQuery(event.target.value)}
                   onKeyDown={handleSearchInputKeyDown}
                   placeholder={t.navbar.searchPlaceholder}
-                  className="flex-1 bg-transparent text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
+                  className="flex-1 bg-transparent text-[24px] lg:text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
                   aria-label={t.navbar.search}
                   role="combobox"
                   aria-expanded={showResults}
