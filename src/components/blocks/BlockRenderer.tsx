@@ -288,19 +288,7 @@ export default function BlockRenderer({
     case "contactMap":
       return <ContactMap mapUrl={str(c.mapUrl) || undefined} />;
     case "contactDetails":
-      return (
-        <ContactDetails
-          cardOneTitle={str(c.cardOneTitle) || undefined}
-          cardOneBody={str(c.cardOneBody) || undefined}
-          cardTwoTitle={str(c.cardTwoTitle) || undefined}
-          cardTwoBody={str(c.cardTwoBody) || undefined}
-          cardThreeTitle={str(c.cardThreeTitle) || undefined}
-          cardThreeBody={str(c.cardThreeBody) || undefined}
-          phone={str(c.phone) || undefined}
-          phoneHref={str(c.phoneHref) || undefined}
-          address={str(c.address) || undefined}
-        />
-      );
+      return (<ContactDetails />);
 
     // Dynamic (live data, with optional display config)
     case "recentPublications":
