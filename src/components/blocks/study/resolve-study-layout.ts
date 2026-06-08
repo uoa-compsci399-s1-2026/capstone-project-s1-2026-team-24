@@ -93,7 +93,7 @@ type StudyRecord = {
   ethicsStatement: string;
   status: string;
   publishedAt: Date | null;
-  pdfs: { id: number; title: string; pdfPath: string }[];
+  pdfs: { id: number; title: string; fileName: string }[];
 };
 
 // Serialises a Prisma study (with pdfs) into the plain object passed to client blocks.
@@ -117,7 +117,7 @@ export function toStudyData(study: StudyRecord): StudyData {
     pdfs: study.pdfs.map((pdf) => ({
       id: pdf.id,
       title: pdf.title,
-      pdfPath: pdf.pdfPath,
+      fileName: pdf.fileName,
     })),
   };
 }

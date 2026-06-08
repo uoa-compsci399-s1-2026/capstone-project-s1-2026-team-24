@@ -123,7 +123,18 @@ model StudyPdf {
   id         Int      @id @default(autoincrement())
   studyId    Int
   title      String
-  pdfPath    String
+  // The stored file name — a display label only, no longer a path or URL. Mapped
+  // to the legacy `pdfPath` column so existing rows keep working without a data
+  // migration. The bytes themselves live in `data` and are streamed by
+  // GET /api/studies/pdf/[id] — Render's filesystem is ephemeral, so files
+  // written to public/ at runtime don't survive a redeploy.
+  fileName   String   @map("pdfPath")
+  // The PDF bytes. Nullable so pre-existing rows (whose disk files were lost)
+  // don't break; those return 404 until re-uploaded. Kept out of every list/
+  // render query via the global `omit` in src/lib/prisma.ts — only the download
+  // route selects it.
+  data       Bytes?
+  mimeType   String   @default("application/pdf")
   order      Int      @default(0)
   uploadedAt DateTime @default(now())
 

@@ -6,7 +6,7 @@ type StudyPdf = {
   id: number;
   studyId: number;
   title: string;
-  pdfPath: string;
+  fileName: string;
   order: number;
   uploadedAt: string;
 };
@@ -135,7 +135,7 @@ export default function StudyPdfManager({ studyId }: { studyId: number }) {
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
                 <a
-                  href={pdf.pdfPath}
+                  href={`/api/studies/pdf/${pdf.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#0a4479] hover:underline font-semibold text-sm"
