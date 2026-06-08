@@ -27,7 +27,10 @@ import {
 } from "@/lib/page-publish";
 import { POST as publish } from "@/app/api/admin/pages/[slug]/publish/route";
 import { POST as discard } from "@/app/api/admin/pages/[slug]/discard/route";
-import { GET as listRevisions } from "@/app/api/admin/pages/[slug]/revisions/route";
+import {
+  GET as listRevisions,
+  DELETE as clearRevisions,
+} from "@/app/api/admin/pages/[slug]/revisions/route";
 import { POST as restore } from "@/app/api/admin/pages/[slug]/revisions/[id]/restore/route";
 import { POST as rebaseline } from "@/app/api/admin/pages/[slug]/rebaseline/route";
 
@@ -285,7 +288,7 @@ describe("POST /api/admin/pages/[slug]/rebaseline", () => {
     expect(mockPrisma.pageRevision.create).not.toHaveBeenCalled();
   });
 
-  it("replaces the existing Original's content with the published snapshot", async () => {
+  it("replaces the existing Original's content and re-stamps its date", async () => {
     mockPrisma.page.findUnique.mockResolvedValueOnce({
       id: 6,
       createdAt: new Date("2026-01-01T00:00:00Z"),
@@ -297,9 +300,13 @@ describe("POST /api/admin/pages/[slug]/rebaseline", () => {
       params: Promise.resolve({ slug: "home" }),
     });
     expect(res.status).toBe(200);
+    // createdAt is stamped to "now" so History shows when the baseline was reset.
     expect(mockPrisma.pageRevision.update).toHaveBeenCalledWith({
       where: { id: 11 },
-      data: { content: '[{"type":"new","content":"{}"}]' },
+      data: {
+        content: '[{"type":"new","content":"{}"}]',
+        createdAt: expect.any(Date),
+      },
     });
     expect(mockPrisma.pageRevision.create).not.toHaveBeenCalled();
   });
@@ -326,5 +333,33 @@ describe("POST /api/admin/pages/[slug]/rebaseline", () => {
       },
     });
     expect(mockPrisma.pageRevision.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("DELETE /api/admin/pages/[slug]/revisions (clear history)", () => {
+  const del = () => new Request("http://localhost/x", { method: "DELETE" });
+
+  beforeEach(() => vi.clearAllMocks());
+
+  it("404 when the page is missing", async () => {
+    mockPrisma.page.findUnique.mockResolvedValueOnce(null);
+    const res = await clearRevisions(del(), {
+      params: Promise.resolve({ slug: "nope" }),
+    });
+    expect(res.status).toBe(404);
+    expect(mockPrisma.pageRevision.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("deletes every revision except the Original baseline", async () => {
+    mockPrisma.page.findUnique.mockResolvedValueOnce({ id: 7 });
+    mockPrisma.pageRevision.deleteMany.mockResolvedValueOnce({ count: 3 });
+
+    const res = await clearRevisions(del(), {
+      params: Promise.resolve({ slug: "home" }),
+    });
+    expect(res.status).toBe(200);
+    expect(mockPrisma.pageRevision.deleteMany).toHaveBeenCalledWith({
+      where: { pageId: 7, label: { not: "Original" } },
+    });
   });
 });

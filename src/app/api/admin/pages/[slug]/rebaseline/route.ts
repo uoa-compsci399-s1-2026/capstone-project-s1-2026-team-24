@@ -34,9 +34,13 @@ export async function POST(
       select: { id: true },
     });
     if (original) {
+      // Stamp the new baseline with the current time so History shows *when* the
+      // Original was last reset (the old date was misleading — it kept pointing
+      // at the first baseline). The editor pins the "Original" entry to the
+      // bottom of the list regardless of date, so it stays the visual baseline.
       await prisma.pageRevision.update({
         where: { id: original.id },
-        data: { content: page.publishedContent },
+        data: { content: page.publishedContent, createdAt: new Date() },
       });
     } else {
       await prisma.pageRevision.create({
