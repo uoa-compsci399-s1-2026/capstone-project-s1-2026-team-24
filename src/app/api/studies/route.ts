@@ -2,16 +2,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerLang } from "@/lib/lang";
 import { localizeStrings } from "@/lib/translate/blocks";
+import { PUBLIC_STUDY_WHERE } from "@/lib/data/study-filters";
 
 export async function GET(request: Request) {
   try {
     const studies = await prisma.study.findMany({
-      // Public listing = active studies that aren't finished. Completed studies
-      // drop off automatically even if still flagged active.
-      where: {
-        isActive: true,
-        status: { not: "Completed" },
-      },
+      where: PUBLIC_STUDY_WHERE,
       orderBy: {
         order: "asc",
       },

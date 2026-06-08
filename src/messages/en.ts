@@ -191,10 +191,7 @@ const en = {
     findUsContact: "Find us and get in contact →",
   },
   studies: {
-    search: "Search",
-    searchStudies: "Search studies",
     noStudiesAvailable: "No studies available.",
-    noStudiesMatch: "No studies match your search.",
     contactUs: "Contact us",
     panelHours: "Mon – Fri  9am–5pm",
     panelEnquiriesTitle: "Enquiries & Opportunities",

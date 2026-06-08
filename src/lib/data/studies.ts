@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { localizeStrings } from "@/lib/translate/blocks";
+import { PUBLIC_STUDY_WHERE } from "@/lib/data/study-filters";
 
 export type StudyListItem = {
   id: number;
@@ -33,9 +34,7 @@ export async function getStudies(
   lang: "EN" | "ZH",
 ): Promise<StudyListItem[]> {
   const studies = await prisma.study.findMany({
-    // Active studies that aren't finished — a Completed study drops off the
-    // listing automatically even if it's still flagged active.
-    where: { isActive: true, status: { not: "Completed" } },
+    where: PUBLIC_STUDY_WHERE,
     orderBy: { order: "asc" },
     select: studyListSelect,
   });

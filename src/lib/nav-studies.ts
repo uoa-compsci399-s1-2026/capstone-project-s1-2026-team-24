@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { localizeStrings } from "@/lib/translate/blocks";
+import { PUBLIC_STUDY_WHERE } from "@/lib/data/study-filters";
 
 // Studies for the navbar dropdown. Resolved on the server and seeded into the
 // NavStudiesProvider by the root layout (same pattern as SiteSettingsProvider),
@@ -16,14 +17,15 @@ export type NavStudy = {
 /**
  * Every active, not-yet-completed study in admin-set order, titles localised
  * for ZH (read-only TranslationCache lookup — a miss falls back to the English
- * source, never a live API call). The "hide Completed" + ordering policy lives
- * here so the contract has a single owner. Returns [] on error so a transient
- * DB failure leaves the dropdown empty rather than breaking the whole page.
+ * source, never a live API call). The "hide Completed" filter is shared via
+ * PUBLIC_STUDY_WHERE so every public listing stays in sync. Returns [] on error
+ * so a transient DB failure leaves the dropdown empty rather than breaking the
+ * whole page.
  */
 export async function getNavStudies(lang: "EN" | "ZH"): Promise<NavStudy[]> {
   try {
     const studies = await prisma.study.findMany({
-      where: { isActive: true, status: { not: "Completed" } },
+      where: PUBLIC_STUDY_WHERE,
       orderBy: { order: "asc" },
       select: { slug: true, title: true, imagePath: true },
     });
