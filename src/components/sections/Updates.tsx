@@ -181,7 +181,13 @@ export default function Updates({
               display: "flex",
               flexDirection: "column",
               gap: "16px",
-              height: "280px",
+              // The grid stack below already sizes the card to the tallest
+              // update, so the card fits its content with no scrollbar. `maxHeight`
+              // just caps an unusually long update; only then does overflowY:auto
+              // show a scrollbar. (A fixed `height` showed a scrollbar even when
+              // the content fit, because the content was a few px taller than the
+              // padded box.)
+              maxHeight: "380px",
               overflowY: "auto",
               position: "relative",
               overflowX: "hidden",
