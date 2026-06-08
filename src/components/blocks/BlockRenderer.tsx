@@ -221,6 +221,7 @@ export default function BlockRenderer({
         <SectionHeading
           text={str(c.text)}
           heightClass={str(c.heightClass, "h-32")}
+          align="center"
         />
       );
     case "partnerImageGrid":

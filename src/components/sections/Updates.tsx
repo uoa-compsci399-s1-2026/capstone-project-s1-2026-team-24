@@ -89,8 +89,9 @@ export default function Updates({
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("left");
   const [isHovered, setIsHovered] = useState(false);
-  // Reveal the prev/next arrows while a keyboard user is tabbing through the
-  // carousel; pause autoplay when the OS asks for reduced motion.
+  // True while keyboard focus is within the carousel: reveals the prev/next
+  // arrows and pauses autoplay so a keyboard user can read and navigate without
+  // the slide rotating under them.
   const [isFocused, setIsFocused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const touchStartX = useRef<number | null>(null);
@@ -115,10 +116,11 @@ export default function Updates({
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  // Autoplay pauses on hover and under the OS reduced-motion preference (which
-  // fully stops the rotation — the WCAG 2.2.2 pause mechanism). It does not
-  // pause on keyboard focus; isFocused only reveals the prev/next arrows.
-  const autoplayPaused = isHovered || reducedMotion;
+  // Autoplay pauses on hover, while keyboard focus is within the carousel, and
+  // under the OS reduced-motion preference (which fully stops the rotation).
+  // Hover and focus give mouse and keyboard users a way to halt the motion
+  // (WCAG 2.2.2) without a dedicated pause control.
+  const autoplayPaused = isHovered || isFocused || reducedMotion;
 
   useEffect(() => {
     if (autoplayPaused) return;
