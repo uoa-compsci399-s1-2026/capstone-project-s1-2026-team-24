@@ -42,12 +42,15 @@ export async function GET(
       ? safeName
       : `${safeName}.pdf`;
 
-    return new Response(new Uint8Array(pdf.data), {
+    // `pdf.data` is already a Uint8Array (a valid BodyInit), so hand it to the
+    // Response directly — wrapping it in `new Uint8Array(...)` would copy the
+    // whole buffer and double peak memory for multi-MB PDFs.
+    return new Response(pdf.data, {
       status: 200,
       headers: {
         "Content-Type": pdf.mimeType || "application/pdf",
         "Content-Disposition": `inline; filename="${fileName}"`,
-        "Content-Length": String(pdf.data.length),
+        "Content-Length": String(pdf.data.byteLength),
         "Cache-Control": "public, max-age=3600",
       },
     });

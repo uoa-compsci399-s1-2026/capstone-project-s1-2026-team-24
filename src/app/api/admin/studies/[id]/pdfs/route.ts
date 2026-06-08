@@ -109,9 +109,10 @@ export async function POST(
       );
     }
 
-    // Store the bytes in the database (durable on Render's ephemeral disk) and
-    // serve them via GET /api/studies/pdf/[id]. `pdfPath` is kept as the stored
-    // file name for display/record only.
+    // Store the bytes in the database so downloads survive a redeploy: Render's
+    // filesystem is ephemeral, so files written to public/ at runtime are wiped.
+    // The bytes are served by GET /api/studies/pdf/[id]; `fileName` is kept as a
+    // display label only.
     const safeFileName = `${Date.now()}-${sanitizeFileName(file.name)}`;
     const bytes = Buffer.from(await file.arrayBuffer());
 
@@ -121,7 +122,7 @@ export async function POST(
       data: {
         studyId,
         title: title.trim(),
-        pdfPath: safeFileName,
+        fileName: safeFileName,
         data: bytes,
         mimeType: file.type || "application/pdf",
         order,

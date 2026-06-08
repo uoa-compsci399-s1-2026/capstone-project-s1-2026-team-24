@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 
 const mockPrisma = vi.hoisted(() => ({
   study: { findUnique: vi.fn() },
@@ -73,9 +74,14 @@ describe("POST /api/admin/studies/[id]/pdfs (upload stores bytes in the DB)", ()
     const form = new FormData();
     form.set("title", "Doc");
     form.set("file", new File([pdfBytes], "doc.pdf", { type: "application/pdf" }));
-    const req = new Request("http://localhost", { method: "POST", body: form });
+    // Build a real NextRequest (the handler's declared param type) instead of
+    // casting to `never` — keeps the test honest about the route's contract.
+    const req = new NextRequest("http://localhost", {
+      method: "POST",
+      body: form,
+    });
 
-    const res = await uploadPdf(req as never, {
+    const res = await uploadPdf(req, {
       params: Promise.resolve({ id: "1" }),
     });
     expect(res.status).toBe(201);

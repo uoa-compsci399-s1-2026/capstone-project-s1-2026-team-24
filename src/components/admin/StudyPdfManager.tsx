@@ -6,7 +6,7 @@ type StudyPdf = {
   id: number;
   studyId: number;
   title: string;
-  pdfPath: string;
+  fileName: string;
   order: number;
   uploadedAt: string;
 };

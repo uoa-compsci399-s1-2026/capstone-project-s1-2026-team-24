@@ -9,7 +9,7 @@ type Lang = "en" | "zh";
 interface StudyPdfRecord {
   id: number;
   title: string;
-  pdfPath: string;
+  fileName: string;
 }
 
 interface StudyContentProps {

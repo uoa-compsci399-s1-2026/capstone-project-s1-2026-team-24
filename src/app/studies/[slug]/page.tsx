@@ -159,7 +159,7 @@ export default async function StudyPage({ params }: Props) {
           pdfs={study.pdfs.map((pdf) => ({
             id: pdf.id,
             title: pdf.title,
-            pdfPath: pdf.pdfPath,
+            fileName: pdf.fileName,
           }))}
         />
       </main>
