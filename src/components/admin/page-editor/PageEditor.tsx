@@ -370,18 +370,22 @@ export default function PageEditor({
 
   const liveHref = viewHref ?? publicPath(slug);
 
-  // "Original" is the recoverable baseline; pin it to the bottom of History so
-  // it stays the visual anchor even though a rebaseline now stamps it with the
-  // current date (which would otherwise sort it to the top).
-  const orderedRevisions = revisions
-    ? [
-        ...revisions.filter((r) => r.label !== "Original"),
-        ...revisions.filter((r) => r.label === "Original"),
-      ]
-    : null;
-  const clearableCount = revisions
-    ? revisions.filter((r) => r.label !== "Original").length
-    : 0;
+  // Split History once into the clearable versions and the "Original" baseline,
+  // then pin Original to the bottom so it stays the visual anchor even though a
+  // rebaseline now stamps it with the current date (which would otherwise sort
+  // it to the top).
+  const { clearable, original } = (revisions ?? []).reduce<{
+    clearable: RevisionMeta[];
+    original: RevisionMeta[];
+  }>(
+    (acc, r) => {
+      (r.label === "Original" ? acc.original : acc.clearable).push(r);
+      return acc;
+    },
+    { clearable: [], original: [] },
+  );
+  const orderedRevisions = revisions ? [...clearable, ...original] : null;
+  const clearableCount = clearable.length;
 
   const editorPane = (
     <>
