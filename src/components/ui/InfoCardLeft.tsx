@@ -36,20 +36,29 @@ export default function InfoCard({
   showButton = false,
 }: InfoCardProps) {
   return (
-    <section className="relative w-full bg-white overflow-hidden py-6">
+    <section className="@container relative w-full bg-white overflow-hidden py-6">
 
-      {/* ── Mobile layout ── */}
-      <div className="lg:hidden relative flex flex-col">
+      {/* ── Narrow layout (also used inside narrow row columns via @container) ── */}
+      <div className="@5xl:hidden relative flex flex-col">
 
         {/* Image fills top portion */}
         <div className="relative w-full h-[280px] sm:h-[340px]">
-          <Image
-            src={imageSrc}
-            alt={imageAlt}
-            fill
-            className={`object-cover object-${imagePosition}`}
-            sizes="100vw"
-          />
+          {imageSrc ? (
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              fill
+              className={`object-cover object-${imagePosition}`}
+              sizes="100vw"
+            />
+          ) : (
+            <div
+              className="flex h-full w-full items-center justify-center bg-[#0c0c48]/5 text-xs text-[#0c0c48]/40"
+              aria-hidden="true"
+            >
+              No image selected
+            </div>
+          )}
         </div>
 
         {/* Card slides up over the image with big top-left radius */}
@@ -111,8 +120,8 @@ export default function InfoCard({
         </div>
       </div>
 
-      {/* ── Desktop layout: original overlapping design ── */}
-      <div className="hidden lg:block py-10 px-12 lg:px-45">
+      {/* ── Wide layout: original overlapping two-column design ── */}
+      <div className="hidden @5xl:block py-10 px-12 @5xl:px-45">
         <div className="max-w-[1100px] mx-auto">
           <div className="relative flex flex-row items-center gap-0">
             <div
@@ -173,20 +182,29 @@ export default function InfoCard({
               className="relative rounded-[28px] overflow-hidden flex-1 -ml-65"
               style={{ height: "550px", zIndex: 9 }}
             >
-              <Image
-                src={imageSrc}
-                alt={imageAlt}
-                fill
-                className={`object-cover object-${imagePosition}`}
-                sizes="70vw"
-              />
+              {imageSrc ? (
+                <Image
+                  src={imageSrc}
+                  alt={imageAlt}
+                  fill
+                  className={`object-cover object-${imagePosition}`}
+                  sizes="70vw"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center bg-[#0c0c48]/5 text-sm text-[#0c0c48]/40"
+                  aria-hidden="true"
+                >
+                  No image selected
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Background pattern */}
         <div
-          className="hidden lg:flex absolute inset-0 overflow-hidden pointer-events-none items-center"
+          className="hidden @5xl:flex absolute inset-0 overflow-hidden pointer-events-none items-center"
           aria-hidden="true"
         >
           <div

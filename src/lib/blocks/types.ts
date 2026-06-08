@@ -3,6 +3,7 @@
 // code, so it must contain types and plain data only — no React component imports.
 
 export type BlockCategory =
+  | "Generic blocks"
   | "Hero"
   | "Content"
   | "Dynamic"
@@ -25,6 +26,8 @@ export type FieldType =
   | "boolean"
   | "studyCards"
   | "updatesList"
+  | "faqList"
+  | "statList"
   | "richText";
 
 export interface BlockField {
@@ -65,6 +68,19 @@ export interface UpdateItem {
   title: string;
   date?: string;
   paragraphs: string[];
+}
+
+/** One question/answer pair in an `accordion` (FAQ) block's `faqList` field. */
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+/** One stat in a `statHighlights` block's `statList` field. `value` is the big
+ *  number/figure (e.g. "500+"), `label` the caption beneath it. */
+export interface StatItem {
+  value: string;
+  label: string;
 }
 
 /** Shape of a single card inside a `homepageStudies` block. */

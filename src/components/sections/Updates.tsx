@@ -260,7 +260,7 @@ export default function Updates({
                 reflows (jumps) when the carousel rotates. The active update
                 is a visible overlay keyed on `current`, remounted per change
                 so the slide-in animation restarts. */}
-            <div style={{ display: "grid" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)" }}>
               {updates.map((u, i) => (
                 <div
                   key={i}

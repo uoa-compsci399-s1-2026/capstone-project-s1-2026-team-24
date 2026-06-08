@@ -15,7 +15,7 @@ export default function SectionHeading({
     <section
       className={`w-full ${heightClass} bg-white px-6 sm:px-12 lg:px-45 flex items-center justify-center`}
     >
-      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48]">
+      <h2 className="min-w-0 max-w-full break-words text-center text-3xl font-bold text-[#0c0c48] sm:text-4xl lg:text-5xl">
         {text}
       </h2>
     </section>

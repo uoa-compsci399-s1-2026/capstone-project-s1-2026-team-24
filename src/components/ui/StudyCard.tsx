@@ -41,13 +41,24 @@ export default function StudyCard({
   const content = (
     <>
       <div className="relative w-full h-[180px] sm:h-[280px] flex-shrink-0">
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          fill
-          className={`object-cover object-${imagePosition}`}
-          sizes="(max-width: 768px) 100vw, 50vw"
-        />
+        {imageSrc ? (
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            className={`object-cover object-${imagePosition}`}
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+        ) : (
+          // next/image throws on an empty src; show a neutral placeholder so a
+          // card without an image yet still renders cleanly instead of crashing.
+          <div
+            className="flex h-full w-full items-center justify-center bg-[#0c0c48]/5 text-xs text-[#0c0c48]/40"
+            aria-hidden="true"
+          >
+            No image selected
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-3 sm:gap-4 px-6 py-5 sm:px-[45px] sm:py-8 flex-1">
         <h2

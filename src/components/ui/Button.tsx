@@ -33,7 +33,7 @@ export default function Button({
   const [hovered, setHovered] = useState(false);
 
   const base =
-    "inline-flex items-center justify-center font-semibold rounded-full transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 w-fit text-[13px] sm:text-[16px]";
+    "inline-flex items-center justify-center text-center font-semibold rounded-full transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 w-fit max-w-full break-words text-[13px] sm:text-[16px]";
 
   const blueStyle = {
     backgroundColor: blueColors[color],

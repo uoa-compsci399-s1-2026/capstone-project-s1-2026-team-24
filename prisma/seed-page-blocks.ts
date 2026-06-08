@@ -237,7 +237,6 @@ const PAGE_SEEDS: PageSeed[] = [
       { type: "studiesHero", content: {} },
       { type: "studiesOverview", content: {} },
       { type: "trialDesign", content: { ...TRIAL_DESIGN_DEFAULTS } },
-      { type: "studiesContactCard", content: {} },
     ],
   },
   {
