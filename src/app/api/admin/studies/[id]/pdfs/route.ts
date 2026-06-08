@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { mkdir, unlink, writeFile } from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";
 
@@ -103,22 +101,6 @@ export async function POST(
       );
     }
 
-    const uploadDir = path.join(
-      process.cwd(),
-      "public",
-      "uploads",
-      "studies",
-      String(studyId),
-    );
-
-    await mkdir(uploadDir, { recursive: true });
-
-    const safeFileName = `${Date.now()}-${sanitizeFileName(file.name)}`;
-    const diskPath = path.join(uploadDir, safeFileName);
-
-    const bytes = await file.arrayBuffer();
-    await writeFile(diskPath, Buffer.from(bytes));
-
     const order = parseOrder(orderRaw);
     if (order === null) {
       return NextResponse.json(
@@ -127,25 +109,24 @@ export async function POST(
       );
     }
 
-    const pdfPath = `/uploads/studies/${studyId}/${safeFileName}`;
-    let created;
-    try {
-      created = await prisma.studyPdf.create({
-        data: {
-          studyId,
-          title: title.trim(),
-          pdfPath,
-          order,
-        },
-      });
-    } catch (dbError) {
-      try {
-        await unlink(diskPath);
-      } catch (fileError) {
-        console.warn("Uploaded PDF cleanup failed:", fileError);
-      }
-      throw dbError;
-    }
+    // Store the bytes in the database (durable on Render's ephemeral disk) and
+    // serve them via GET /api/studies/pdf/[id]. `pdfPath` is kept as the stored
+    // file name for display/record only.
+    const safeFileName = `${Date.now()}-${sanitizeFileName(file.name)}`;
+    const bytes = Buffer.from(await file.arrayBuffer());
+
+    // `data` is omitted from the client's default selection, so the returned row
+    // is metadata only (no multi-MB buffer echoed back to the admin).
+    const created = await prisma.studyPdf.create({
+      data: {
+        studyId,
+        title: title.trim(),
+        pdfPath: safeFileName,
+        data: bytes,
+        mimeType: file.type || "application/pdf",
+        order,
+      },
+    });
 
     return NextResponse.json(created, { status: 201 });
   } catch (error) {

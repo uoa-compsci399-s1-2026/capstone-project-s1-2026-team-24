@@ -160,7 +160,7 @@ export default function StudyContent({
                   {pdfs.map((pdf) => (
                     <li key={pdf.id}>
                       <a
-                        href={pdf.pdfPath}
+                        href={`/api/studies/pdf/${pdf.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-[#0a4479] hover:underline font-semibold"

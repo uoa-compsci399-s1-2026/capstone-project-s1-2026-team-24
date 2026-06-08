@@ -1,6 +1,4 @@
 import { NextResponse } from "next/server";
-import { unlink } from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";
 
@@ -89,15 +87,8 @@ export async function DELETE(
       return NextResponse.json({ error: "PDF not found." }, { status: 404 });
     }
 
+    // The bytes live in the row, so deleting it removes the file too.
     await prisma.studyPdf.delete({ where: { id: pdfId } });
-
-    const relativePdfPath = pdf.pdfPath.replace(/^\/+/, "");
-    const diskPath = path.join(process.cwd(), "public", relativePdfPath);
-    try {
-      await unlink(diskPath);
-    } catch (fileError) {
-      console.warn("Study PDF file could not be removed:", fileError);
-    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {
