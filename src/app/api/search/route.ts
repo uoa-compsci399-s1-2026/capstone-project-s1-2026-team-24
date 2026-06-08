@@ -3,7 +3,7 @@ import Fuse, { type FuseResultMatch, type IFuseOptions } from "fuse.js";
 import { prisma } from "@/lib/prisma";
 import { getSafeHttpUrl } from "@/lib/safe-url";
 import { parsePublishedSnapshot } from "@/lib/page-publish";
-import { publicPath } from "@/lib/blocks/page-paths";
+import { publicPath, isPubliclyRoutable } from "@/lib/blocks/page-paths";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { getClientIp } from "@/lib/client-ip";
 
@@ -24,7 +24,7 @@ const PAGES: { title: string; snippet: string; href: string; keywords: string[] 
   { title: "About / Discover HNU", snippet: "Who we are and what we do", href: "/about", keywords: ["about", "discover", "facility", "facilities"] },
   { title: "Our Team", snippet: "Board of directors, research team, and alumni", href: "/team", keywords: ["team", "people", "board", "directors", "research", "alumni"] },
   { title: "Our Research", snippet: "Research focus areas and trials", href: "/research", keywords: ["research", "trials", "publications"] },
-  { title: "Studies", snippet: "Current studies you can join", href: "/studies", keywords: ["studies", "join", "participant"] },
+  { title: "Studies", snippet: "Current studies you can join", href: "/#studies", keywords: ["studies", "join", "participant"] },
   { title: "Collaborations", snippet: "Partner with HNU", href: "/collaborations", keywords: ["collaborations", "partners", "industry"] },
   { title: "Donations", snippet: "Support our research", href: "/contact", keywords: ["donations", "donate", "funding"] },
   { title: "Contact", snippet: "Get in touch with our team", href: "/contact", keywords: ["contact", "email", "phone", "address"] },
@@ -377,7 +377,10 @@ async function fuzzySearch(
         ? pageSearchText(page.publishedContent, page.slug)
         : blocksToText(page.blocks, page.slug),
     }))
-    .filter((page) => page.text && !seenHrefs.has(page.href));
+    .filter(
+      (page) =>
+        page.text && !seenHrefs.has(page.href) && isPubliclyRoutable(page.slug),
+    );
   const pageContentFuse = new Fuse(pageDocs, {
     ...FUZZY_OPTIONS,
     keys: [
@@ -538,6 +541,8 @@ export async function GET(request: NextRequest) {
     }
 
     for (const page of pages) {
+      // Skip pages with no public route (e.g. the retired /studies overview).
+      if (!isPubliclyRoutable(page.slug)) continue;
       const href = publicPath(page.slug);
       // A static PAGES entry already linked this destination for this query —
       // don't add a near-duplicate page-content row for it.

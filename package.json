@@ -19,6 +19,7 @@
     "backfill:media-dims": "tsx prisma/backfill-media-dimensions.ts",
     "backfill:published": "tsx prisma/backfill-published.ts",
     "backfill:inquiry-labels": "tsx prisma/backfill-inquiry-labels.ts",
+    "backfill:studies-links": "tsx prisma/repoint-studies-links.ts",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots"

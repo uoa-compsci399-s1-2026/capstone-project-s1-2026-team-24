@@ -15,7 +15,6 @@ const STATIC_PATHS = [
   "/about",
   "/team",
   "/research",
-  "/studies",
   "/contact",
   "/collaborations",
   "/collaborations/academic",
@@ -33,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = STATIC_PATHS.map((p) => ({
     url: `${SITE_URL}${p}`,
     lastModified: now,
-    changeFrequency: p === "" || p === "/studies" ? "weekly" : "monthly",
+    changeFrequency: p === "" ? "weekly" : "monthly",
     priority: p === "" ? 1 : 0.7,
   }));
 

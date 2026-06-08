@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  INTERNAL_PAGE_SLUG_PREFIX,
+  RETIRED_PAGE_SLUG,
+} from "@/lib/blocks/page-paths";
 
 export const runtime = "nodejs";
 
@@ -8,10 +12,12 @@ export async function GET() {
   try {
     const pages = await prisma.page.findMany({
       where: {
-        // "studies" is being reworked directly on the public site — hide it
-        // from the page editor so content editors don't change it here.
-        slug: { not: "studies" },
-        NOT: { slug: { startsWith: "studylayout-" } },
+        // Hide pages with no public route — the "studies" overview (reworked
+        // directly on the public site) and internal study-layout pages — so
+        // content editors don't change them here. Shared with site search via
+        // page-paths so the non-public slug rules can't drift.
+        slug: { not: RETIRED_PAGE_SLUG },
+        NOT: { slug: { startsWith: INTERNAL_PAGE_SLUG_PREFIX } },
       },
       orderBy: { slug: "asc" },
       include: { _count: { select: { blocks: true } } },

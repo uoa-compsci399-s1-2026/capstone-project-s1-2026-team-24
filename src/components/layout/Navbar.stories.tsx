@@ -27,7 +27,9 @@ export const OnAbout: Story = {
 
 export const OnStudies: Story = {
   parameters: {
-    nextjs: { navigation: { pathname: '/studies' } },
+    // The /studies overview was removed; a study detail page is the closest
+    // active-nav state.
+    nextjs: { navigation: { pathname: '/studies/nz-synergy' } },
   },
 };
 

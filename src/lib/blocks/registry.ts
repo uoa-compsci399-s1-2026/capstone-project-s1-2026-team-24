@@ -124,7 +124,7 @@ const DEFINITIONS: BlockDefinition[] = [
     defaultContent: {
       title: "Unlock the power of food with \n the Human Nutrition Unit",
       buttonLabel: "JOIN A STUDY",
-      buttonHref: "/studies",
+      buttonHref: "/#studies",
       backgroundGradient:
         "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
       heroImageSrc: "/images/homepage-hero-bowl.webp",
@@ -297,7 +297,7 @@ const DEFINITIONS: BlockDefinition[] = [
           subtitle: "",
           description: "Short description of the study.",
           buttonLabel: "Find out more >",
-          buttonHref: "/studies",
+          buttonHref: "/#studies",
           imageSrc: "",
           imageAlt: "",
           imagePosition: "center",
