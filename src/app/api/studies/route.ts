@@ -6,8 +6,11 @@ import { localizeStrings } from "@/lib/translate/blocks";
 export async function GET(request: Request) {
   try {
     const studies = await prisma.study.findMany({
+      // Public listing = active studies that aren't finished. Completed studies
+      // drop off automatically even if still flagged active.
       where: {
         isActive: true,
+        status: { not: "Completed" },
       },
       orderBy: {
         order: "asc",

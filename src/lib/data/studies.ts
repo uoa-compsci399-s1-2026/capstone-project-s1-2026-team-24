@@ -33,7 +33,9 @@ export async function getStudies(
   lang: "EN" | "ZH",
 ): Promise<StudyListItem[]> {
   const studies = await prisma.study.findMany({
-    where: { isActive: true },
+    // Active studies that aren't finished — a Completed study drops off the
+    // listing automatically even if it's still flagged active.
+    where: { isActive: true, status: { not: "Completed" } },
     orderBy: { order: "asc" },
     select: studyListSelect,
   });
