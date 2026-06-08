@@ -1,8 +1,22 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { DISCOVER_VIDEO_DEFAULTS } from "@/lib/blocks/default-content";
+
+// Subscribe to a media query without setState-in-effect (SSR-safe: false on the
+// server and the first client paint, then corrected once mounted).
+function useMediaQuery(query: string): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(query);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(query).matches,
+    () => false,
+  );
+}
 
 export default function DiscoverVideo({
   videoId = DISCOVER_VIDEO_DEFAULTS.videoId,
@@ -16,20 +30,16 @@ export default function DiscoverVideo({
   cardParagraph2?: string;
 } = {}) {
   const [muted, setMuted] = useState(true);
-  const [playing, setPlaying] = useState(true);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [videoHovered, setVideoHovered] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
-  const src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=${muted ? 1 : 0}&loop=1&playlist=${videoId}&controls=1&rel=0&modestbranding=1`;
+  const isDesktop = useMediaQuery("(min-width: 640px)");
 
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 640px)");
-    setIsDesktop(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
+  // The src is STATIC: it always starts muted (required for autoplay) and turns
+  // on the iframe JS API. Mute is then toggled purely via postMessage, so the
+  // iframe never reloads (the old bug: `mute` was interpolated into the src, so
+  // toggling it changed the URL and remounted/restarted the player).
+  const src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
 
   function postMessage(command: string) {
     iframeRef.current?.contentWindow?.postMessage(
@@ -39,17 +49,13 @@ export default function DiscoverVideo({
   }
 
   function toggleMute() {
-    if (muted) postMessage("unMute");
-    else postMessage("mute");
+    postMessage(muted ? "unMute" : "mute");
     setMuted((m) => !m);
   }
 
-  function togglePlay() {
-    if (playing) postMessage("pauseVideo");
-    else postMessage("playVideo");
-    setPlaying((p) => !p);
-  }
-
+  // Unmute once the video scrolls into view (people expect sound when they
+  // reach it). postMessage only — the static src means setMuted just updates
+  // the button, it never reloads the player.
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -133,6 +139,30 @@ export default function DiscoverVideo({
                   title="HNU video"
                   allow="autoplay; encrypted-media; fullscreen"
                 />
+
+                {/* Custom mute toggle — drives the player via postMessage so it
+                    mutes in place instead of reloading. */}
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  aria-pressed={!muted}
+                  aria-label={muted ? "Unmute video" : "Mute video"}
+                  className="absolute bottom-4 left-4 z-20 flex h-11 w-11 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm transition-colors hover:bg-black/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                >
+                  {muted ? (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M11 5 6 9H2v6h4l5 4V5z" />
+                      <line x1="23" y1="9" x2="17" y2="15" />
+                      <line x1="17" y1="9" x2="23" y2="15" />
+                    </svg>
+                  ) : (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M11 5 6 9H2v6h4l5 4V5z" />
+                      <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                      <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                    </svg>
+                  )}
+                </button>
               </div>
             )}
 
