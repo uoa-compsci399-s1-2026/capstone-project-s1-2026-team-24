@@ -181,9 +181,10 @@ export default function Updates({
               display: "flex",
               flexDirection: "column",
               gap: "16px",
-              minHeight: "260px",
+              height: "280px",
+              overflowY: "auto",
               position: "relative",
-              overflow: "hidden",
+              overflowX: "hidden",
               touchAction: "pan-y",
               userSelect: "none",
             }}
