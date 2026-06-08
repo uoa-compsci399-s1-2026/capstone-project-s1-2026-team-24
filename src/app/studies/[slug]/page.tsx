@@ -86,7 +86,7 @@ export default async function StudyPage({ params }: Props) {
       <Navbar />
       <JsonLd
         data={breadcrumbSchema([
-          { name: "Studies", path: "/studies" },
+          { name: "Studies", path: "/#studies" },
           { name: study.title, path: `/studies/${slug}` },
         ])}
       />
@@ -126,7 +126,7 @@ export default async function StudyPage({ params }: Props) {
         <ol className="flex items-center gap-2 text-[18px] text-[#0c0c48] tracking-[0.36px]">
           <li>
             <Link
-              href="/studies"
+              href="/#studies"
               className="hover:opacity-70 transition-opacity"
             >
               Studies

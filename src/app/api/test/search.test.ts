@@ -198,8 +198,8 @@ describe("GET /api/search", () => {
     mockPrisma.publication.findMany.mockResolvedValue([]);
     mockPrisma.page.findMany.mockResolvedValue([
       {
-        slug: "studies",
-        title: "Studies",
+        slug: "collaborations-academic",
+        title: "Academic Collaborations",
         publishedContent: JSON.stringify([
           {
             type: "trialDesign",
@@ -217,11 +217,38 @@ describe("GET /api/search", () => {
     const { results } = (await res.json()) as { results: SearchResult[] };
     const content = results.find((r) => r.type === "page-content");
     expect(content).toBeTruthy();
-    expect(content?.href).toBe("/studies");
-    expect(content?.title).toBe("Studies");
+    expect(content?.href).toBe("/collaborations/academic");
+    expect(content?.title).toBe("Academic Collaborations");
     expect(content?.snippet).toContain("intervention");
     // HTML tags are stripped out of the snippet.
     expect(content?.snippet).not.toContain("<p>");
+  });
+
+  it("never links the retired /studies overview page from page-content", async () => {
+    mockPrisma.study.findMany.mockResolvedValue([]);
+    mockPrisma.teamMember.findMany.mockResolvedValue([]);
+    mockPrisma.publication.findMany.mockResolvedValue([]);
+    // The "studies" DB page still exists and its copy matches the query, but its
+    // route was deleted — it must not surface as a clickable /studies result.
+    mockPrisma.page.findMany.mockResolvedValue([
+      {
+        slug: "studies",
+        title: "Studies",
+        publishedContent: JSON.stringify([
+          {
+            type: "trialDesign",
+            content: JSON.stringify({
+              intro: "Intervention trials about diet and disease.",
+            }),
+          },
+        ]),
+      },
+    ]);
+
+    const res = await search(req("intervention"));
+    const { results } = (await res.json()) as { results: SearchResult[] };
+    expect(results.some((r) => r.href === "/studies")).toBe(false);
+    expect(results.some((r) => r.type === "page-content")).toBe(false);
   });
 
   it("does not duplicate a page already matched by the static PAGES list", async () => {
@@ -424,8 +451,8 @@ describe("GET /api/search", () => {
     const padding = "Filler copy about something unrelated. ".repeat(10);
     mockPrisma.page.findMany.mockResolvedValue([
       {
-        slug: "studies",
-        title: "Studies",
+        slug: "collaborations-academic",
+        title: "Academic Collaborations",
         publishedContent: JSON.stringify([
           {
             type: "trialDesign",
@@ -441,7 +468,7 @@ describe("GET /api/search", () => {
     const { results } = (await res.json()) as { results: SearchResult[] };
     const content = results.find((r) => r.type === "page-content");
     expect(content).toBeTruthy();
-    expect(content?.href).toBe("/studies");
+    expect(content?.href).toBe("/collaborations/academic");
     expect(content?.snippet).toContain("intervention");
   });
 
