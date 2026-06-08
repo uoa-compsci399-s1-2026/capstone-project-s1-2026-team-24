@@ -49,7 +49,7 @@ export default function AccordionBlock({
               </summary>
               {it.answer && it.answer.trim() && (
                 <p
-                  className="mt-3 text-[#0c0c48]/80"
+                  className="mt-3 whitespace-pre-line text-[#0c0c48]/80"
                   style={{
                     fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "15px",

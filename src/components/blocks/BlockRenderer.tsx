@@ -286,10 +286,13 @@ export default function BlockRenderer({
       }));
       // The carousel reads updates[current]; render nothing when empty.
       if (normalized.length === 0) return null;
+      const isAnnouncements = type === "announcements";
       return (
         <Updates
           updates={normalized}
           backgroundColor={str(c.backgroundColor) || undefined}
+          ariaLabelEn={isAnnouncements ? "Announcements" : undefined}
+          ariaLabelZh={isAnnouncements ? "公告" : undefined}
         />
       );
     }
@@ -435,16 +438,23 @@ export default function BlockRenderer({
         );
       }
       return (
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-          {columns.map((col, i) => (
-            <div
-              key={i}
-              className="flex min-w-0 w-full flex-col gap-8 lg:w-auto"
-              style={{ flexGrow: widths[i], flexBasis: 0 }}
-            >
-              {col.map(renderChild)}
-            </div>
-          ))}
+        // The OUTER div establishes the query container; the INNER flex queries
+        // it (a container query reads an ANCESTOR container, never the element's
+        // own size). So the column split keys off the row's available width —
+        // like the child blocks do — stacking in any narrow context, not just a
+        // narrow viewport. @5xl ≈ the previous `lg` breakpoint at full width.
+        <div className="@container">
+          <div className="flex flex-col gap-8 @5xl:flex-row @5xl:items-start">
+            {columns.map((col, i) => (
+              <div
+                key={i}
+                className="flex min-w-0 w-full flex-col gap-8 @5xl:w-auto"
+                style={{ flexGrow: widths[i], flexBasis: 0 }}
+              >
+                {col.map(renderChild)}
+              </div>
+            ))}
+          </div>
         </div>
       );
     }

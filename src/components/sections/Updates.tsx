@@ -13,6 +13,10 @@ interface UpdatesProps {
   updates: Update[];
   /** Any CSS background (colour or gradient). Defaults to the dark navy. */
   backgroundColor?: string;
+  /** Accessible name for the carousel — this component renders both the
+   *  "updates" and "announcements" blocks, so the caller sets the right label. */
+  ariaLabelEn?: string;
+  ariaLabelZh?: string;
 }
 
 /** Shared layout for each cell in the grid stack (hidden sizing cells + visible card). */
@@ -84,6 +88,8 @@ function renderUpdate(update: Update) {
 export default function Updates({
   updates,
   backgroundColor = "#0c0c48f2",
+  ariaLabelEn = "Updates",
+  ariaLabelZh = "动态",
 }: UpdatesProps) {
   const { lang } = useLanguage();
   const [current, setCurrent] = useState(0);
@@ -158,7 +164,7 @@ export default function Updates({
           className="w-full max-w-[750px]"
           role="group"
           aria-roledescription="carousel"
-          aria-label={lang === "EN" ? "Updates" : "动态"}
+          aria-label={lang === "EN" ? ariaLabelEn : ariaLabelZh}
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           onFocus={() => setIsFocused(true)}

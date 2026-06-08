@@ -318,12 +318,16 @@ function StudyCardsField({
 }
 
 function UpdatesField({
+  label,
   value,
   onChange,
 }: {
+  label: string;
   value: UpdateItem[];
   onChange: (v: UpdateItem[]) => void;
 }) {
+  // Per-item noun, e.g. "Updates" -> "Update", "Announcements" -> "Announcement".
+  const itemNoun = label.replace(/s$/, "") || "Item";
   // Persisted block JSON is untrusted, so normalize each entry to a clean
   // UpdateItem. A malformed payload (e.g. [null] or a string) then can't crash
   // the editor — it just shows empty fields the admin can fix or remove.
@@ -345,7 +349,7 @@ function UpdatesField({
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   return (
     <div>
-      <label className={labelClass}>Updates</label>
+      <label className={labelClass}>{label}</label>
       <div className="space-y-4">
         {items.map((item, i) => (
           <div
@@ -354,7 +358,7 @@ function UpdatesField({
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-gray-500">
-                Update {i + 1}
+                {itemNoun} {i + 1}
               </span>
               <button
                 type="button"
@@ -367,12 +371,14 @@ function UpdatesField({
             <input
               className={inputClass}
               placeholder="Title"
+              aria-label={`${itemNoun} ${i + 1} title`}
               value={asString(item.title)}
               onChange={(e) => update(i, { title: e.target.value })}
             />
             <input
               className={inputClass}
               placeholder="Date (e.g. May 2026)"
+              aria-label={`${itemNoun} ${i + 1} date`}
               value={asString(item.date)}
               onChange={(e) => update(i, { date: e.target.value })}
             />
@@ -398,12 +404,15 @@ function UpdatesField({
 }
 
 function FaqField({
+  label,
   value,
   onChange,
 }: {
+  label: string;
   value: FaqItem[];
   onChange: (v: FaqItem[]) => void;
 }) {
+  const itemNoun = label.replace(/s$/, "") || "Question";
   // Untrusted persisted JSON — normalize each entry so a malformed payload can't
   // crash the editor.
   const raw: unknown[] = Array.isArray(value) ? value : [];
@@ -421,7 +430,7 @@ function FaqField({
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   return (
     <div>
-      <label className={labelClass}>Questions</label>
+      <label className={labelClass}>{label}</label>
       <div className="space-y-4">
         {items.map((item, i) => (
           <div
@@ -430,7 +439,7 @@ function FaqField({
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-gray-500">
-                Question {i + 1}
+                {itemNoun} {i + 1}
               </span>
               <button
                 type="button"
@@ -443,6 +452,7 @@ function FaqField({
             <input
               className={inputClass}
               placeholder="Question"
+              aria-label={`${itemNoun} ${i + 1}`}
               value={asString(item.question)}
               onChange={(e) => update(i, { question: e.target.value })}
             />
@@ -450,6 +460,7 @@ function FaqField({
               className={inputClass}
               rows={3}
               placeholder="Answer"
+              aria-label={`Answer ${i + 1}`}
               value={asString(item.answer)}
               onChange={(e) => update(i, { answer: e.target.value })}
             />
@@ -468,9 +479,11 @@ function FaqField({
 }
 
 function StatField({
+  label,
   value,
   onChange,
 }: {
+  label: string;
   value: StatItem[];
   onChange: (v: StatItem[]) => void;
 }) {
@@ -489,7 +502,7 @@ function StatField({
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   return (
     <div>
-      <label className={labelClass}>Stats</label>
+      <label className={labelClass}>{label}</label>
       <div className="space-y-3">
         {items.map((item, i) => (
           <div
@@ -499,12 +512,14 @@ function StatField({
             <input
               className={inputClass}
               placeholder="Value (e.g. 500+)"
+              aria-label={`Stat ${i + 1} value`}
               value={asString(item.value)}
               onChange={(e) => update(i, { value: e.target.value })}
             />
             <input
               className={inputClass}
               placeholder="Label (e.g. Participants)"
+              aria-label={`Stat ${i + 1} label`}
               value={asString(item.label)}
               onChange={(e) => update(i, { label: e.target.value })}
             />
@@ -648,17 +663,23 @@ export function Field({
     case "updatesList":
       return (
         <UpdatesField
+          label={field.label}
           value={(value as UpdateItem[]) ?? []}
           onChange={(v) => onChange(v)}
         />
       );
     case "faqList":
       return (
-        <FaqField value={(value as FaqItem[]) ?? []} onChange={(v) => onChange(v)} />
+        <FaqField
+          label={field.label}
+          value={(value as FaqItem[]) ?? []}
+          onChange={(v) => onChange(v)}
+        />
       );
     case "statList":
       return (
         <StatField
+          label={field.label}
           value={(value as StatItem[]) ?? []}
           onChange={(v) => onChange(v)}
         />

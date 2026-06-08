@@ -1,13 +1,32 @@
-// Accepts a bare 11-char YouTube id or any common YouTube URL (watch, embed,
-// youtu.be, shorts) and returns just the id, or "" if none can be parsed.
-function extractYouTubeId(raw: string): string {
+const YT_ID = /^[\w-]{11}$/;
+
+// Accepts a bare 11-char YouTube id or any common YouTube URL and returns just
+// the id, or "" if none can be parsed. Parses via the URL API so the `v` param
+// can appear in any position (e.g. `watch?si=…&v=ID`), and covers youtu.be,
+// /embed/, /v/, /shorts/, /live/ and youtube-nocookie.com. Exported for testing.
+export function extractYouTubeId(raw: string): string {
   const s = raw.trim();
   if (!s) return "";
-  if (/^[\w-]{11}$/.test(s)) return s;
-  const m = s.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([\w-]{11})/,
-  );
-  return m ? m[1] : "";
+  // Bare-id fast path — only when the input clearly isn't a URL.
+  if (!/[/.]/.test(s)) return YT_ID.test(s) ? s : "";
+  let url: URL;
+  try {
+    url = new URL(s.includes("//") ? s : `https://${s}`);
+  } catch {
+    return "";
+  }
+  const host = url.hostname.replace(/^www\./, "");
+  if (host === "youtu.be") {
+    const id = url.pathname.split("/")[1] ?? "";
+    return YT_ID.test(id) ? id : "";
+  }
+  if (host === "youtube.com" || host === "youtube-nocookie.com" || host.endsWith(".youtube.com")) {
+    const v = url.searchParams.get("v");
+    if (v && YT_ID.test(v)) return v;
+    const m = url.pathname.match(/\/(?:embed|v|shorts|live)\/([\w-]{11})/);
+    if (m) return m[1];
+  }
+  return "";
 }
 
 // A generic, responsive 16:9 video embed with an optional heading and caption.
@@ -49,7 +68,7 @@ export default function VideoEmbed({
             <iframe
               className="absolute inset-0 h-full w-full"
               src={src}
-              title={hasHeading ? heading : "Embedded video"}
+              title={heading?.trim() ? heading : "Embedded video"}
               loading="lazy"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
