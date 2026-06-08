@@ -93,20 +93,20 @@ export default function DiscoverVideo({
           >
             <h2
               className="text-white font-bold"
-              style={{ fontFamily: "Inter, sans-serif", fontSize: "28px", lineHeight: 1.2 }}
+              style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "28px", lineHeight: 1.2 }}
             >
               {cardTitle}
             </h2>
             <p
               className="text-white/85"
-              style={{ fontFamily: "Inter, sans-serif", fontSize: "15px", lineHeight: 1.6 }}
+              style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "15px", lineHeight: 1.6 }}
             >
               {cardParagraph1}
             </p>
             {cardParagraph2 && (
               <p
                 className="text-white/85"
-                style={{ fontFamily: "Inter, sans-serif", fontSize: "15px", lineHeight: 1.6 }}
+                style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "15px", lineHeight: 1.6 }}
               >
                 {cardParagraph2}
               </p>
@@ -177,20 +177,20 @@ export default function DiscoverVideo({
             >
               <h2
                 className="text-white font-bold"
-                style={{ fontFamily: "Inter, sans-serif", fontSize: "32px", lineHeight: 1.2 }}
+                style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "32px", lineHeight: 1.2 }}
               >
                 {cardTitle}
               </h2>
               <p
                 className="text-white/85"
-                style={{ fontFamily: "Inter, sans-serif", fontSize: "16px", lineHeight: 1.6 }}
+                style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "16px", lineHeight: 1.6 }}
               >
                 {cardParagraph1}
               </p>
               {cardParagraph2 && (
                 <p
                   className="text-white/85"
-                  style={{ fontFamily: "Inter, sans-serif", fontSize: "16px", lineHeight: 1.6 }}
+                  style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "16px", lineHeight: 1.6 }}
                 >
                   {cardParagraph2}
                 </p>

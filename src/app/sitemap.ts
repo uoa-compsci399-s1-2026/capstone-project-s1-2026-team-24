@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL } from "@/lib/constants";
+import { PUBLIC_STUDY_WHERE } from "@/lib/data/study-filters";
 
 // CMS-driven: study slugs come from the DB, which on Render only exists at
 // runtime (the persistent disk isn't mounted during builds — a static sitemap
@@ -37,7 +38,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const studies = await prisma.study.findMany({
-    where: { isActive: true },
+    // Same "active and not Completed" policy every other public study listing
+    // uses, so the sitemap doesn't advertise studies hidden from the site.
+    where: PUBLIC_STUDY_WHERE,
     select: { slug: true, updatedAt: true },
   });
 
