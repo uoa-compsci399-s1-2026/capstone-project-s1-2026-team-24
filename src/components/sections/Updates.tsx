@@ -89,10 +89,9 @@ export default function Updates({
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("left");
   const [isHovered, setIsHovered] = useState(false);
-  // Pause autoplay while a keyboard user is interacting, when the user has
-  // pressed the pause control, or when the OS asks for reduced motion (B53).
+  // Reveal the prev/next arrows while a keyboard user is tabbing through the
+  // carousel; pause autoplay when the OS asks for reduced motion.
   const [isFocused, setIsFocused] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
@@ -116,12 +115,10 @@ export default function Updates({
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  // Pauses on hover, on an explicit user pause, and under reduced motion. It
-  // deliberately does NOT pause on keyboard focus — focusing the Pause/Play
-  // toggle would otherwise prevent it from ever resuming (the announced state
-  // would contradict the behaviour). Keyboard users still have the explicit
-  // Pause control. (isFocused is still used to reveal the prev/next arrows.)
-  const autoplayPaused = isHovered || isPaused || reducedMotion;
+  // Autoplay pauses on hover and under the OS reduced-motion preference (which
+  // fully stops the rotation — the WCAG 2.2.2 pause mechanism). It does not
+  // pause on keyboard focus; isFocused only reveals the prev/next arrows.
+  const autoplayPaused = isHovered || reducedMotion;
 
   useEffect(() => {
     if (autoplayPaused) return;
@@ -153,7 +150,7 @@ export default function Updates({
   if (!activeUpdate) return null;
 
   return (
-    <section className="w-full bg-white py-10 px-6 sm:px-12">
+    <section className="w-full bg-white pt-10 pb-2 px-6 sm:px-12">
       <div className="max-w-[1200px] mx-auto sm:px-12 flex justify-end">
         <div
           className="w-full max-w-[750px]"
@@ -307,45 +304,6 @@ export default function Updates({
                 }}
               />
             ))}
-          </div>
-
-          {/* Autoplay pause/resume control (B53 / WCAG 2.2.2). */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              marginTop: "10px",
-            }}
-          >
-            <button
-              type="button"
-              onClick={() => setIsPaused((p) => !p)}
-              aria-pressed={isPaused}
-              aria-label={
-                isPaused
-                  ? lang === "EN"
-                    ? "Resume automatic rotation"
-                    : "继续自动轮播"
-                  : lang === "EN"
-                    ? "Pause automatic rotation"
-                    : "暂停自动轮播"
-              }
-              className="rounded-full px-3 py-1 text-xs font-semibold text-[#0c0c48] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0c0c48]"
-              style={{
-                background: "transparent",
-                border: "1px solid #9ca3af",
-                cursor: "pointer",
-              }}
-            >
-              <span aria-hidden="true">{isPaused ? "▶ " : "❚❚ "}</span>
-              {isPaused
-                ? lang === "EN"
-                  ? "Play"
-                  : "播放"
-                : lang === "EN"
-                  ? "Pause"
-                  : "暂停"}
-            </button>
           </div>
         </div>
       </div>
