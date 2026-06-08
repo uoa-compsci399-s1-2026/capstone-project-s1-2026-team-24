@@ -1,23 +1,24 @@
 "use client";
 
-import { useState, useEffect, useRef, useSyncExternalStore } from "react";
+import { useState, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { DISCOVER_VIDEO_DEFAULTS } from "@/lib/blocks/default-content";
 
-// The YouTube embed's origin — postMessage commands target this exact origin
-// (not "*") so a player command can't be delivered to an unexpected document.
-const YOUTUBE_ORIGIN = "https://www.youtube.com";
-
 // Subscribe to a media query without setState-in-effect (SSR-safe: false on the
 // server and the first client paint, then corrected once mounted). Guards for
-// environments without matchMedia (very old browsers / a jsdom test runner).
+// environments without matchMedia (very old browsers / a jsdom test runner), and
+// falls back to the deprecated addListener/removeListener for Safari < 14.
 function useMediaQuery(query: string): boolean {
   return useSyncExternalStore(
     (onChange) => {
       if (typeof window === "undefined" || !window.matchMedia) return () => {};
       const mq = window.matchMedia(query);
-      mq.addEventListener("change", onChange);
-      return () => mq.removeEventListener("change", onChange);
+      if (mq.addEventListener) {
+        mq.addEventListener("change", onChange);
+        return () => mq.removeEventListener("change", onChange);
+      }
+      mq.addListener(onChange);
+      return () => mq.removeListener(onChange);
     },
     () =>
       typeof window !== "undefined" && window.matchMedia
@@ -50,10 +51,21 @@ export default function DiscoverVideo({
   // toggling it changed the URL and remounted/restarted the player).
   const src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1`;
 
+  // Target the embed's own origin in postMessage (not "*") so a player command
+  // can't be delivered to an unexpected document. Derived from the src so it
+  // follows the host if it ever changes (e.g. youtube-nocookie.com).
+  const youtubeOrigin = useMemo(() => {
+    try {
+      return new URL(src).origin;
+    } catch {
+      return "https://www.youtube.com";
+    }
+  }, [src]);
+
   function postMessage(command: string) {
     iframeRef.current?.contentWindow?.postMessage(
       JSON.stringify({ event: "command", func: command, args: [] }),
-      YOUTUBE_ORIGIN,
+      youtubeOrigin,
     );
   }
 

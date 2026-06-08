@@ -386,6 +386,12 @@ export default function PageEditor({
   );
   const orderedRevisions = revisions ? [...clearable, ...original] : null;
   const clearableCount = clearable.length;
+  const clearHistoryTitle =
+    revisions === null
+      ? "Loading version history…"
+      : clearableCount === 0
+        ? "Nothing to clear — only the Original baseline remains."
+        : 'Delete every saved version except "Original".';
 
   const editorPane = (
     <>
@@ -568,13 +574,7 @@ export default function PageEditor({
                   disabled={
                     revisions === null || clearableCount === 0 || clearingHistory
                   }
-                  title={
-                    revisions === null
-                      ? "Loading version history…"
-                      : clearableCount === 0
-                        ? "Nothing to clear — only the Original baseline remains."
-                        : 'Delete every saved version except "Original".'
-                  }
+                  title={clearHistoryTitle}
                   className="rounded-lg border border-gray-300 px-2.5 py-1 text-xs font-medium text-[#0c0c48] hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {clearingHistory ? "Clearing…" : "Clear history"}
