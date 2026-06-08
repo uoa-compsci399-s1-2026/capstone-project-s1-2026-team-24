@@ -49,6 +49,12 @@ export interface BlockDefinition {
    * it can be reordered, hidden, or deleted, but renders fixed markup.
    */
   editable: boolean;
+  /**
+   * When true the block is kept out of the "Add block" picker but its renderer
+   * still works, so existing pages that use it keep rendering. Used to retire a
+   * block type from new use without breaking published content.
+   */
+  hidden?: boolean;
   fields: readonly BlockField[];
   /** Starting content used when an admin inserts a new instance of this block. */
   defaultContent: Record<string, unknown>;
