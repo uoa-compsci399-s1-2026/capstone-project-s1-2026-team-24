@@ -153,7 +153,7 @@ export default function HomepageHero({
             top: "70px",
             margin: 0,
             fontSize: "24px",
-            fontFamily: "inter",
+            fontFamily: "var(--font-inter), sans-serif",
             fontWeight: 700,
           }}
         >

@@ -66,8 +66,7 @@ export default function PublicationIndex({
       <button
         onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
         disabled={currentPage === 1}
-        className="px-4 py-2 rounded-full border-[1.5px] border-[#0c0c48] text-sm disabled:opacity-0
-         text-[#0c0c48] font-regular"
+        className="px-4 py-2 rounded-full border-[1.5px] border-[#0c0c48] text-sm disabled:opacity-40 text-[#0c0c48] font-normal"
       >
         {t.research.previous}
       </button>
@@ -79,7 +78,7 @@ export default function PublicationIndex({
       <button
         onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages || 1))}
         disabled={currentPage === totalPages || totalPages === 0}
-        className="px-4 py-2 rounded-full border-[1.5px] border-[#0c0c48] text-sm disabled:opacity-0 text-[#0c0c48] font-regular"
+        className="px-4 py-2 rounded-full border-[1.5px] border-[#0c0c48] text-sm disabled:opacity-40 text-[#0c0c48] font-normal"
       >
         {t.research.next}
       </button>
@@ -145,7 +144,7 @@ export default function PublicationIndex({
                 </select>
               </div>
 
-              <p className="text-sm font-semibold text-[#0a4479]/70 pb-2">
+              <p className="text-sm font-semibold text-[#0c0c48]/70 pb-2">
                 {filtered.length}{" "}
                 {filtered.length === 1 ? t.research.result : t.research.results}
               </p>
@@ -220,7 +219,7 @@ export default function PublicationIndex({
                                 href={publicationUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center bg-[#0a4479] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors"
+                                className="inline-flex items-center bg-[#0c0c48] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#080830] transition-colors"
                               >
                                 {t.research.viewPublication}
                                 <NewTabHint />
