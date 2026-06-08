@@ -16,6 +16,9 @@ const HIDDEN_FROM_PICKER = [
   "contactHero",
   "studiesHero",
   "contactDetails",
+  // The homepage studies grid carries the singular #studies anchor, so it's
+  // hidden from the picker; the anchor-free generic "Card grid" supersedes it.
+  "homepageStudies",
 ];
 
 // The exact picker contents, via the shared registry helper.
@@ -36,14 +39,86 @@ describe("block picker visibility", () => {
     }
   });
 
-  it("keeps the generic 'Blank hero' in the picker as the only hero", () => {
+  it("keeps the generic 'Blank hero' in the picker, now under Generic blocks", () => {
     const def = getBlockDefinition("subpageHero");
     expect(def?.hidden).toBeFalsy();
     expect(def?.label).toBe("Blank hero");
+    expect(def?.category).toBe("Generic blocks");
+    // It moved out of Hero, and every other hero is hidden, so the Hero picker
+    // section is now empty (AddBlockButton auto-skips empty categories).
     const heroesInPicker = listPickableBlockDefinitions("page").filter(
       (d) => d.category === "Hero",
     );
-    expect(heroesInPicker.map((d) => d.type)).toEqual(["subpageHero"]);
+    expect(heroesInPicker).toEqual([]);
+  });
+});
+
+describe("Generic blocks category", () => {
+  const MOVED = [
+    "subpageHero",
+    "sectionHeading",
+    "infoCardLeft",
+    "infoCardRight",
+    "calloutBannerLeft",
+    "calloutBannerRight",
+  ];
+  // New, page-scoped building blocks (only wired into the page BlockRenderer).
+  const NEW = [
+    "prose",
+    "imageBlock",
+    "videoEmbed",
+    "spacer",
+    "accordion",
+    "quote",
+    "statHighlights",
+    "announcements",
+    "cardGrid",
+  ];
+
+  it("places the moved + new generic blocks under 'Generic blocks'", () => {
+    for (const type of [...MOVED, ...NEW]) {
+      expect(getBlockDefinition(type)?.category).toBe("Generic blocks");
+    }
+  });
+
+  it("keeps homepageStudies as the hidden, anchored homepage block", () => {
+    const def = getBlockDefinition("homepageStudies");
+    expect(def?.label).toBe("Study cards row");
+    expect(def?.category).toBe("Content");
+    expect(def?.hidden).toBe(true);
+  });
+
+  it("exposes a generic, anchor-free 'Card grid' in the picker", () => {
+    const def = getBlockDefinition("cardGrid");
+    expect(def?.label).toBe("Card grid");
+    expect(def?.category).toBe("Generic blocks");
+    expect(def?.hidden).toBeFalsy();
+    expect(pickerTypes()).toContain("cardGrid");
+  });
+
+  it("exposes the new generic blocks in the page picker", () => {
+    const visible = pickerTypes("page");
+    for (const type of NEW) expect(visible).toContain(type);
+  });
+
+  it("does NOT expose page-scoped generic blocks in the study picker", () => {
+    // The study-layout builder uses a separate renderer; listing page-only
+    // blocks there would render nothing. Lock them out of the study picker.
+    const studyVisible = pickerTypes("study");
+    for (const type of NEW) expect(studyVisible).not.toContain(type);
+  });
+
+  it("leaves the Hero and Heading picker sections empty after the moves", () => {
+    const page = listPickableBlockDefinitions("page");
+    expect(page.filter((d) => d.category === "Hero")).toEqual([]);
+    expect(page.filter((d) => d.category === "Heading")).toEqual([]);
+  });
+});
+
+describe("retired studiesContactCard block", () => {
+  it("is removed from the registry entirely and absent from the picker", () => {
+    expect(getBlockDefinition("studiesContactCard")).toBeUndefined();
+    expect(pickerTypes()).not.toContain("studiesContactCard");
   });
 });
 

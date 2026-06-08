@@ -29,7 +29,7 @@ export default function CalloutBannerRight({
 }: CalloutBannerRightProps) {
   return (
     <section
-      className="relative w-full overflow-hidden"
+      className="@container relative w-full overflow-hidden"
       style={{ background: backgroundColor }}
     >
       {backgroundImage && (
@@ -49,8 +49,8 @@ export default function CalloutBannerRight({
         />
       )}
 
-      {/* ── Mobile layout ── */}
-      <div className="lg:hidden relative z-10 flex flex-col gap-8 px-6 py-12">
+      {/* ── Narrow layout (also used inside narrow row columns via @container) ── */}
+      <div className="@5xl:hidden relative z-10 flex flex-col gap-8 px-6 py-12">
         {(leftTitle || leftDescription) && (
           <div>
             {leftTitle && (
@@ -124,9 +124,9 @@ export default function CalloutBannerRight({
         </div>
       </div>
 
-      {/* ── Desktop layout ── */}
+      {/* ── Wide layout ── */}
       <div
-        className="hidden lg:flex relative z-10 py-16 px-6 sm:px-12 lg:px-45"
+        className="hidden @5xl:flex relative z-10 py-16 px-6 sm:px-12 @5xl:px-45"
         style={{
           alignItems: "center",
           justifyContent: "space-between",

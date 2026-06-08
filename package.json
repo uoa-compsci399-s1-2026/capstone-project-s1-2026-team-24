@@ -20,6 +20,7 @@
     "backfill:published": "tsx prisma/backfill-published.ts",
     "backfill:inquiry-labels": "tsx prisma/backfill-inquiry-labels.ts",
     "backfill:studies-links": "tsx prisma/repoint-studies-links.ts",
+    "cleanup:studies-contact-card": "tsx prisma/remove-studies-contact-card.ts",
     "reset:study-template": "tsx prisma/reset-study-template.ts",
     "test": "vitest run",
     "test:e2e": "playwright test",

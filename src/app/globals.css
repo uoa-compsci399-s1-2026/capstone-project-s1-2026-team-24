@@ -32,6 +32,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
+  /* Break overlong unbroken strings (e.g. a pasted long URL or token) so admin
+     content can never force horizontal page overflow. Inherited, and a no-op for
+     normal text — it only acts when a "word" would otherwise overflow its box. */
+  overflow-wrap: break-word;
 }
 
 @keyframes marquee {

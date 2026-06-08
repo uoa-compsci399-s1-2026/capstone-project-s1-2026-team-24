@@ -151,6 +151,22 @@ export function mapBlockText(type: string, content: Content, visit: Visit): Cont
           });
         }
         break;
+      case "faqList":
+        if (Array.isArray(value)) {
+          out[field.key] = value.map((item) =>
+            mapCardLike(item, ["question", "answer"], visit),
+          );
+        }
+        break;
+      case "statList":
+        // `value` is usually a number/figure and is skipped by looksTranslatable;
+        // `label` is natural language and gets translated.
+        if (Array.isArray(value)) {
+          out[field.key] = value.map((item) =>
+            mapCardLike(item, ["value", "label"], visit),
+          );
+        }
+        break;
       default:
         break; // image / imageArray / url / enum / boolean → not translatable
     }

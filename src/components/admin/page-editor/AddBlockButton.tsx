@@ -6,6 +6,7 @@ import type { BlockCategory } from "@/lib/blocks/types";
 import PopoverMenu from "./PopoverMenu";
 
 const CATEGORY_ORDER: BlockCategory[] = [
+  "Generic blocks",
   "Hero",
   "Heading",
   "Layout",

@@ -117,6 +117,22 @@ describe("validateBlockForWrite('row', ...)", () => {
     expect(res.ok).toBe(false);
   });
 
+  it("accepts the new generic blocks as row children", () => {
+    const res = validateBlockForWrite("row", {
+      columns: [
+        [child("prose"), child("imageBlock"), child("quote")],
+        [
+          child("videoEmbed"),
+          child("accordion"),
+          child("statHighlights"),
+          child("spacer"),
+        ],
+      ],
+      widths: [1, 1],
+    });
+    expect(res.ok).toBe(true);
+  });
+
   it("rejects a column over the child cap", () => {
     const many = Array.from({ length: ROW_MAX_CHILDREN_PER_COLUMN + 1 }, (_, i) =>
       child("sectionHeading", { id: `n${i}` }),
