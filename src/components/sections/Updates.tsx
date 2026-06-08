@@ -185,7 +185,7 @@ export default function Updates({
               height: "280px",
               overflowY: "auto",
               position: "relative",
-              overflow: "hidden",
+              overflowX: "hidden",
               touchAction: "pan-y",
               userSelect: "none",
             }}
