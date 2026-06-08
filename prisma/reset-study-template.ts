@@ -19,7 +19,7 @@ async function main() {
   try {
     const page = await prisma.page.upsert({
       where: { slug: STUDY_TEMPLATE_SLUG },
-      update: {},
+      update: { title: "Study layout template" },
       create: { slug: STUDY_TEMPLATE_SLUG, title: "Study layout template" },
     });
 

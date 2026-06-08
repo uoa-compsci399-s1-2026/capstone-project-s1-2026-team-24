@@ -6,8 +6,9 @@
 //
 // The body is a two-column `row` (the original StudyContent desktop design): the
 // main study copy on the left, the eligibility panel + "Join now" call-to-action
-// on the right. The row stacks to a single column on mobile (lg:flex-row), so it
-// is responsive AND fully editable in the admin Study Layout editor. A flat,
+// on the right. RowBlock renders it `flex-col` by default and switches to
+// `lg:flex-row` on large screens — i.e. a single column on mobile, two columns on
+// desktop — and it's fully editable in the admin Study Layout editor. A flat,
 // row-less layout here is what made study pages render single-column at every
 // width.
 export const DEFAULT_STUDY_LAYOUT_BLOCKS: {
