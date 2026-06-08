@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getBlockDefinition,
-  listBlockDefinitions,
+  listPickableBlockDefinitions,
 } from "@/lib/blocks/registry";
 
 // The "Add block" picker filters out blocks flagged `hidden` (see
@@ -18,11 +18,9 @@ const HIDDEN_FROM_PICKER = [
   "contactDetails",
 ];
 
-// Mirrors AddBlockButton's filter.
+// The exact picker contents, via the shared registry helper.
 const pickerTypes = (scope: "page" | "study" = "page") =>
-  listBlockDefinitions(scope)
-    .filter((d) => !d.hidden)
-    .map((d) => d.type);
+  listPickableBlockDefinitions(scope).map((d) => d.type);
 
 describe("block picker visibility", () => {
   it("hides retired/page-specific blocks from the picker", () => {
@@ -34,7 +32,7 @@ describe("block picker visibility", () => {
 
   it("keeps hidden blocks resolvable so existing pages still render", () => {
     for (const type of HIDDEN_FROM_PICKER) {
-      expect(getBlockDefinition(type)).toBeTruthy();
+      expect(getBlockDefinition(type)).toBeDefined();
     }
   });
 
@@ -42,8 +40,8 @@ describe("block picker visibility", () => {
     const def = getBlockDefinition("subpageHero");
     expect(def?.hidden).toBeFalsy();
     expect(def?.label).toBe("Blank hero");
-    const heroesInPicker = listBlockDefinitions("page").filter(
-      (d) => !d.hidden && d.category === "Hero",
+    const heroesInPicker = listPickableBlockDefinitions("page").filter(
+      (d) => d.category === "Hero",
     );
     expect(heroesInPicker.map((d) => d.type)).toEqual(["subpageHero"]);
   });

@@ -712,6 +712,19 @@ export function listBlockDefinitions(
   });
 }
 
+// Block definitions offered in the "Add block" picker for a scope: everything
+// listable in that scope, minus blocks retired from new use (`hidden`) and any
+// explicitly excluded types. Single source of truth for picker visibility —
+// used by AddBlockButton and its tests so the rule can't drift.
+export function listPickableBlockDefinitions(
+  scope: "page" | "study" = "page",
+  { exclude = [] }: { exclude?: readonly string[] } = {},
+): BlockDefinition[] {
+  return listBlockDefinitions(scope).filter(
+    (def) => !def.hidden && !exclude.includes(def.type),
+  );
+}
+
 export function getBlockDefinition(type: string): BlockDefinition | undefined {
   return BLOCK_REGISTRY[type];
 }
