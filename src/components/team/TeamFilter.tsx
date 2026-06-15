@@ -2,8 +2,6 @@
 
 import { useState, type ReactNode } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 type FilterKey = "all" | "board" | "research" | "alumni";
 
@@ -26,8 +24,7 @@ export default function TeamFilter({
   hasAlumni: boolean;
   defaultTab?: FilterKey;
 }) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
   const [filter, setFilter] = useState<FilterKey>(defaultTab);
 
   const options: FilterOption[] = [

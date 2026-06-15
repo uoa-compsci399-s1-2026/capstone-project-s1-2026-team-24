@@ -3,6 +3,7 @@
 import Link from "next/link";
 import SectionHeading from "@/components/sections/SectionHeading";
 import { readRowContent } from "@/lib/blocks/row";
+import { formatStudyDate } from "@/lib/format-study-date";
 import { useStudy, type StudyLang } from "./study-context";
 
 const STATUS_STYLES: Record<
@@ -31,11 +32,7 @@ function StudyStatusBar() {
   const { study, lang, setLang } = useStudy();
   const statusStyle = STATUS_STYLES[study.status] || STATUS_STYLES.Completed;
   const deadline = study.publishedAt
-    ? new Date(study.publishedAt).toLocaleDateString("en-NZ", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
+    ? formatStudyDate(study.publishedAt, lang)
     : null;
 
   return (
@@ -206,7 +203,7 @@ function StudyPdfs() {
         {study.pdfs.map((pdf) => (
           <li key={pdf.id}>
             <a
-              href={pdf.pdfPath}
+              href={`/api/studies/pdf/${pdf.id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-[#0a4479] hover:underline font-semibold"

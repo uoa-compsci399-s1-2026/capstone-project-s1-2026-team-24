@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/client-ip";
 import { sendContactNotification } from "@/lib/email";
+import {
+  asTrimmedString,
+  isValidEmail,
+  isValidPhone,
+  normalizePhone,
+  sanitizePhone,
+} from "@/lib/validation";
 
-const ALLOWED_CATEGORIES = [
-  "Study Participant Enquiry",
-  "Industry Partnership",
-  "Internship or PhD Opportunity",
-  "Donation",
-  "General Enquiry",
-  "Other",
-] as const;
+// Inquiry types are admin-managed ContactRecipient rows — the recipient
+// lookup below doubles as the category validation (no hardcoded allow-list).
 
 const MIN_FORM_FILL_MS = 3000;
 const MAX_NAME_LENGTH = 120;
@@ -19,31 +21,9 @@ const MIN_MESSAGE_LENGTH = 10;
 const MAX_URLS_IN_MESSAGE = 3;
 const URL_REGEX = /https?:\/\/|www\./gi;
 
-function asTrimmedString(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
 function countUrlsLike(text: string) {
   const matches = text.match(URL_REGEX);
   return matches ? matches.length : 0;
-}
-
-function getClientIp(request: NextRequest) {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    return forwardedFor.split(",")[0]?.trim() || "unknown";
-  }
-
-  const realIp = request.headers.get("x-real-ip");
-  if (realIp) {
-    return realIp.trim();
-  }
-
-  return "unknown";
 }
 
 export async function POST(request: NextRequest) {
@@ -52,6 +32,13 @@ export async function POST(request: NextRequest) {
 
     const name = asTrimmedString(body?.name);
     const email = asTrimmedString(body?.email);
+    // Canonical phone: whitespace collapsed to single spaces (no CR/LF), so the
+    // value we store and drop into the notification email body is injection-safe
+    // while staying human-readable. Validation/rate-limit key off normalizePhone.
+    const phone = sanitizePhone(asTrimmedString(body?.phone));
+    // Only meaningful when both contact channels were given (the form shows
+    // the checkbox only then) — never trust it without a phone to prefer.
+    const prefersPhone = body?.prefersPhone === true && phone !== "";
     const category = asTrimmedString(body?.category);
     const message = asTrimmedString(body?.message);
     const honeypot = asTrimmedString(body?.honeypot);
@@ -74,24 +61,24 @@ export async function POST(request: NextRequest) {
     const ipRateLimit = checkRateLimit(`ip:${ip}`);
 
     if (!ipRateLimit.allowed) {
-      const response = NextResponse.json(
-        { error: "Too many submissions. Please try again later." },
-        { status: 429 },
+      return rateLimitResponse(
+        ipRateLimit,
+        "Too many submissions. Please try again later.",
       );
-
-      if (ipRateLimit.retryAfterSeconds) {
-        response.headers.set(
-          "Retry-After",
-          String(ipRateLimit.retryAfterSeconds),
-        );
-      }
-
-      return response;
     }
 
-    if (!name || !email || !category || !message) {
+    if (!name || !category || !message) {
       return NextResponse.json(
-        { error: "name, email, category, and message are required." },
+        { error: "name, category, and message are required." },
+        { status: 400 },
+      );
+    }
+
+    // Either/or: the enquirer chooses their contact channel — at least one of
+    // email/phone must be present, and whichever is given must be valid.
+    if (!email && !phone) {
+      return NextResponse.json(
+        { error: "Provide an email address or a phone number." },
         { status: 400 },
       );
     }
@@ -103,20 +90,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!isValidEmail(email)) {
+    if (email && !isValidEmail(email)) {
       return NextResponse.json(
         { error: "email must be a valid email address." },
         { status: 400 },
       );
     }
 
-    if (
-      !ALLOWED_CATEGORIES.includes(
-        category as (typeof ALLOWED_CATEGORIES)[number],
-      )
-    ) {
+    if (phone && !isValidPhone(phone)) {
       return NextResponse.json(
-        { error: "category must be one of the allowed values." },
+        { error: "phone must be a valid phone number." },
         { status: 400 },
       );
     }
@@ -146,29 +129,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const emailRateLimit = checkRateLimit(`email:${email.toLowerCase()}`);
-    if (!emailRateLimit.allowed) {
-      const response = NextResponse.json(
-        { error: "Too many submissions. Please try again later." },
-        { status: 429 },
+    // Second limiter keyed on the contact handle. Phone-only submissions key
+    // on the normalised phone number — keying them all on email:"" would give
+    // every phone-only sender one shared bucket.
+    const contactRateLimit = checkRateLimit(
+      email ? `email:${email.toLowerCase()}` : `phone:${normalizePhone(phone)}`,
+    );
+    if (!contactRateLimit.allowed) {
+      return rateLimitResponse(
+        contactRateLimit,
+        "Too many submissions. Please try again later.",
       );
-      if (emailRateLimit.retryAfterSeconds) {
-        response.headers.set(
-          "Retry-After",
-          String(emailRateLimit.retryAfterSeconds),
-        );
-      }
-      return response;
     }
 
+    // The single source of truth for inquiry types: an unknown category means
+    // the client sent something the admin never configured (400, not 500),
+    // and an archived one means the type was removed from the form.
     const recipient = await prisma.contactRecipient.findUnique({
       where: { category },
     });
 
     if (!recipient) {
       return NextResponse.json(
-        { error: "No recipient configured for this inquiry type." },
-        { status: 500 },
+        { error: "category must be one of the allowed values." },
+        { status: 400 },
+      );
+    }
+
+    if (recipient.isArchived) {
+      return NextResponse.json(
+        { error: "This inquiry type is no longer available." },
+        { status: 400 },
       );
     }
 
@@ -176,6 +167,8 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         email,
+        phone: phone || null,
+        prefersPhone,
         category,
         message,
       },
@@ -186,7 +179,7 @@ export async function POST(request: NextRequest) {
     // must not fail the request — log it and move on.
     const emailResult = await sendContactNotification({
       recipientEmail: recipient.email,
-      submission: { name, email, category, message },
+      submission: { name, email, phone: phone || null, prefersPhone, category, message },
     }).catch((err) => {
       console.error("Contact notification email threw (non-fatal):", err);
       return { ok: false as const, error: "threw" };
@@ -194,7 +187,7 @@ export async function POST(request: NextRequest) {
 
     if (!emailResult.ok) {
       console.error(
-        `Contact notification email not delivered for "${category}" enquiry from ${email}.`,
+        `Contact notification email not delivered for "${category}" enquiry from ${email || phone}.`,
       );
     }
 

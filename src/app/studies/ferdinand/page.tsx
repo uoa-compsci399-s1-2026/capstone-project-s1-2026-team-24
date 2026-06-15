@@ -6,21 +6,16 @@ import StudiesHero from "@/components/layout/StudiesHero";
 import { getStudyLayoutForSlug } from "@/components/blocks/study/resolve-study-layout";
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 import { getServerLang } from "@/lib/lang";
-import { localizedMetadata } from "@/lib/localized-metadata";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import { getDictionary } from "@/lib/dictionaries";
+import { buildPageMetadata } from "@/lib/page-metadata";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return localizedMetadata({
-    en: {
-      title: "Ferdinand | HNU Auckland",
-      description:
-        "A 6-month weight loss nutrition study investigating whether daily feijoa whole fruit powder alters the risk of developing type 2 diabetes.",
-    },
-    zh: {
-      title: "Ferdinand 研究 | HNU Auckland",
-      description:
-        "一项为期 6 个月的体重管理营养研究，探讨每日食用斐济果全果粉是否会改变 2 型糖尿病风险。",
+  return buildPageMetadata({
+    path: "/studies/ferdinand",
+    title: { en: "Ferdinand", zh: "Ferdinand 研究" },
+    description: {
+      en: "A 6-month weight loss nutrition study investigating whether daily feijoa whole fruit powder alters the risk of developing type 2 diabetes.",
+      zh: "一项为期 6 个月的体重管理营养研究，探讨每日食用斐济果全果粉是否会改变 2 型糖尿病风险。",
     },
   });
 }
@@ -32,7 +27,7 @@ export default async function FerdinandPage() {
   if (layout) {
     return <StudyLayoutView study={layout.study} blocks={layout.blocks} />;
   }
-  const t = (await getServerLang()) === "ZH" ? zh : en;
+  const t = await getDictionary(await getServerLang());
 
   return (
     <>

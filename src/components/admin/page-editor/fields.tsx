@@ -2,7 +2,13 @@
 
 import dynamic from "next/dynamic";
 
-import type { BlockField, StudyCardContent, UpdateItem } from "@/lib/blocks/types";
+import type {
+  BlockField,
+  FaqItem,
+  StatItem,
+  StudyCardContent,
+  UpdateItem,
+} from "@/lib/blocks/types";
 import MediaPicker from "@/components/admin/media/MediaPicker";
 import { useMediaResolver } from "@/components/admin/media/useMediaResolver";
 
@@ -178,9 +184,11 @@ function ImageArrayField({
 }
 
 function StudyCardsField({
+  label,
   value,
   onChange,
 }: {
+  label: string;
   value: StudyCardContent[];
   onChange: (v: StudyCardContent[]) => void;
 }) {
@@ -191,7 +199,7 @@ function StudyCardsField({
   };
   return (
     <div>
-      <label className={labelClass}>Study cards</label>
+      <label className={labelClass}>{label}</label>
       <div className="space-y-4">
         {cards.map((card, i) => (
           <div
@@ -248,12 +256,39 @@ function StudyCardsField({
               value={asString(card.imageSrc)}
               onChange={(v) => update(i, { imageSrc: v })}
             />
-            <input
-              className={inputClass}
-              placeholder="Image alt text"
-              value={asString(card.imageAlt)}
-              onChange={(e) => update(i, { imageAlt: e.target.value })}
-            />
+            <div>
+              <label
+                htmlFor={`card-alt-${i}`}
+                className="block text-xs font-semibold text-[#0c0c48] mb-1"
+              >
+                Image alt text{" "}
+                <span className="font-normal text-gray-500">
+                  (describe the image for screen readers; leave empty only if it’s purely decorative)
+                </span>
+              </label>
+              <input
+                id={`card-alt-${i}`}
+                className={inputClass}
+                placeholder="e.g. Researcher preparing a meal in the metabolic kitchen"
+                value={asString(card.imageAlt)}
+                onChange={(e) => update(i, { imageAlt: e.target.value })}
+                aria-describedby={
+                  asString(card.imageSrc) && !asString(card.imageAlt).trim()
+                    ? `card-alt-warn-${i}`
+                    : undefined
+                }
+              />
+              {asString(card.imageSrc) && !asString(card.imageAlt).trim() && (
+                <p
+                  id={`card-alt-warn-${i}`}
+                  className="mt-1 text-xs text-amber-700"
+                >
+                  ⚠ This image has no alt text. Add a description, or confirm it’s
+                  purely decorative. (The media library’s alt text is used as a
+                  fallback if set.)
+                </p>
+              )}
+            </div>
           </div>
         ))}
         <button
@@ -283,12 +318,16 @@ function StudyCardsField({
 }
 
 function UpdatesField({
+  label,
   value,
   onChange,
 }: {
+  label: string;
   value: UpdateItem[];
   onChange: (v: UpdateItem[]) => void;
 }) {
+  // Per-item noun, e.g. "Updates" -> "Update", "Announcements" -> "Announcement".
+  const itemNoun = label.replace(/s$/, "") || "Item";
   // Persisted block JSON is untrusted, so normalize each entry to a clean
   // UpdateItem. A malformed payload (e.g. [null] or a string) then can't crash
   // the editor — it just shows empty fields the admin can fix or remove.
@@ -310,7 +349,7 @@ function UpdatesField({
     onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   return (
     <div>
-      <label className={labelClass}>Updates</label>
+      <label className={labelClass}>{label}</label>
       <div className="space-y-4">
         {items.map((item, i) => (
           <div
@@ -319,7 +358,7 @@ function UpdatesField({
           >
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-gray-500">
-                Update {i + 1}
+                {itemNoun} {i + 1}
               </span>
               <button
                 type="button"
@@ -332,12 +371,14 @@ function UpdatesField({
             <input
               className={inputClass}
               placeholder="Title"
+              aria-label={`${itemNoun} ${i + 1} title`}
               value={asString(item.title)}
               onChange={(e) => update(i, { title: e.target.value })}
             />
             <input
               className={inputClass}
               placeholder="Date (e.g. May 2026)"
+              aria-label={`${itemNoun} ${i + 1} date`}
               value={asString(item.date)}
               onChange={(e) => update(i, { date: e.target.value })}
             />
@@ -356,6 +397,148 @@ function UpdatesField({
           className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
         >
           + Add update
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FaqField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: FaqItem[];
+  onChange: (v: FaqItem[]) => void;
+}) {
+  const itemNoun = label.replace(/s$/, "") || "Question";
+  // Untrusted persisted JSON — normalize each entry so a malformed payload can't
+  // crash the editor.
+  const raw: unknown[] = Array.isArray(value) ? value : [];
+  const items: FaqItem[] = raw.map((entry) => {
+    const o =
+      entry && typeof entry === "object" && !Array.isArray(entry)
+        ? (entry as Record<string, unknown>)
+        : {};
+    return {
+      question: typeof o.question === "string" ? o.question : "",
+      answer: typeof o.answer === "string" ? o.answer : "",
+    };
+  });
+  const update = (i: number, patch: Partial<FaqItem>) =>
+    onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  return (
+    <div>
+      <label className={labelClass}>{label}</label>
+      <div className="space-y-4">
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-gray-500">
+                {itemNoun} {i + 1}
+              </span>
+              <button
+                type="button"
+                onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+                className="rounded border border-gray-300 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-100"
+              >
+                Remove
+              </button>
+            </div>
+            <input
+              className={inputClass}
+              placeholder="Question"
+              aria-label={`${itemNoun} ${i + 1}`}
+              value={asString(item.question)}
+              onChange={(e) => update(i, { question: e.target.value })}
+            />
+            <textarea
+              className={inputClass}
+              rows={3}
+              placeholder="Answer"
+              aria-label={`Answer ${i + 1}`}
+              value={asString(item.answer)}
+              onChange={(e) => update(i, { answer: e.target.value })}
+            />
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...items, { question: "", answer: "" }])}
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
+        >
+          + Add question
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StatField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: StatItem[];
+  onChange: (v: StatItem[]) => void;
+}) {
+  const raw: unknown[] = Array.isArray(value) ? value : [];
+  const items: StatItem[] = raw.map((entry) => {
+    const o =
+      entry && typeof entry === "object" && !Array.isArray(entry)
+        ? (entry as Record<string, unknown>)
+        : {};
+    return {
+      value: typeof o.value === "string" ? o.value : "",
+      label: typeof o.label === "string" ? o.label : "",
+    };
+  });
+  const update = (i: number, patch: Partial<StatItem>) =>
+    onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  return (
+    <div>
+      <label className={labelClass}>{label}</label>
+      <div className="space-y-3">
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3"
+          >
+            <input
+              className={inputClass}
+              placeholder="Value (e.g. 500+)"
+              aria-label={`Stat ${i + 1} value`}
+              value={asString(item.value)}
+              onChange={(e) => update(i, { value: e.target.value })}
+            />
+            <input
+              className={inputClass}
+              placeholder="Label (e.g. Participants)"
+              aria-label={`Stat ${i + 1} label`}
+              value={asString(item.label)}
+              onChange={(e) => update(i, { label: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => onChange(items.filter((_, idx) => idx !== i))}
+              className="rounded-lg border border-gray-300 px-2 py-1 text-xs text-gray-600 hover:bg-gray-100"
+              aria-label="Remove stat"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...items, { value: "", label: "" }])}
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-xs font-medium text-[#0c0c48] hover:bg-gray-100"
+        >
+          + Add stat
         </button>
       </div>
     </div>
@@ -472,6 +655,7 @@ export function Field({
     case "studyCards":
       return (
         <StudyCardsField
+          label={field.label}
           value={(value as StudyCardContent[]) ?? []}
           onChange={(v) => onChange(v)}
         />
@@ -479,7 +663,24 @@ export function Field({
     case "updatesList":
       return (
         <UpdatesField
+          label={field.label}
           value={(value as UpdateItem[]) ?? []}
+          onChange={(v) => onChange(v)}
+        />
+      );
+    case "faqList":
+      return (
+        <FaqField
+          label={field.label}
+          value={(value as FaqItem[]) ?? []}
+          onChange={(v) => onChange(v)}
+        />
+      );
+    case "statList":
+      return (
+        <StatField
+          label={field.label}
+          value={(value as StatItem[]) ?? []}
           onChange={(v) => onChange(v)}
         />
       );

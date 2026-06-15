@@ -3,6 +3,7 @@
 // code, so it must contain types and plain data only — no React component imports.
 
 export type BlockCategory =
+  | "Generic blocks"
   | "Hero"
   | "Content"
   | "Dynamic"
@@ -25,6 +26,8 @@ export type FieldType =
   | "boolean"
   | "studyCards"
   | "updatesList"
+  | "faqList"
+  | "statList"
   | "richText";
 
 export interface BlockField {
@@ -49,6 +52,12 @@ export interface BlockDefinition {
    * it can be reordered, hidden, or deleted, but renders fixed markup.
    */
   editable: boolean;
+  /**
+   * When true the block is kept out of the "Add block" picker but its renderer
+   * still works, so existing pages that use it keep rendering. Used to retire a
+   * block type from new use without breaking published content.
+   */
+  hidden?: boolean;
   fields: readonly BlockField[];
   /** Starting content used when an admin inserts a new instance of this block. */
   defaultContent: Record<string, unknown>;
@@ -59,6 +68,19 @@ export interface UpdateItem {
   title: string;
   date?: string;
   paragraphs: string[];
+}
+
+/** One question/answer pair in an `accordion` (FAQ) block's `faqList` field. */
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+/** One stat in a `statHighlights` block's `statList` field. `value` is the big
+ *  number/figure (e.g. "500+"), `label` the caption beneath it. */
+export interface StatItem {
+  value: string;
+  label: string;
 }
 
 /** Shape of a single card inside a `homepageStudies` block. */

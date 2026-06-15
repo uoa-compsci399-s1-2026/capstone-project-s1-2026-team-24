@@ -2,18 +2,17 @@ import type { ReactNode } from "react";
 
 import HomepageHero from "@/components/sections/HomepageHero";
 import DiscoverVideo from "@/components/sections/DiscoverVideo";
-import StudiesOverview from "@/components/sections/StudiesOverview";
+import StudiesOverviewBlock from "@/components/sections/StudiesOverviewBlock";
 import TrialDesign from "@/components/sections/TrialDesign";
-import RecentPublications from "@/components/sections/RecentPublications";
+import RecentPublicationsBlock from "@/components/sections/RecentPublicationsBlock";
 import OurPartners from "@/components/sections/OurPartners";
-import PublicationIndex from "@/components/sections/PublicationIndex";
+import PublicationIndexBlock from "@/components/sections/PublicationIndexBlock";
 import AcademicCollaborators from "@/components/sections/AcademicCollaborators";
 import IndustryCollaborators from "@/components/sections/IndustryCollaborators";
 import BenefitsRow from "@/components/sections/BenefitsRow";
 import SectionHeading from "@/components/sections/SectionHeading";
 import CollaborationsIntro from "@/components/sections/CollaborationsIntro";
 import PartnerImageGrid from "@/components/sections/PartnerImageGrid";
-import StudiesContactCard from "@/components/sections/StudiesContactCard";
 import ContactMap from "@/components/sections/ContactMap";
 import ContactDetails from "@/components/sections/ContactDetails";
 import StudiesHero from "@/components/layout/StudiesHero";
@@ -25,6 +24,13 @@ import SubpageHeroBlock from "@/components/blocks/SubpageHeroBlock";
 import TeamSectionsBlock from "@/components/blocks/TeamSectionsBlock";
 import HomepageStudiesBlock from "@/components/blocks/HomepageStudiesBlock";
 import Updates from "@/components/sections/Updates";
+import ProseBlock from "@/components/blocks/ProseBlock";
+import ImageBlock from "@/components/blocks/ImageBlock";
+import VideoEmbed from "@/components/blocks/VideoEmbed";
+import Spacer from "@/components/blocks/Spacer";
+import AccordionBlock from "@/components/blocks/AccordionBlock";
+import QuoteBlock from "@/components/blocks/QuoteBlock";
+import StatHighlights from "@/components/blocks/StatHighlights";
 
 import { parseBlockContent, serializeBlockContent } from "@/lib/blocks/validate";
 import { getBlockDefinition } from "@/lib/blocks/registry";
@@ -57,27 +63,31 @@ const teamTab = (
     ? v
     : undefined;
 
-// Coerce persisted `studyCards` JSON into a safe StudyCardContent[]: every field
-// becomes a string (so nothing undefined reaches next/image's `src`), and cards
-// without a usable image are dropped — a malformed entry can't crash the render.
+// Coerce persisted card JSON into a safe StudyCardContent[]: every field becomes
+// a string (so nothing undefined or non-string reaches next/image's `src`). Keeps
+// cards without an image — StudyCard renders a neutral placeholder for an empty
+// src, so a malformed/imageless entry can't crash the render.
+const cardList = (v: unknown): StudyCardContent[] =>
+  (Array.isArray(v) ? v : []).map((card) => {
+    const o = (
+      card && typeof card === "object" ? card : {}
+    ) as Record<string, unknown>;
+    return {
+      title: str(o.title),
+      subtitle: str(o.subtitle) || undefined,
+      description: str(o.description),
+      buttonLabel: str(o.buttonLabel) || undefined,
+      buttonHref: str(o.buttonHref) || undefined,
+      imageSrc: str(o.imageSrc),
+      imageAlt: str(o.imageAlt),
+      imagePosition: imgPos(o.imagePosition),
+    };
+  });
+
+// Featured-collaborator cards additionally drop imageless entries — that design
+// has no empty-image state and falls back to its defaults when the list is empty.
 const studyCards = (v: unknown): StudyCardContent[] =>
-  (Array.isArray(v) ? v : [])
-    .map((card) => {
-      const o = (
-        card && typeof card === "object" ? card : {}
-      ) as Record<string, unknown>;
-      return {
-        title: str(o.title),
-        subtitle: str(o.subtitle) || undefined,
-        description: str(o.description),
-        buttonLabel: str(o.buttonLabel) || undefined,
-        buttonHref: str(o.buttonHref) || undefined,
-        imageSrc: str(o.imageSrc),
-        imageAlt: str(o.imageAlt),
-        imagePosition: imgPos(o.imagePosition),
-      };
-    })
-    .filter((card) => card.imageSrc !== "");
+  cardList(v).filter((card) => card.imageSrc !== "");
 
 function infoCardProps(c: Content) {
   return {
@@ -161,6 +171,70 @@ export default function BlockRenderer({
         />
       );
 
+    // Generic building blocks (content-neutral)
+    case "prose":
+      return (
+        <ProseBlock
+          heading={str(c.heading) || undefined}
+          body={str(c.body) || undefined}
+          align={c.align === "center" ? "center" : "left"}
+        />
+      );
+    case "imageBlock": {
+      const height =
+        c.height === "small" || c.height === "large" ? c.height : "medium";
+      return (
+        <ImageBlock
+          imageSrc={str(c.imageSrc) || undefined}
+          imageAlt={str(c.imageAlt)}
+          caption={str(c.caption) || undefined}
+          height={height}
+          rounded={c.rounded !== false}
+        />
+      );
+    }
+    case "videoEmbed":
+      return (
+        <VideoEmbed
+          videoId={str(c.videoId)}
+          heading={str(c.heading) || undefined}
+          caption={str(c.caption) || undefined}
+        />
+      );
+    case "accordion": {
+      const items = (Array.isArray(c.items) ? c.items : []).map((it) => {
+        const o =
+          it && typeof it === "object" ? (it as Record<string, unknown>) : {};
+        return { question: str(o.question), answer: str(o.answer) };
+      });
+      return (
+        <AccordionBlock heading={str(c.heading) || undefined} items={items} />
+      );
+    }
+    case "quote":
+      return (
+        <QuoteBlock
+          quote={str(c.quote) || undefined}
+          attribution={str(c.attribution) || undefined}
+          role={str(c.role) || undefined}
+        />
+      );
+    case "statHighlights": {
+      const items = (Array.isArray(c.items) ? c.items : []).map((it) => {
+        const o =
+          it && typeof it === "object" ? (it as Record<string, unknown>) : {};
+        return { value: str(o.value), label: str(o.label) };
+      });
+      return (
+        <StatHighlights heading={str(c.heading) || undefined} items={items} />
+      );
+    }
+    case "spacer": {
+      const size =
+        c.size === "small" || c.size === "large" ? c.size : "medium";
+      return <Spacer size={size} divider={c.divider === true} />;
+    }
+
     // Editable content
     case "infoCardLeft":
       return <InfoCardLeft {...infoCardProps(c)} />;
@@ -195,11 +269,14 @@ export default function BlockRenderer({
         />
       );
     case "homepageStudies":
-      return (
-        <HomepageStudiesBlock
-          cards={(Array.isArray(c.cards) ? c.cards : []) as StudyCardContent[]}
-        />
-      );
+      // The homepage studies grid carries the singular #studies scroll anchor.
+      return <HomepageStudiesBlock anchorId="studies" cards={cardList(c.cards)} />;
+    case "cardGrid":
+      // Generic, anchor-free card grid (reuses the same component).
+      return <HomepageStudiesBlock cards={cardList(c.cards)} />;
+    // `announcements` is the generic, content-neutral sibling of `updates`;
+    // both render through the same Updates carousel.
+    case "announcements":
     case "updates": {
       const items = (Array.isArray(c.updates) ? c.updates : []) as UpdateItem[];
       const normalized = items.map((it) => ({
@@ -209,7 +286,15 @@ export default function BlockRenderer({
       }));
       // The carousel reads updates[current]; render nothing when empty.
       if (normalized.length === 0) return null;
-      return <Updates updates={normalized} />;
+      const isAnnouncements = type === "announcements";
+      return (
+        <Updates
+          updates={normalized}
+          backgroundColor={str(c.backgroundColor) || undefined}
+          ariaLabelEn={isAnnouncements ? "Announcements" : undefined}
+          ariaLabelZh={isAnnouncements ? "公告" : undefined}
+        />
+      );
     }
     case "sectionHeading":
       return (
@@ -261,10 +346,8 @@ export default function BlockRenderer({
       );
 
     // Content-frozen
-    case "studiesContactCard":
-      return <StudiesContactCard />;
     case "studiesOverview":
-      return <StudiesOverview />;
+      return <StudiesOverviewBlock />;
     case "trialDesign":
       return (
         <TrialDesign
@@ -304,14 +387,14 @@ export default function BlockRenderer({
 
     // Dynamic (live data, with optional display config)
     case "recentPublications":
-      return <RecentPublications limit={Number(c.limit) || undefined} />;
+      return <RecentPublicationsBlock limit={Number(c.limit) || undefined} />;
     // TODO: remove once carousel-deletion PR lands (Karendeep). The OurPartners
     // marquee + its home-page seed + the OurPartners component go together —
     // coordinate merge order so this case isn't deleted before the seed is.
     case "ourPartners":
       return <OurPartners group={partnerGroup(c.group)} />;
     case "publicationIndex":
-      return <PublicationIndex pageSize={Number(c.pageSize) || undefined} />;
+      return <PublicationIndexBlock pageSize={Number(c.pageSize) || undefined} />;
     case "academicCollaborators": {
       const cards = studyCards(c.cards);
       return (
@@ -355,24 +438,31 @@ export default function BlockRenderer({
         );
       }
       return (
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-          {columns.map((col, i) => (
-            <div
-              key={i}
-              className="flex min-w-0 w-full flex-col gap-8 lg:w-auto"
-              style={{ flexGrow: widths[i], flexBasis: 0 }}
-            >
-              {col.map(renderChild)}
-            </div>
-          ))}
+        // The OUTER div establishes the query container; the INNER flex queries
+        // it (a container query reads an ANCESTOR container, never the element's
+        // own size). So the column split keys off the row's available width —
+        // like the child blocks do — stacking in any narrow context, not just a
+        // narrow viewport. @5xl ≈ the previous `lg` breakpoint at full width.
+        <div className="@container">
+          <div className="flex flex-col gap-8 @5xl:flex-row @5xl:items-start">
+            {columns.map((col, i) => (
+              <div
+                key={i}
+                className="flex min-w-0 w-full flex-col gap-8 @5xl:w-auto"
+                style={{ flexGrow: widths[i], flexBasis: 0 }}
+              >
+                {col.map(renderChild)}
+              </div>
+            ))}
+          </div>
         </div>
       );
     }
 
     default:
-      if (process.env.NODE_ENV !== "production") {
-        console.warn(`[BlockRenderer] Unknown block type: ${type}`);
-      }
+      // Prod-visible signal: a drifted/unknown block type would otherwise vanish
+      // silently (the page still 200s). Log unconditionally so it's diagnosable.
+      console.error(`[BlockRenderer] Unknown block type: ${type}`);
       return null;
   }
 }

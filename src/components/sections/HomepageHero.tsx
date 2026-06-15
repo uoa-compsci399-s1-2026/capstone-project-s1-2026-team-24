@@ -58,10 +58,10 @@ export default function HomepageHero({
             }}
           >
             <div className="max-w-6xl text-center text-white lg:text-right">
-              <h2
+              <h1
                 className="leading-[1.05]"
                 style={{
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "72px",
                   fontWeight: 800,
                   opacity: 0.75,
@@ -73,7 +73,7 @@ export default function HomepageHero({
                     {i < titleLines.length - 1 && <br />}
                   </Fragment>
                 ))}
-              </h2>
+              </h1>
               <Link
                 href={buttonHref}
                 className="
@@ -145,18 +145,20 @@ export default function HomepageHero({
           height: "500px",
         }}
       >
-        {/* Top label */}
-        <p
+        {/* Top label — the page <h1> on mobile (the desktop hero's <h1> is
+            display:none here, so exactly one h1 is exposed per breakpoint). */}
+        <h1
           className="absolute text-white text-center w-full"
           style={{
             top: "70px",
+            margin: 0,
             fontSize: "24px",
-            fontFamily: "inter",
+            fontFamily: "var(--font-inter), sans-serif",
             fontWeight: 700,
           }}
         >
           Human Nutrition Unit
-        </p>
+        </h1>
 
         {/* Text — sits just above the bowl */}
         <div

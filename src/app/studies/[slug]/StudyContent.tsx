@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { formatStudyDate } from "@/lib/format-study-date";
 
 type Lang = "en" | "zh";
 
 interface StudyPdfRecord {
   id: number;
   title: string;
-  pdfPath: string;
+  fileName: string;
 }
 
 interface StudyContentProps {
@@ -66,11 +67,7 @@ export default function StudyContent({
   const statusStyle = STATUS_STYLES[status] || STATUS_STYLES.Completed;
 
   const deadlineDisplay = publishedAt
-    ? new Date(publishedAt).toLocaleDateString("en-NZ", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
+    ? formatStudyDate(publishedAt, lang)
     : null;
 
   return (
@@ -163,7 +160,7 @@ export default function StudyContent({
                   {pdfs.map((pdf) => (
                     <li key={pdf.id}>
                       <a
-                        href={pdf.pdfPath}
+                        href={`/api/studies/pdf/${pdf.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-[#0a4479] hover:underline font-semibold"

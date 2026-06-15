@@ -3,12 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { NAVBAR_HEIGHT } from "./SubpageHero";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { NewTabHint } from "@/components/ui/NewTabHint";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import { useSiteSettings } from "@/contexts/SiteSettingsContext";
+import { useNavStudies } from "@/contexts/NavStudiesContext";
 import type { SearchResult } from "@/app/api/search/route";
 import React from "react";
 
@@ -24,8 +26,9 @@ export default function Navbar() {
   const [studiesOpen, setStudiesOpen] = React.useState(false);
   const [searchStudiesOpen, setSearchStudiesOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const { lang, setLang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { lang, setLang, t } = useLanguage();
+  // Admin-set logos (defaults when unset), seeded server-side by the layout.
+  const { logoLightPath, logoDarkPath } = useSiteSettings();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileStudiesOpen, setMobileStudiesOpen] = useState(false);
@@ -36,10 +39,28 @@ export default function Navbar() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
   const searchDialogRef = useRef<HTMLDivElement>(null);
+  const mobileDrawerRef = useRef<HTMLDivElement>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
   const previousBodyOverflowRef = useRef<string | null>(null);
   const wasSearchOpenRef = useRef(false);
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Studies for the dropdown, resolved on the server (getNavStudies) and seeded
+  // by the root layout — present on first paint (SSR, no client fetch) and
+  // re-localised on a language toggle, which triggers router.refresh().
+  const navStudies = useNavStudies();
+
+  // Mobile drawer accessibility (B22): trap Tab focus inside the open drawer,
+  // close on Escape, and restore focus to the hamburger toggle on close.
+  const closeMobile = useCallback(() => setMobileOpen(false), []);
+  useFocusTrap(mobileOpen, mobileDrawerRef, closeMobile, mobileToggleRef);
+
+  // Search dialog: trap Tab focus and close on Escape (same hook — it was
+  // modelled on this dialog's original inline trap). Initial focus and restoring
+  // focus to the trigger are also driven by the searchOpen effect below; passing
+  // searchTriggerRef keeps the hook's own restore on that same element.
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+  useFocusTrap(searchOpen, searchDialogRef, closeSearch, searchTriggerRef);
 
   const ABOUT_ITEMS = [
     { label: t.navbar.discoverHnu, image: "Discover HNU", href: "/about" },
@@ -62,12 +83,14 @@ export default function Navbar() {
     { label: t.navbar.contact, href: "/contact" },
   ];
 
-  const STUDIES_ITEMS = [
-    { label: t.navbar.studiesOverview, image: "Studies Overview", href: "/studies" },
-    { label: t.navbar.nzSynergy, image: "NZ Synergy Study", href: "/studies/nz-synergy" },
-    { label: t.navbar.foodBeverage, image: "nz-food-beverage-study", href: "/studies/food-beverage" },
-    { label: t.navbar.ferdinand, image: "Ferdinand Study", href: "/studies/ferdinand" },
-  ] as const;
+  // Dropdown entries from the server-seeded studies (was a hardcoded three-study
+  // list, so a fourth study never appeared in the nav). imagePath is a full
+  // public path on the Study row; entries without one render a placeholder.
+  const studyNavItems = navStudies.map((study) => ({
+    label: study.title,
+    image: study.imagePath || "",
+    href: `/studies/${study.slug}`,
+  }));
 
   const POPULAR_SEARCHES = [
     { label: t.navbar.discoverHnu, href: "/about" },
@@ -180,49 +203,9 @@ export default function Navbar() {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (!searchOpen) {
-      setSearchQuery("");
-      setSearchResults([]);
-      setSearchLoading(false);
-      setSearchPerformed(false);
-      setActiveIndex(-1);
-    }
-  }, [searchOpen]);
-
-  useEffect(() => {
-    const trimmed = searchQuery.trim();
-    if (trimmed.length < 2) {
-      setSearchResults([]);
-      setSearchLoading(false);
-      setSearchPerformed(false);
-      setActiveIndex(-1);
-      return;
-    }
-    const controller = new AbortController();
-    setSearchLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`, { signal: controller.signal });
-        if (!res.ok) throw new Error(`Search request failed: ${res.status}`);
-        const data: { results?: SearchResult[] } = await res.json();
-        setSearchResults(Array.isArray(data.results) ? data.results : []);
-        setSearchPerformed(true);
-        setActiveIndex(-1);
-      } catch (error) {
-        if ((error as Error).name === "AbortError") return;
-        console.error("Search failed:", error);
-        setSearchResults([]);
-        setSearchPerformed(true);
-        setActiveIndex(-1);
-      } finally {
-        if (!controller.signal.aborted) setSearchLoading(false);
-      }
-    }, 250);
-    return () => { clearTimeout(timer); controller.abort(); };
-  }, [searchQuery]);
-
-  useEffect(() => {
-    if (searchOpen) {
+    // Lock background scroll while either modal overlay is open (the search
+    // dialog or the focus-trapped mobile drawer).
+    if (searchOpen || mobileOpen) {
       previousBodyOverflowRef.current = document.body.style.overflow;
       document.body.style.overflow = "hidden";
     } else if (previousBodyOverflowRef.current !== null) {
@@ -235,7 +218,7 @@ export default function Navbar() {
         previousBodyOverflowRef.current = null;
       }
     };
-  }, [searchOpen]);
+  }, [searchOpen, mobileOpen]);
 
   useEffect(() => {
     const updateOffset = () => setSearchContentTopOffset(headerRef.current?.offsetHeight ?? 0);
@@ -252,36 +235,6 @@ export default function Navbar() {
       resizeObserver?.disconnect();
     };
   }, []);
-
-  useEffect(() => {
-    if (!searchOpen) return;
-    function handleSearchDialogKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") { event.preventDefault(); setSearchOpen(false); return; }
-      if (event.key !== "Tab") return;
-      const dialogElement = searchDialogRef.current;
-      if (!dialogElement) return;
-      const focusableElements = Array.from(
-        dialogElement.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((el) => el.getAttribute("aria-hidden") !== "true");
-      if (focusableElements.length === 0) { event.preventDefault(); return; }
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
-      const activeElement = document.activeElement as HTMLElement | null;
-      if (event.shiftKey) {
-        if (activeElement === firstElement || !dialogElement.contains(activeElement)) {
-          event.preventDefault(); lastElement.focus();
-        }
-        return;
-      }
-      if (activeElement === lastElement || !dialogElement.contains(activeElement)) {
-        event.preventDefault(); firstElement.focus();
-      }
-    }
-    document.addEventListener("keydown", handleSearchDialogKeyDown);
-    return () => document.removeEventListener("keydown", handleSearchDialogKeyDown);
-  }, [searchOpen]);
 
   // Activate a result by index by clicking its rendered <Link> anchor. Routing
   // through the real anchor keeps Next.js client-side navigation (and the
@@ -385,6 +338,7 @@ export default function Navbar() {
                 className="px-3 text-[14px] font-bold tracking-[0.28px] text-[#0c0c48] hover:opacity-70 transition-opacity whitespace-nowrap"
               >
                 {link.label}
+                {link.target === "_blank" && <NewTabHint />}
               </Link>
             ))}
 
@@ -453,7 +407,7 @@ export default function Navbar() {
               <div className="hidden lg:block flex items-center">
                 <Link href="/" aria-label="HNU — Home">
                   <Image
-                    src="/images/logos/hnu-logo.svg"
+                    src={logoLightPath}
                     alt="HNU"
                     width={mounted && scrolled && isDesktop ? 180 : 200}
                     height={mounted && scrolled && isDesktop ? 52 : 70}
@@ -592,8 +546,11 @@ export default function Navbar() {
                       }}
                     >
                       <div className="max-w-[1512px] mx-auto px-12 h-full flex items-end pb-10 justify-end">
-                        <div className="flex space-x-4">
-                          {STUDIES_ITEMS.slice(1).map((item) => (
+                        {/* Stays the width of three cards (3×300px + 2×16px gap);
+                            more studies scroll horizontally behind a visible
+                            scrollbar instead of widening the dropdown. */}
+                        <div className="studies-dropdown-scroll flex space-x-4 max-w-[932px] overflow-x-auto py-2">
+                          {studyNavItems.map((item) => (
                             <Link
                               key={item.href}
                               href={item.href}
@@ -604,14 +561,21 @@ export default function Navbar() {
                                   setStudiesClosing(false);
                                 }, 300);
                               }}
-                              className="group block transition-transform duration-300 hover:scale-105"
+                              className="group block shrink-0 w-[300px] transition-transform duration-300 hover:scale-105"
                             >
                               <div className="relative">
-                                <img
-                                  src={`/${item.image}.jpg`}
-                                  className="w-[300px] h-[200px] object-cover rounded-[30px]"
-                                  alt={item.label}
-                                />
+                                {item.image ? (
+                                  <img
+                                    src={item.image}
+                                    className="w-[300px] h-[200px] object-cover rounded-[30px]"
+                                    alt={item.label}
+                                  />
+                                ) : (
+                                  <div
+                                    className="w-[300px] h-[200px] rounded-[30px] bg-white/10"
+                                    aria-hidden="true"
+                                  />
+                                )}
                               </div>
 
                               <p className="mt-3 text-white text-[18px] font-semibold text-center">
@@ -726,7 +690,7 @@ export default function Navbar() {
 
                 <Link href="/" aria-label="HNU — Home" className="absolute left-1/2 -translate-x-1/2">
                   <Image
-                    src={mobileNavActive ? "/images/logos/hnu-logo.svg" : "/images/logos/hnu-logo-blue.png"}
+                    src={mobileNavActive ? logoLightPath : logoDarkPath}
                     alt="HNU"
                     width={140}
                     height={20}
@@ -735,8 +699,11 @@ export default function Navbar() {
                 </Link>
 
                 <button
+                  ref={mobileToggleRef}
                   onClick={() => { if (mobileOpen) { setMobileOpen(false); } else { setSearchOpen(false); setMobileOpen(true); } }}
                   aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                  aria-expanded={mobileOpen}
+                  aria-controls={mobileOpen ? "mobile-menu" : undefined}
                   className={`w-14 h-14 flex items-center justify-center transition-colors duration-300 ${mobileNavActive ? "text-white" : "text-[#0c0c48]"}`}
                 >
                   <div className="relative w-8 h-8">
@@ -757,10 +724,13 @@ export default function Navbar() {
       {/* Mobile menu overlay */}
       {mobileOpen && (
         <div
+          id="mobile-menu"
+          ref={mobileDrawerRef}
           className="fixed inset-x-0 bottom-0 z-[39] flex flex-col animate-[slideDown_0.5s_ease-out] lg:hidden"
           style={{ top: `${searchContentTopOffset}px`, backgroundColor: "#0c0c48" }}
           role="dialog"
           aria-modal="true"
+          aria-label={lang === "EN" ? "Main menu" : "主菜单"}
         >
           <div className="flex-1 overflow-y-auto px-6 py-5">
             <ul className="space-y-0 mb-10">
@@ -773,7 +743,7 @@ export default function Navbar() {
 
               {/* About accordion */}
               <li>
-                <button onClick={() => setMobileAboutOpen((v) => !v)} className="w-full flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
+                <button onClick={() => setMobileAboutOpen((v) => !v)} aria-expanded={mobileAboutOpen} className="w-full flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
                   <span className="flex items-center gap-2">
                     <span className={mobileAboutOpen ? "underline underline-offset-4" : ""}>{t.navbar.about}</span>
                     <svg className={`w-3 h-3 transition-transform duration-300 ${mobileAboutOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -783,11 +753,7 @@ export default function Navbar() {
                 </button>
                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${mobileAboutOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"}`}>
                   <ul className="pl-4 pb-2 space-y-0">
-                    {[
-                      { label: "Discover HNU", href: "/about" },
-                      { label: "Our Team", href: "/team" },
-                      { label: "Our Research", href: "/research" },
-                    ].map((item) => (
+                    {ABOUT_ITEMS.map((item) => (
                       <li key={item.href}>
                         <Link href={item.href} onClick={() => setMobileOpen(false)} className="block py-2.5 text-white text-[15px] font-medium hover:opacity-70 transition-opacity">
                           {item.label}
@@ -800,7 +766,7 @@ export default function Navbar() {
 
               {/* Studies accordion */}
               <li>
-                <button onClick={() => setMobileStudiesOpen((v) => !v)} className="w-full flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
+                <button onClick={() => setMobileStudiesOpen((v) => !v)} aria-expanded={mobileStudiesOpen} className="w-full flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
                   <span className="flex items-center gap-2">
                     <span className={mobileStudiesOpen ? "underline underline-offset-4" : ""}>{t.navbar.studies}</span>
                     <svg className={`w-3 h-3 transition-transform duration-300 ${mobileStudiesOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
@@ -808,9 +774,11 @@ export default function Navbar() {
                     </svg>
                   </span>
                 </button>
-                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${mobileStudiesOpen ? "max-h-48 opacity-100" : "max-h-0 opacity-0"}`}>
+                {/* Scrolls (overflow-y-auto, max-h-[60vh]) when open so a long study
+                    list isn't clipped; overflow-hidden only while collapsing. */}
+                <div className={`transition-all duration-300 ease-in-out ${mobileStudiesOpen ? "max-h-[60vh] overflow-y-auto opacity-100" : "max-h-0 overflow-hidden opacity-0"}`}>
                   <ul className="pl-4 pb-2 space-y-0">
-                    {STUDIES_ITEMS.slice(1).map((item) => (
+                    {studyNavItems.map((item) => (
                       <li key={item.href}>
                         <Link href={item.href} onClick={() => setMobileOpen(false)} className="block py-2.5 text-white text-[15px] font-medium hover:opacity-70 transition-opacity">
                           {item.label}
@@ -832,6 +800,7 @@ export default function Navbar() {
               <li>
                 <Link href="https://www.auckland.ac.nz/en/giving/donate.html" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
                   {lang === "EN" ? "Donations" : "捐赠"}
+                  <NewTabHint />
                 </Link>
               </li>
 
@@ -849,7 +818,8 @@ export default function Navbar() {
                 <button
                   key={l}
                   onClick={() => setLang(l)}
-                  className={`px-6 py-2.5 rounded-[30px] text-sm tracking-widest transition-colors border-[3px] font-bold font-['Inter'] ${lang === l ? "border-white text-white" : "border-white/15 text-white/50"}`}
+                  aria-pressed={lang === l}
+                  className={`px-6 py-2.5 rounded-[30px] text-sm tracking-widest transition-colors border-[3px] font-bold font-[var(--font-inter)] ${lang === l ? "border-white text-white" : "border-white/15 text-white/50"}`}
                 >
                   {l === "EN" ? "EN" : "中文"}
                 </button>
@@ -878,7 +848,7 @@ export default function Navbar() {
                   onChange={(event) => setSearchQuery(event.target.value)}
                   onKeyDown={handleSearchInputKeyDown}
                   placeholder={t.navbar.searchPlaceholder}
-                  className="flex-1 bg-transparent text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
+                  className="flex-1 bg-transparent text-[24px] lg:text-[48px] font-bold text-white/75 placeholder:text-white/50 outline-none tracking-[0.96px] min-w-0"
                   aria-label={t.navbar.search}
                   role="combobox"
                   aria-expanded={showResults}

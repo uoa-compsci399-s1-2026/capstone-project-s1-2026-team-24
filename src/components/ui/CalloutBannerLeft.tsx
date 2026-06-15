@@ -28,7 +28,7 @@ export default function CalloutBannerLeft({
 }: CalloutBannerLeftProps) {
   return (
     <section
-      className="relative w-full overflow-hidden"
+      className="@container relative w-full overflow-hidden"
       style={{ background: backgroundColor }}
     >
       {backgroundImage && (
@@ -48,8 +48,8 @@ export default function CalloutBannerLeft({
         />
       )}
 
-      {/* ── Mobile layout ── */}
-      <div className="lg:hidden relative z-10 flex flex-col gap-8 px-6 py-12">
+      {/* ── Narrow layout (also used inside narrow row columns via @container) ── */}
+      <div className="@5xl:hidden relative z-10 flex flex-col gap-8 px-6 py-12">
         {/* White card first */}
         <div
           style={{
@@ -61,7 +61,7 @@ export default function CalloutBannerLeft({
         >
           <h2
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "22px",
               fontWeight: 800,
               color: "#0c0c48",
@@ -76,7 +76,7 @@ export default function CalloutBannerLeft({
             html={description}
             className="[&_p]:mb-4 [&_p:last-child]:mb-0 [&_a]:text-[#0c0c48] [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "15px",
               color: "#4b5563",
               lineHeight: 1.6,
@@ -87,8 +87,8 @@ export default function CalloutBannerLeft({
           {showButton && (
             <Link
               href={buttonHref}
-              className="inline-flex items-center justify-center rounded-full bg-[#0c0c48] px-7 py-3 text-base font-semibold text-white no-underline"
-              style={{ fontFamily: "Inter, sans-serif" }}
+              className="inline-flex max-w-full items-center justify-center break-words rounded-full bg-[#0c0c48] px-7 py-3 text-center text-base font-semibold text-white no-underline"
+              style={{ fontFamily: "var(--font-inter), sans-serif" }}
             >
               {buttonLabel}
             </Link>
@@ -101,7 +101,7 @@ export default function CalloutBannerLeft({
             {rightTitle && (
               <h2
                 style={{
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "32px",
                   fontWeight: 800,
                   color: "white",
@@ -115,7 +115,7 @@ export default function CalloutBannerLeft({
             {rightDescription && (
               <p
                 style={{
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "16px",
                   color: "rgba(255,255,255,0.8)",
                   lineHeight: 1.6,
@@ -128,9 +128,9 @@ export default function CalloutBannerLeft({
         )}
       </div>
 
-      {/* ── Desktop layout ── */}
+      {/* ── Wide layout ── */}
       <div
-        className="hidden lg:flex relative z-10 py-16 px-6 sm:px-12 lg:px-45"
+        className="hidden @5xl:flex relative z-10 py-16 px-6 sm:px-12 @5xl:px-45"
         style={{
           alignItems: "center",
           justifyContent: "space-between",
@@ -163,7 +163,7 @@ export default function CalloutBannerLeft({
           >
             <h2
               style={{
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: "28px",
                 fontWeight: 800,
                 color: "#0c0c48",
@@ -178,7 +178,7 @@ export default function CalloutBannerLeft({
               html={description}
               className="[&_p]:mb-4 [&_p:last-child]:mb-0 [&_a]:text-[#0c0c48] [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
               style={{
-                fontFamily: "Inter, sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: "16px",
                 color: "#4b5563",
                 lineHeight: 1.6,
@@ -189,8 +189,8 @@ export default function CalloutBannerLeft({
             {showButton && (
               <Link
                 href={buttonHref}
-                className="inline-flex items-center justify-center rounded-full bg-[#0c0c48] px-7 py-3 text-base font-semibold text-white no-underline"
-                style={{ fontFamily: "Inter, sans-serif" }}
+                className="inline-flex max-w-full items-center justify-center break-words rounded-full bg-[#0c0c48] px-7 py-3 text-center text-base font-semibold text-white no-underline"
+                style={{ fontFamily: "var(--font-inter), sans-serif" }}
               >
                 {buttonLabel}
               </Link>
@@ -203,7 +203,7 @@ export default function CalloutBannerLeft({
               {rightTitle && (
                 <h2
                   style={{
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "42px",
                     fontWeight: 800,
                     color: "white",
@@ -217,7 +217,7 @@ export default function CalloutBannerLeft({
               {rightDescription && (
                 <p
                   style={{
-                    fontFamily: "Inter, sans-serif",
+                    fontFamily: "var(--font-inter), sans-serif",
                     fontSize: "18px",
                     color: "rgba(255,255,255,0.8)",
                     lineHeight: 1.6,

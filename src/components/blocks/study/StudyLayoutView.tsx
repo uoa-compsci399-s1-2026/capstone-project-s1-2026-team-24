@@ -68,7 +68,7 @@ export default function StudyLayoutView({
       <nav aria-label="Breadcrumb" className="bg-white px-6 sm:px-12 lg:px-[52px] py-5">
         <ol className="flex items-center gap-2 text-[18px] text-[#0c0c48] tracking-[0.36px]">
           <li>
-            <Link href="/studies" className="hover:opacity-70 transition-opacity">
+            <Link href="/#studies" className="hover:opacity-70 transition-opacity">
               Studies
             </Link>
           </li>

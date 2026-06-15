@@ -19,13 +19,18 @@ export function isAllowedImage(file: File): boolean {
   );
 }
 
-// Remove a managed upload file; only ever touches files under uploads/media.
-export async function tryRemoveFile(filePath: string): Promise<void> {
+// Remove a managed upload file. The prefix guard keeps deletes inside the
+// managed upload directory (defaults to uploads/media; branding uploads pass
+// their own prefix), so a stored path can never escape it.
+export async function tryRemoveFile(
+  filePath: string,
+  prefix: string = MEDIA_UPLOAD_PREFIX,
+): Promise<void> {
   const relative = filePath.replace(/^\/+/, "");
-  if (!relative.startsWith(MEDIA_UPLOAD_PREFIX)) return;
+  if (!relative.startsWith(prefix)) return;
   try {
     await unlink(path.join(process.cwd(), "public", relative));
   } catch (error) {
-    console.warn("Media file could not be removed:", error);
+    console.warn("Upload file could not be removed:", error);
   }
 }

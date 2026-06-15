@@ -33,20 +33,20 @@ export default function HomepageAboutUs() {
           {/* Text container */}
           <div className="absolute inset-0 z-10 flex items-center pl-[90px] text-white">
             <div className="h-[550px] w-[450px] flex flex-col gap-5">
-              <h3
+              <h2
                 style={{
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "54px",
                   fontWeight: 800,
                 }}
               >
                 About Us
-              </h3>
+              </h2>
 
               <p
                 className="mt-8 max-w-[620px] leading-[1.35]"
                 style={{
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "28px",
                   fontWeight: 400,
                 }}
@@ -59,7 +59,7 @@ export default function HomepageAboutUs() {
               <p
                 className="mt-8 max-w-[620px] leading-[1.35]"
                 style={{
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "28px",
                   fontWeight: 400,
                 }}
@@ -72,7 +72,7 @@ export default function HomepageAboutUs() {
                 href="/about"
                 className="mt-10 inline-flex text-white underline underline-offset-4"
                 style={{
-                  fontFamily: "Inter, sans-serif",
+                  fontFamily: "var(--font-inter), sans-serif",
                   fontSize: "20px",
                   fontWeight: 400,
                 }}

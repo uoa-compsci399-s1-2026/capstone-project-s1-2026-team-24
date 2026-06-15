@@ -42,3 +42,35 @@ export async function GET(
     );
   }
 }
+
+// Clear a page's saved history on demand, keeping only the "Original" baseline.
+// Published versions accumulate fast when an admin publishes repeatedly to
+// preview a full page; this lets them reset the log without waiting for the
+// automatic prune in publish/route.ts. The Original is never deleted.
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  try {
+    const { slug } = await params;
+    const page = await prisma.page.findUnique({
+      where: { slug },
+      select: { id: true },
+    });
+    if (!page) {
+      return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    }
+
+    await prisma.pageRevision.deleteMany({
+      where: { pageId: page.id, label: { not: "Original" } },
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Failed to clear revisions:", error);
+    return NextResponse.json(
+      { error: "Failed to clear history" },
+      { status: 500 },
+    );
+  }
+}

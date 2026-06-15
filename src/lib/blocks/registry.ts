@@ -104,6 +104,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Homepage hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: [
       {
         key: "title",
@@ -123,7 +124,7 @@ const DEFINITIONS: BlockDefinition[] = [
     defaultContent: {
       title: "Unlock the power of food with \n the Human Nutrition Unit",
       buttonLabel: "JOIN A STUDY",
-      buttonHref: "/studies",
+      buttonHref: "/#studies",
       backgroundGradient:
         "linear-gradient(112deg, #0f2e75 0%, #0b4e93 48%, #0a95ca 100%)",
       heroImageSrc: "/images/homepage-hero-bowl.webp",
@@ -134,6 +135,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Discover hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: SUBPAGE_HERO_FIELDS,
     defaultContent: {
       title: "Discover HNU",
@@ -147,6 +149,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Research hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: SUBPAGE_HERO_FIELDS,
     defaultContent: {
       title: "Our Research",
@@ -160,6 +163,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Team hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: SUBPAGE_HERO_FIELDS,
     defaultContent: {
       title: "Our Team",
@@ -173,6 +177,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Contact hero",
     category: "Hero",
     editable: true,
+    hidden: true,
     fields: SUBPAGE_HERO_FIELDS,
     defaultContent: {
       title: "Contact Us",
@@ -185,13 +190,14 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Studies hero",
     category: "Hero",
     editable: false,
+    hidden: true,
     fields: [],
     defaultContent: {},
   },
   {
     type: "subpageHero",
-    label: "Subpage hero",
-    category: "Hero",
+    label: "Blank hero",
+    category: "Generic blocks",
     editable: true,
     fields: [
       { key: "title", label: "Title", type: "text" },
@@ -211,27 +217,220 @@ const DEFINITIONS: BlockDefinition[] = [
     defaultContent: { title: "Page title", subtitle: "", subtitleMaxWidth: "" },
   },
 
-  // ---- Content ----
+  // ---- Generic blocks (content-neutral building blocks) ----
+  // Page-scoped: each is wired only into the page BlockRenderer. Do NOT set
+  // scope "both" unless the block is also handled by the study StudyBlockRenderer,
+  // or it would appear in the study-layout picker and render as nothing.
   {
-    type: "infoCardLeft",
-    label: "Info card (image left)",
-    category: "Content",
+    type: "prose",
+    label: "Text / prose",
+    category: "Generic blocks",
     editable: true,
-    fields: INFO_CARD_FIELDS,
-    defaultContent: { ...INFO_CARD_DEFAULT, imagePosition: "left" },
+    fields: [
+      { key: "heading", label: "Heading (optional)", type: "text" },
+      { key: "body", label: "Body", type: "richText" },
+      {
+        key: "align",
+        label: "Text alignment",
+        type: "enum",
+        options: ["left", "center"],
+      },
+    ],
+    defaultContent: {
+      heading: "",
+      body: "<p>Add your text here.</p>",
+      align: "left",
+    },
   },
   {
-    type: "infoCardRight",
+    type: "imageBlock",
+    label: "Image",
+    category: "Generic blocks",
+    editable: true,
+    fields: [
+      { key: "imageSrc", label: "Image", type: "image" },
+      {
+        key: "imageAlt",
+        label: "Image alt text",
+        type: "text",
+        help: "Describe the image for screen readers. Leave blank only if purely decorative.",
+      },
+      { key: "caption", label: "Caption (optional)", type: "text" },
+      {
+        key: "height",
+        label: "Height",
+        type: "enum",
+        options: ["small", "medium", "large"],
+        help: "small ≈ 240px, medium ≈ 400px, large ≈ 560px.",
+      },
+      { key: "rounded", label: "Rounded corners", type: "boolean" },
+    ],
+    defaultContent: {
+      imageSrc: "",
+      imageAlt: "",
+      caption: "",
+      height: "medium",
+      rounded: true,
+    },
+  },
+  {
+    type: "videoEmbed",
+    label: "Video",
+    category: "Generic blocks",
+    editable: true,
+    fields: [
+      {
+        key: "videoId",
+        label: "YouTube video ID or URL",
+        type: "text",
+        help: "Paste a YouTube link or just the id (the part after watch?v= or youtu.be/).",
+      },
+      { key: "heading", label: "Heading (optional)", type: "text" },
+      { key: "caption", label: "Caption (optional)", type: "text" },
+    ],
+    defaultContent: { videoId: "", heading: "", caption: "" },
+  },
+  {
+    type: "accordion",
+    label: "Accordion / FAQ",
+    category: "Generic blocks",
+    editable: true,
+    fields: [
+      { key: "heading", label: "Heading (optional)", type: "text" },
+      { key: "items", label: "Questions", type: "faqList" },
+    ],
+    defaultContent: {
+      heading: "Frequently asked questions",
+      items: [{ question: "Your question here?", answer: "Your answer here." }],
+    },
+  },
+  {
+    type: "quote",
+    label: "Quote / testimonial",
+    category: "Generic blocks",
+    editable: true,
+    fields: [
+      { key: "quote", label: "Quote", type: "textarea" },
+      { key: "attribution", label: "Attribution (name)", type: "text" },
+      { key: "role", label: "Role / title (optional)", type: "text" },
+    ],
+    defaultContent: {
+      quote: "Add a memorable quote or testimonial here.",
+      attribution: "",
+      role: "",
+    },
+  },
+  {
+    type: "statHighlights",
+    label: "Stat highlights",
+    category: "Generic blocks",
+    editable: true,
+    fields: [
+      { key: "heading", label: "Heading (optional)", type: "text" },
+      { key: "items", label: "Stats", type: "statList" },
+    ],
+    defaultContent: {
+      heading: "",
+      items: [
+        { value: "100+", label: "Label" },
+        { value: "20", label: "Label" },
+      ],
+    },
+  },
+  {
+    // Reuses the Updates carousel component with neutral default content.
+    type: "announcements",
+    label: "Announcements carousel",
+    category: "Generic blocks",
+    editable: true,
+    fields: [
+      { key: "updates", label: "Announcements", type: "updatesList" },
+      {
+        key: "backgroundColor",
+        label: "Background colour / gradient",
+        type: "text",
+        help: "Any CSS background (e.g. #114488 or a linear-gradient). Leave empty for the default dark navy. Text and arrows stay white, so keep it dark.",
+      },
+    ],
+    defaultContent: {
+      backgroundColor: "",
+      updates: [
+        {
+          title: "Announcement title",
+          date: "",
+          paragraphs: ["Add your announcement text here."],
+        },
+      ],
+    },
+  },
+  {
+    // Generic, reusable card grid. Reuses HomepageStudiesBlock but WITHOUT the
+    // `#studies` anchor (see homepageStudies), so it can be added anywhere, any
+    // number of times, without emitting a duplicate/misplaced id.
+    type: "cardGrid",
+    label: "Card grid",
+    category: "Generic blocks",
+    editable: true,
+    fields: [{ key: "cards", label: "Cards", type: "studyCards" }],
+    defaultContent: {
+      cards: [
+        {
+          title: "Card title",
+          subtitle: "",
+          description: "Short description goes here.",
+          buttonLabel: "Find out more >",
+          buttonHref: "#",
+          imageSrc: "",
+          imageAlt: "",
+          imagePosition: "center",
+        },
+      ],
+    },
+  },
+  {
+    type: "spacer",
+    label: "Spacer / divider",
+    category: "Generic blocks",
+    editable: true,
+    fields: [
+      {
+        key: "size",
+        label: "Vertical space",
+        type: "enum",
+        options: ["small", "medium", "large"],
+      },
+      { key: "divider", label: "Show divider line", type: "boolean" },
+    ],
+    defaultContent: { size: "medium", divider: false },
+  },
+
+  // ---- Content ----
+  // NOTE: the InfoCardLeft/InfoCardRight components' desktop layouts are
+  // historically swapped — the `infoCardLeft` type renders the image on the
+  // RIGHT and `infoCardRight` renders it on the LEFT. The labels (and the
+  // default image crop) below match what actually renders, so the picker is
+  // truthful; the internal type names are kept as-is to avoid migrating the
+  // existing stored blocks across draft/published/revision snapshots.
+  {
+    type: "infoCardLeft",
     label: "Info card (image right)",
-    category: "Content",
+    category: "Generic blocks",
     editable: true,
     fields: INFO_CARD_FIELDS,
     defaultContent: { ...INFO_CARD_DEFAULT, imagePosition: "right" },
   },
   {
+    type: "infoCardRight",
+    label: "Info card (image left)",
+    category: "Generic blocks",
+    editable: true,
+    fields: INFO_CARD_FIELDS,
+    defaultContent: { ...INFO_CARD_DEFAULT, imagePosition: "left" },
+  },
+  {
     type: "calloutBannerRight",
     label: "Callout banner (card right)",
-    category: "Content",
+    category: "Generic blocks",
     editable: true,
     fields: [
       { key: "leftTitle", label: "Left title", type: "text" },
@@ -253,7 +452,7 @@ const DEFINITIONS: BlockDefinition[] = [
   {
     type: "calloutBannerLeft",
     label: "Callout banner (card left)",
-    category: "Content",
+    category: "Generic blocks",
     editable: true,
     fields: [
       { key: "rightTitle", label: "Right title", type: "text" },
@@ -273,10 +472,15 @@ const DEFINITIONS: BlockDefinition[] = [
     },
   },
   {
+    // The homepage's studies grid. It carries the singular `#studies` scroll
+    // anchor (see HomepageStudiesBlock), so it is NOT a reusable building block:
+    // hidden from the picker (the renderer stays for the existing homepage block)
+    // and superseded for new use by the anchor-free, generic "Card grid" below.
     type: "homepageStudies",
     label: "Study cards row",
     category: "Content",
     editable: true,
+    hidden: true,
     fields: [{ key: "cards", label: "Study cards", type: "studyCards" }],
     defaultContent: {
       cards: [
@@ -285,7 +489,7 @@ const DEFINITIONS: BlockDefinition[] = [
           subtitle: "",
           description: "Short description of the study.",
           buttonLabel: "Find out more >",
-          buttonHref: "/studies",
+          buttonHref: "/#studies",
           imageSrc: "",
           imageAlt: "",
           imagePosition: "center",
@@ -298,8 +502,17 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Updates carousel",
     category: "Content",
     editable: true,
-    fields: [{ key: "updates", label: "Updates", type: "updatesList" }],
+    fields: [
+      { key: "updates", label: "Updates", type: "updatesList" },
+      {
+        key: "backgroundColor",
+        label: "Background colour / gradient",
+        type: "text",
+        help: "Any CSS background (e.g. #114488 or a linear-gradient). Leave empty for the default dark navy. Text and arrows stay white, so keep it dark.",
+      },
+    ],
     defaultContent: {
+      backgroundColor: "",
       updates: [
         {
           title: "NZ Synergy Study Now Recruiting",
@@ -322,7 +535,7 @@ const DEFINITIONS: BlockDefinition[] = [
   {
     type: "sectionHeading",
     label: "Section heading",
-    category: "Heading",
+    category: "Generic blocks",
     scope: "both",
     editable: true,
     fields: [
@@ -368,6 +581,7 @@ const DEFINITIONS: BlockDefinition[] = [
     label: "Partner logo grid",
     category: "Content",
     editable: true,
+    hidden: true,
     fields: [
       { key: "breadcrumbLabel", label: "Breadcrumb label", type: "text" },
       { key: "images", label: "Logos", type: "imageArray" },
@@ -375,17 +589,11 @@ const DEFINITIONS: BlockDefinition[] = [
     defaultContent: { breadcrumbLabel: "Partners", images: [], variant: "academic" },
   },
   {
-    type: "studiesContactCard",
-    label: "Studies contact card",
-    category: "Content",
-    editable: false,
-    fields: [],
-    defaultContent: {},
-  },
-  {
+    // Dynamic: renders the live list of active studies (getStudies), so it
+    // belongs with the other live-data blocks.
     type: "studiesOverview",
     label: "Studies overview",
-    category: "Content",
+    category: "Dynamic",
     editable: false,
     fields: [],
     defaultContent: {},
@@ -440,6 +648,19 @@ const DEFINITIONS: BlockDefinition[] = [
       mapUrl:
         "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3191.62085243865!2d174.74999331301763!3d-36.87549318088687!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6d0d4771e23b727d%3A0x90ba816391e739dc!2sHuman%20Nutrition%20Unit!5e0!3m2!1sen!2snz!4v1777374580042!5m2!1sen!2snz",
     },
+  },
+  {
+    // Registered only so the editor shows a friendly name ("Contact details")
+    // instead of the raw type for the existing block on the Contact page.
+    // Hidden from the picker and content-frozen — its content is rendered from
+    // what's already stored (see BlockRenderer's "contactDetails" case).
+    type: "contactDetails",
+    label: "Contact details",
+    category: "Content",
+    editable: false,
+    hidden: true,
+    fields: [],
+    defaultContent: {},
   },
 
   // ---- Dynamic (pull live data from existing admin sections) ----
@@ -673,6 +894,19 @@ export function listBlockDefinitions(
     const defScope = def.scope ?? "page";
     return defScope === "both" || defScope === scope;
   });
+}
+
+// Block definitions offered in the "Add block" picker for a scope: everything
+// listable in that scope, minus blocks retired from new use (`hidden`) and any
+// explicitly excluded types. Single source of truth for picker visibility —
+// used by AddBlockButton and its tests so the rule can't drift.
+export function listPickableBlockDefinitions(
+  scope: "page" | "study" = "page",
+  { exclude = [] }: { exclude?: readonly string[] } = {},
+): BlockDefinition[] {
+  return listBlockDefinitions(scope).filter(
+    (def) => !def.hidden && !exclude.includes(def.type),
+  );
 }
 
 export function getBlockDefinition(type: string): BlockDefinition | undefined {

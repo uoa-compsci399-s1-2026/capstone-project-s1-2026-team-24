@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -10,6 +11,9 @@ import { resolveStudyLayoutBlocks } from "@/components/blocks/study/resolve-stud
 import StudyLayoutView from "@/components/blocks/study/StudyLayoutView";
 import { getServerLang } from "@/lib/lang";
 import { localizeStrings } from "@/lib/translate/blocks";
+import { buildPageMetadata } from "@/lib/page-metadata";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { breadcrumbSchema } from "@/lib/structured-data";
 
 
 export const dynamic = "force-dynamic";
@@ -18,7 +22,11 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-async function fetchStudy(slug: string) {
+// Wrapped in React cache() so the two reads in one request — generateMetadata
+// and the page component — share a single query instead of hitting SQLite twice.
+// Request-scoped only: nothing persists across requests, so admin edits to a
+// study still appear on the next load (the page stays force-dynamic).
+const fetchStudy = cache(async (slug: string) => {
   return prisma.study.findFirst({
     where: { slug },
     include: {
@@ -27,29 +35,31 @@ async function fetchStudy(slug: string) {
       },
     },
   });
-}
+});
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const study = await fetchStudy(slug);
   if (!study || !study.isActive) {
-    return { title: "Study Not Found | HNU Auckland" };
+    return { title: "Study Not Found" };
   }
-  const lang = await getServerLang();
-  if (lang === "ZH") {
-    const [title, description] = await localizeStrings([
+  // Resolve title/description in the visitor's language (machine-translated for
+  // 中文, as before), then decorate with canonical + OG/Twitter + x-default via
+  // the shared helper.
+  let title = study.title;
+  let description = study.shortDescription;
+  if ((await getServerLang()) === "ZH") {
+    [title, description] = await localizeStrings([
       study.title,
       study.shortDescription,
     ]);
-    return {
-      title: `${title} | HNU Auckland`,
-      description,
-    };
   }
-  return {
-    title: `${study.title} | HNU Auckland`,
-    description: study.shortDescription,
-  };
+  return buildPageMetadata({
+    path: `/studies/${slug}`,
+    title,
+    description,
+    image: study.imagePath?.trim() ? study.imagePath : undefined,
+  });
 }
 
 const FALLBACK_IMAGE = "/services-and-expertise.jpg";
@@ -74,6 +84,16 @@ export default async function StudyPage({ params }: Props) {
   return (
     <>
       <Navbar />
+      <JsonLd
+        data={breadcrumbSchema([
+          // The visible breadcrumb links to /#studies (the homepage studies
+          // section), but structured data needs a canonical, fragment-free URL
+          // or crawlers may drop the BreadcrumbList — so point this item at the
+          // homepage root instead.
+          { name: "Studies", path: "/" },
+          { name: study.title, path: `/studies/${slug}` },
+        ])}
+      />
 
       {/* Hero — image bleeds up behind the transparent navbar */}
       <section
@@ -110,7 +130,7 @@ export default async function StudyPage({ params }: Props) {
         <ol className="flex items-center gap-2 text-[18px] text-[#0c0c48] tracking-[0.36px]">
           <li>
             <Link
-              href="/studies"
+              href="/#studies"
               className="hover:opacity-70 transition-opacity"
             >
               Studies
@@ -143,7 +163,7 @@ export default async function StudyPage({ params }: Props) {
           pdfs={study.pdfs.map((pdf) => ({
             id: pdf.id,
             title: pdf.title,
-            pdfPath: pdf.pdfPath,
+            fileName: pdf.fileName,
           }))}
         />
       </main>

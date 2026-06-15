@@ -40,7 +40,7 @@ export default function InfoCardRight({
       <RichText
         html={body}
         className={`flex flex-col ${gap} text-white/85 [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5`}
-        style={{ fontFamily: "Inter, sans-serif", fontSize, lineHeight: 1.6 }}
+        style={{ fontFamily: "var(--font-inter), sans-serif", fontSize, lineHeight: 1.6 }}
       />
     ) : (
       <div className={`flex flex-col ${gap}`}>
@@ -48,7 +48,7 @@ export default function InfoCardRight({
           <p
             key={i}
             className="text-white/85"
-            style={{ fontFamily: "Inter, sans-serif", fontSize, lineHeight: 1.6 }}
+            style={{ fontFamily: "var(--font-inter), sans-serif", fontSize, lineHeight: 1.6 }}
           >
             {para}
           </p>
@@ -57,18 +57,27 @@ export default function InfoCardRight({
     );
 
   return (
-    <section className="relative w-full bg-white overflow-hidden py-10">
+    <section className="@container relative w-full bg-white overflow-hidden py-10">
 
-      {/* ── Mobile layout ── */}
-      <div className="lg:hidden flex flex-col">
+      {/* ── Narrow layout (also used inside narrow row columns via @container) ── */}
+      <div className="@5xl:hidden flex flex-col">
         <div className="relative w-full h-[280px] sm:h-[340px]">
-          <Image
-            src={imageSrc}
-            alt={imageAlt}
-            fill
-            className={`object-cover object-${imagePosition}`}
-            sizes="100vw"
-          />
+          {imageSrc ? (
+            <Image
+              src={imageSrc}
+              alt={imageAlt}
+              fill
+              className={`object-cover object-${imagePosition}`}
+              sizes="100vw"
+            />
+          ) : (
+            <div
+              className="flex h-full w-full items-center justify-center bg-[#0c0c48]/5 text-xs text-[#0c0c48]/40"
+              aria-hidden="true"
+            >
+              No image selected
+            </div>
+          )}
         </div>
 
         <div className="relative -mt-15 px-6">
@@ -78,7 +87,7 @@ export default function InfoCardRight({
           >
             <h2
               className="text-white font-bold"
-              style={{ fontFamily: "Inter, sans-serif", fontSize: "28px", lineHeight: 1.2 }}
+              style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "28px", lineHeight: 1.2 }}
             >
               {title}
             </h2>
@@ -92,21 +101,30 @@ export default function InfoCardRight({
         </div>
       </div>
 
-      {/* ── Desktop layout ── */}
-      <div className="hidden lg:block py-16 px-12 lg:px-45">
+      {/* ── Wide layout: two-column design ── */}
+      <div className="hidden @5xl:block py-16 px-12 @5xl:px-45">
         <div className="max-w-[1100px] mx-auto">
           <div className="relative flex flex-row items-center gap-0">
             <div
               className="relative rounded-[28px] overflow-hidden flex-1 -mr-65"
               style={{ height: "550px", zIndex: 9 }}
             >
-              <Image
-                src={imageSrc}
-                alt={imageAlt}
-                fill
-                className={`object-cover object-${imagePosition}`}
-                sizes="70vw"
-              />
+              {imageSrc ? (
+                <Image
+                  src={imageSrc}
+                  alt={imageAlt}
+                  fill
+                  className={`object-cover object-${imagePosition}`}
+                  sizes="70vw"
+                />
+              ) : (
+                <div
+                  className="flex h-full w-full items-center justify-center bg-[#0c0c48]/5 text-sm text-[#0c0c48]/40"
+                  aria-hidden="true"
+                >
+                  No image selected
+                </div>
+              )}
             </div>
 
             <div
@@ -115,7 +133,7 @@ export default function InfoCardRight({
             >
               <h2
                 className="text-white font-bold"
-                style={{ fontFamily: "Inter, sans-serif", fontSize: "32px", lineHeight: 1.2 }}
+                style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "32px", lineHeight: 1.2 }}
               >
                 {title}
               </h2>
@@ -130,7 +148,7 @@ export default function InfoCardRight({
 
       {/* Background pattern */}
       <div
-        className="hidden lg:flex absolute inset-0 overflow-hidden pointer-events-none items-center"
+        className="hidden @5xl:flex absolute inset-0 overflow-hidden pointer-events-none items-center"
         aria-hidden="true"
       >
         <div

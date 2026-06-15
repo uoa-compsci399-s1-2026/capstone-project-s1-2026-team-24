@@ -7,16 +7,81 @@ const ALGORITHM = "HS256";
 const ISSUER = "hnu-admin";
 const AUDIENCE = "hnu-admin-users";
 
-function getSecret() {
-  const secret = process.env.ADMIN_SESSION_SECRET;
-  if (!secret) {
-    throw new Error("Missing ADMIN_SESSION_SECRET");
+// Minimum length for a machine-generated secret (e.g. ADMIN_SESSION_SECRET).
+const MIN_SECRET_LENGTH = 32;
+
+// Minimum length for the human-typed admin password (lower than a machine
+// secret, but still enforced in production alongside the placeholder check).
+const ADMIN_PASSWORD_MIN_LENGTH = 12;
+
+// Well-known placeholder values that must never reach a production deploy —
+// the .env.example default plus other obvious stand-ins.
+const PLACEHOLDER_SECRETS = new Set([
+  "replace-with-a-long-random-string",
+  "change-me",
+  "changeme",
+  "secret",
+  "password",
+  "admin",
+]);
+
+/**
+ * Returns `value` if it is a usable secret, otherwise throws. Always rejects a
+ * missing value. In production it additionally fails closed on secrets that are
+ * too short or a known placeholder, so a default can never silently reach the
+ * deploy (B12). Outside production the strict checks are skipped so local dev
+ * and tests can use short throwaway secrets. Edge-safe (no Node APIs), so it is
+ * also reachable from middleware.
+ */
+export function requireStrongSecret(
+  value: string | undefined,
+  name: string,
+  minLength: number = MIN_SECRET_LENGTH,
+): string {
+  // Trim first so a stray newline/space from a copy-paste can't slip a short or
+  // placeholder value past the checks (and so the same secret is used verbatim
+  // across environments regardless of surrounding whitespace).
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    throw new Error(`Missing ${name}`);
   }
+  if (process.env.NODE_ENV === "production") {
+    if (trimmed.length < minLength) {
+      throw new Error(
+        `${name} is too weak: it must be at least ${minLength} characters`,
+      );
+    }
+    if (PLACEHOLDER_SECRETS.has(trimmed.toLowerCase())) {
+      throw new Error(`${name} is set to a known placeholder value`);
+    }
+  }
+  return trimmed;
+}
+
+function getSecret() {
+  const secret = requireStrongSecret(
+    process.env.ADMIN_SESSION_SECRET,
+    "ADMIN_SESSION_SECRET",
+  );
   return new TextEncoder().encode(secret);
 }
 
 export function getAdminSessionCookieName() {
   return COOKIE_NAME;
+}
+
+/**
+ * The configured admin password, validated by the same production guard as the
+ * session secret (fails closed on missing / too short / placeholder). Keeps the
+ * ADMIN_PASSWORD policy co-located with the other secret rules instead of inline
+ * at the login route.
+ */
+export function getAdminPassword(): string {
+  return requireStrongSecret(
+    process.env.ADMIN_PASSWORD,
+    "ADMIN_PASSWORD",
+    ADMIN_PASSWORD_MIN_LENGTH,
+  );
 }
 
 export async function createAdminSessionToken() {

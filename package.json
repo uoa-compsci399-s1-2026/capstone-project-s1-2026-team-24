@@ -18,6 +18,10 @@
     "catalog:media": "tsx prisma/catalog-public-media.ts",
     "backfill:media-dims": "tsx prisma/backfill-media-dimensions.ts",
     "backfill:published": "tsx prisma/backfill-published.ts",
+    "backfill:inquiry-labels": "tsx prisma/backfill-inquiry-labels.ts",
+    "backfill:studies-links": "tsx prisma/repoint-studies-links.ts",
+    "cleanup:studies-contact-card": "tsx prisma/remove-studies-contact-card.ts",
+    "reset:study-template": "tsx prisma/reset-study-template.ts",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots"
@@ -33,9 +37,10 @@
     "@tiptap/react": "^3.23.6",
     "@tiptap/starter-kit": "^3.23.6",
     "better-sqlite3": "^12.9.0",
+    "fuse.js": "^7.4.1",
     "image-size": "^2.0.2",
     "jose": "^6.2.2",
-    "next": "16.2.2",
+    "next": "16.2.7",
     "prisma": "^7.7.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -48,18 +53,16 @@
     "@playwright/test": "^1.59.1",
     "@storybook/addon-a11y": "^10.3.5",
     "@storybook/addon-docs": "^10.3.5",
-    "@storybook/addon-onboarding": "^10.3.5",
     "@storybook/addon-vitest": "^10.3.5",
     "@storybook/nextjs-vite": "^10.3.5",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sanitize-html": "^2.16.1",
     "@vitest/browser-playwright": "^4.1.4",
-    "@vitest/coverage-v8": "^4.1.4",
     "eslint": "^9",
-    "eslint-config-next": "16.2.2",
+    "eslint-config-next": "16.2.7",
     "eslint-plugin-storybook": "^10.3.5",
     "playwright": "^1.59.1",
     "storybook": "^10.3.5",
@@ -69,7 +72,7 @@
     "vite": "^8.0.8",
     "vitest": "^4.1.4"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
+  "engines": {
+    "node": ">=22.17.1"
   }
 }

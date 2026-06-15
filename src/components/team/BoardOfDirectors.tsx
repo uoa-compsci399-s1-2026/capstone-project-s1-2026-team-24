@@ -4,16 +4,13 @@ import { useRef, useState, useEffect } from "react";
 import DirectorCard from "@/components/team/DirectorCard";
 import type { TeamMemberRecord } from "@/lib/data/team";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
 
 export default function BoardOfDirectors({
   members,
 }: {
   members: TeamMemberRecord[];
 }) {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -41,7 +38,7 @@ export default function BoardOfDirectors({
     <section style={{ backgroundColor: "white", padding: "60px 0" }}>
       <h2
         style={{
-          fontFamily: "Inter, sans-serif",
+          fontFamily: "var(--font-inter), sans-serif",
           fontSize: "clamp(28px, 5vw, 48px)",
           fontWeight: 800,
           color: "#0c0c48",

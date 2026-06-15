@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { listBlockDefinitions } from "@/lib/blocks/registry";
+import { listPickableBlockDefinitions } from "@/lib/blocks/registry";
 import type { BlockCategory } from "@/lib/blocks/types";
 import PopoverMenu from "./PopoverMenu";
 
 const CATEGORY_ORDER: BlockCategory[] = [
+  "Generic blocks",
   "Hero",
   "Heading",
   "Layout",
@@ -29,9 +30,7 @@ export default function AddBlockButton({
 }) {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
-  const defs = listBlockDefinitions(scope).filter(
-    (d) => !exclude.includes(d.type),
-  );
+  const defs = listPickableBlockDefinitions(scope, { exclude });
 
   return (
     <div className="relative flex justify-center">

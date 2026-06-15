@@ -2,55 +2,48 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import en from '@/messages/en';
-import zh from '@/messages/zh';
+// Type-only import — erased at compile time, so the server-side prisma code
+// in inquiry-types.ts never reaches the client bundle.
+import type { InquiryTypeOption } from '@/lib/inquiry-types';
+import { isValidEmail, isValidPhone } from '@/lib/validation';
 
 type FormState = 'idle' | 'loading' | 'success' | 'error';
 
-// Canonical inquiry-type values sent to the API (must stay English for contact
-// routing / recipient matching). The visible label is translated separately.
-const INQUIRY_TYPES = [
-  'Study Participant Enquiry',
-  'Industry Partnership',
-  'Internship or PhD Opportunity',
-  'Donation',
-  'General Enquiry',
-  'Other',
-] as const;
-
+// Borders darkened #cac7c7 (1.7:1, fails 1.4.11) -> #767676 (>=3:1); placeholder
+// darkened to #6b6b6b (>=4.5:1); a keyboard focus-visible ring supplements the
+// border-colour change (B21 contrast, B38 focus-visible).
 const inputClass =
-  'w-full border-2 border-[#cac7c7] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors';
+  'w-full border-2 border-[#767676] rounded-[30px] h-[56px] px-6 text-base sm:text-[20px] placeholder:text-[#6b6b6b] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-1 transition-colors';
 
 const labelClass =
   'block font-bold text-[#0a4479] text-base sm:text-[24px] mb-2 ml-2';
 
 const textareaClass =
-  'w-full border-2 border-[#cac7c7] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#cac7c7] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] transition-colors resize-none';
+  'w-full border-2 border-[#767676] rounded-[30px] px-6 py-4 text-base sm:text-[20px] placeholder:text-[#6b6b6b] text-[#0a4479] bg-white focus:outline-none focus:border-[#0a4479] focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-1 transition-colors resize-none';
 
-function isValidEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-export default function ContactEmailForm() {
-  const { lang } = useLanguage();
-  const t = lang === 'EN' ? en : zh;
-  const inquiryLabels: Record<(typeof INQUIRY_TYPES)[number], string> = {
-    'Study Participant Enquiry': t.contactPage.inquiryStudyParticipant,
-    'Industry Partnership': t.contactPage.inquiryIndustryPartnership,
-    'Internship or PhD Opportunity': t.contactPage.inquiryInternshipPhd,
-    Donation: t.contactPage.inquiryDonation,
-    'General Enquiry': t.contactPage.inquiryGeneral,
-    Other: t.contactPage.inquiryOther,
-  };
+export default function ContactEmailForm({
+  // Admin-managed types (DB-driven), passed by the server ContactDetails
+  // wrapper. The canonical `category` is submitted; labels are per-language.
+  inquiryTypes = [],
+}: {
+  inquiryTypes?: InquiryTypeOption[];
+}) {
+  const { lang, t } = useLanguage();
+  const noInquiryTypes = inquiryTypes.length === 0;
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [prefersPhone, setPrefersPhone] = useState(false);
   const [category, setCategory] = useState('');
   const [message, setMessage] = useState('');
   const [honeypot, setHoneypot] = useState('');
   const [state, setState] = useState<FormState>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const mountedAtRef = useRef<number>(0);
+
+  // The preference checkbox only makes sense when both channels were given.
+  const showPrefersPhone = email.trim() !== '' && phone.trim() !== '';
 
   useEffect(() => {
     mountedAtRef.current = Date.now();
@@ -66,14 +59,28 @@ export default function ContactEmailForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!name.trim() || !email.trim() || !category || !message.trim()) {
+    if (!name.trim() || !category || !message.trim()) {
       setErrorMsg(t.contactPage.requiredError);
       setState('error');
       return;
     }
 
-    if (!isValidEmail(email.trim())) {
+    // Either/or: at least one contact channel, and whichever is given must
+    // be valid.
+    if (!email.trim() && !phone.trim()) {
+      setErrorMsg(t.contactPage.eitherEmailOrPhoneError);
+      setState('error');
+      return;
+    }
+
+    if (email.trim() && !isValidEmail(email.trim())) {
       setErrorMsg(t.contactPage.invalidEmailError);
+      setState('error');
+      return;
+    }
+
+    if (phone.trim() && !isValidPhone(phone.trim())) {
+      setErrorMsg(t.contactPage.invalidPhoneError);
       setState('error');
       return;
     }
@@ -88,6 +95,8 @@ export default function ContactEmailForm() {
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
+          phone: phone.trim(),
+          prefersPhone: showPrefersPhone && prefersPhone,
           category,
           message: message.trim(),
           honeypot: honeypot.trim(),
@@ -109,18 +118,7 @@ export default function ContactEmailForm() {
     }
   }
 
-  if (state === 'success') {
-    return (
-      <div className="flex flex-col gap-3 py-10">
-        <p className="text-[#0a4479] text-xl font-bold">
-          {t.contactPage.successTitle}
-        </p>
-        <p className="text-[#0a4479] text-base">{t.contactPage.successText}</p>
-      </div>
-    );
-  }
-
-  return (
+  const formMarkup = (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div>
         <label htmlFor="contact-name" className={labelClass}>
@@ -129,6 +127,10 @@ export default function ContactEmailForm() {
         <input
           id="contact-name"
           type="text"
+          required
+          aria-required="true"
+          aria-invalid={state === 'error' && !name.trim()}
+          aria-describedby="contact-error"
           value={name}
           onChange={e => {
             setName(e.target.value);
@@ -147,6 +149,12 @@ export default function ContactEmailForm() {
         <input
           id="contact-email"
           type="email"
+          aria-describedby="contact-channel-hint contact-error"
+          aria-invalid={
+            state === 'error' &&
+            ((!email.trim() && !phone.trim()) ||
+              (!!email.trim() && !isValidEmail(email.trim())))
+          }
           value={email}
           onChange={e => {
             setEmail(e.target.value);
@@ -159,26 +167,83 @@ export default function ContactEmailForm() {
       </div>
 
       <div>
+        <label htmlFor="contact-phone" className={labelClass}>
+          {t.contactPage.phoneLabel}
+        </label>
+        <input
+          id="contact-phone"
+          type="tel"
+          aria-describedby="contact-channel-hint contact-error"
+          aria-invalid={
+            state === 'error' &&
+            ((!email.trim() && !phone.trim()) ||
+              (!!phone.trim() && !isValidPhone(phone.trim())))
+          }
+          value={phone}
+          onChange={e => {
+            setPhone(e.target.value);
+            clearError();
+          }}
+          placeholder={t.contactPage.phonePlaceholder}
+          className={inputClass}
+          disabled={state === 'loading'}
+        />
+        <p id="contact-channel-hint" className="text-sm text-[#0a4479]/80 mt-1.5 ml-2">
+          {t.contactPage.eitherEmailOrPhoneHint}
+        </p>
+      </div>
+
+      {showPrefersPhone && (
+        <label
+          htmlFor="contact-prefers-phone"
+          className="flex items-center gap-3 ml-2 cursor-pointer select-none"
+        >
+          <input
+            id="contact-prefers-phone"
+            type="checkbox"
+            checked={prefersPhone}
+            onChange={e => {
+              setPrefersPhone(e.target.checked);
+              clearError();
+            }}
+            className="h-5 w-5 accent-[#0a4479] cursor-pointer"
+            disabled={state === 'loading'}
+          />
+          <span className="text-[#0a4479] text-base sm:text-[18px]">
+            {t.contactPage.prefersPhoneLabel}
+          </span>
+        </label>
+      )}
+
+      <div>
         <label htmlFor="contact-category" className={labelClass}>
           {t.contactPage.inquiryTypeLabel}
         </label>
         <div className="relative">
           <select
             id="contact-category"
+            required
+            aria-required="true"
+            aria-invalid={state === 'error' && !category}
+            aria-describedby="contact-error"
             value={category}
             onChange={e => {
               setCategory(e.target.value);
               clearError();
             }}
             className={`${inputClass} appearance-none pr-12 cursor-pointer`}
-            disabled={state === 'loading'}
+            disabled={state === 'loading' || noInquiryTypes}
           >
             <option value="" disabled>
-              {t.contactPage.selectPlaceholder}
+              {noInquiryTypes
+                ? t.contactPage.noInquiryTypes
+                : t.contactPage.selectPlaceholder}
             </option>
-            {INQUIRY_TYPES.map(type => (
-              <option key={type} value={type}>
-                {inquiryLabels[type]}
+            {inquiryTypes.map(type => (
+              <option key={type.category} value={type.category}>
+                {lang === 'ZH'
+                  ? type.labelZh || type.labelEn
+                  : type.labelEn}
               </option>
             ))}
           </select>
@@ -208,6 +273,10 @@ export default function ContactEmailForm() {
         </label>
         <textarea
           id="contact-message"
+          required
+          aria-required="true"
+          aria-invalid={state === 'error' && !message.trim()}
+          aria-describedby="contact-error"
           value={message}
           onChange={e => {
             setMessage(e.target.value);
@@ -235,19 +304,49 @@ export default function ContactEmailForm() {
         />
       </div>
 
-      {state === 'error' && (
-        <p className="text-red-500 text-sm ml-2" role="alert">
-          {errorMsg}
-        </p>
-      )}
+      {/* Always in the DOM so aria-describedby resolves and role="alert"
+          announces; hidden while empty. Non-colour cue (icon + "Error:") plus
+          red-600 (>=4.5:1) instead of the failing red-500. */}
+      <p
+        id="contact-error"
+        role="alert"
+        className="text-red-600 font-semibold text-sm ml-2 empty:hidden"
+      >
+        {state === 'error' && (
+          <>
+            <span aria-hidden="true">⚠ </span>
+            {lang === 'EN' ? 'Error: ' : '错误：'}
+            {errorMsg}
+          </>
+        )}
+      </p>
 
       <button
         type="submit"
-        disabled={state === 'loading'}
-        className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        disabled={state === 'loading' || noInquiryTypes}
+        className="w-fit bg-[#0a4479] text-white font-bold text-base sm:text-[20px] px-8 sm:px-10 py-3 sm:py-4 rounded-[30px] hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0a4479] focus-visible:ring-offset-2"
       >
         {state === 'loading' ? t.contactPage.sending : t.contactPage.sendMessage}
       </button>
     </form>
+  );
+
+  return (
+    <div>
+      {/* Live region kept in the DOM (empty) before success so screen readers
+          announce the text when it's injected — many only announce a region
+          that already existed before its content changed. */}
+      <div role="status">
+        {state === 'success' && (
+          <div className="flex flex-col gap-3 py-10">
+            <p className="text-[#0a4479] text-xl font-bold">
+              {t.contactPage.successTitle}
+            </p>
+            <p className="text-[#0a4479] text-base">{t.contactPage.successText}</p>
+          </div>
+        )}
+      </div>
+      {state !== 'success' && formMarkup}
+    </div>
   );
 }

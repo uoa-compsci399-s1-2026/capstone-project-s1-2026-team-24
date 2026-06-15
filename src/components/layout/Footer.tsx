@@ -3,12 +3,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useLanguage } from "@/contexts/LanguageContext";
-import en from "@/messages/en";
-import zh from "@/messages/zh";
+import { NewTabHint } from "@/components/ui/NewTabHint";
 
 export default function Footer() {
-  const { lang } = useLanguage();
-  const t = lang === "EN" ? en : zh;
+  const { t } = useLanguage();
 
   const legalLinks = [
     {
@@ -40,7 +38,7 @@ export default function Footer() {
           {/* Left */}
           <p
             style={{
-              fontFamily: "Inter, sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "13px",
               color: "rgba(255,255,255,0.4)",
             }}
@@ -61,6 +59,7 @@ export default function Footer() {
                   rel="noopener noreferrer"
                 >
                   {link.label}
+                  <NewTabHint />
                 </a>
               </li>
             ))}

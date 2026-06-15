@@ -147,8 +147,12 @@ export async function POST(request: NextRequest) {
     const maxOrderResult = await prisma.partnerLogo.aggregate({
       _max: { order: true },
     });
-    const nextOrder =
-      parsedOrder ?? (maxOrderResult._max.order ?? -1) + 1;
+    // Clamp the auto-increment fallback too: an unclamped MAX_ORDER+1 writes to
+    // SQLite fine but throws when Prisma reads the row back, crashing the admin
+    // list. (Explicit client orders are already clamped via parseOrder.)
+    const nextOrder = clampOrder(
+      parsedOrder ?? (maxOrderResult._max.order ?? -1) + 1,
+    );
 
     const isPlaceholder = hasFile ? false : (explicitPlaceholder ?? true);
 

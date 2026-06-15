@@ -22,7 +22,7 @@ export interface StudyData {
   ethicsStatement: string;
   status: string;
   publishedAt: string | null;
-  pdfs: { id: number; title: string; pdfPath: string }[];
+  pdfs: { id: number; title: string; fileName: string }[];
 }
 
 interface StudyContextValue {

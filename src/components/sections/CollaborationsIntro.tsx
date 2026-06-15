@@ -34,10 +34,10 @@ export default function CollaborationsIntro({
       <div className="lg:hidden px-6 py-10 flex flex-col gap-8">
         {/* Title + text */}
         <div>
-          <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "24px", fontWeight: 700, color: "#0c0c48", marginBottom: "12px", lineHeight: 1.2 }}>
+          <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "24px", fontWeight: 700, color: "#0c0c48", marginBottom: "12px", lineHeight: 1.2 }}>
             {sectionTitle}
           </h2>
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "15px", color: "#4b5563", lineHeight: 1.7, margin: 0 }}>
+          <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "15px", color: "#4b5563", lineHeight: 1.7, margin: 0 }}>
             {sectionText}
           </p>
         </div>
@@ -57,18 +57,18 @@ export default function CollaborationsIntro({
 
         {/* Pathway card */}
         <div style={{ backgroundColor: "#0a4379", borderRadius: "0 24px", padding: "24px" }}>
-          <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "18px", fontWeight: 700, color: "white", marginBottom: "16px" }}>
+          <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "18px", fontWeight: 700, color: "white", marginBottom: "16px" }}>
             {pathwayTitle}
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {steps.map((step, i) => (
               <div key={`${i}-${step}`} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", fontWeight: 700, color: "white" }}>
+                  <span style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "12px", fontWeight: 700, color: "white" }}>
                     {i + 1}
                   </span>
                 </div>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "14px", color: "rgba(255,255,255,0.85)", margin: 0 }}>
+                <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "14px", color: "rgba(255,255,255,0.85)", margin: 0 }}>
                   {step}
                 </p>
               </div>
@@ -83,11 +83,11 @@ export default function CollaborationsIntro({
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
               <polyline points="22 4 12 14.01 9 11.01" />
             </svg>
-            <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "17px", fontWeight: 700, color: "#0a4379", margin: 0 }}>
+            <h3 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "17px", fontWeight: 700, color: "#0a4379", margin: 0 }}>
               {complianceTitle}
             </h3>
           </div>
-          <p style={{ fontFamily: "Inter, sans-serif", fontSize: "14px", color: "#4b5563", lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "14px", color: "#4b5563", lineHeight: 1.6, margin: 0 }}>
             {complianceText}
           </p>
         </div>
@@ -99,25 +99,25 @@ export default function CollaborationsIntro({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "60px", alignItems: "start" }}>
             {/* Left */}
             <div>
-              <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "28px", fontWeight: 700, color: "#0c0c48", marginBottom: "16px", lineHeight: 1.2 }}>
+              <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "28px", fontWeight: 700, color: "#0c0c48", marginBottom: "16px", lineHeight: 1.2 }}>
                 {sectionTitle}
               </h2>
-              <p style={{ fontFamily: "Inter, sans-serif", fontSize: "16px", color: "#4b5563", lineHeight: 1.7, marginBottom: "32px" }}>
+              <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "16px", color: "#4b5563", lineHeight: 1.7, marginBottom: "32px" }}>
                 {sectionText}
               </p>
               <div style={{ backgroundColor: "#0a4379", borderRadius: "0 30px", padding: "32px", height: "400px" }}>
-                <h2 style={{ fontFamily: "Inter, sans-serif", fontSize: "20px", fontWeight: 700, color: "white", marginBottom: "20px" }}>
+                <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "20px", fontWeight: 700, color: "white", marginBottom: "20px" }}>
                   {pathwayTitle}
                 </h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                   {steps.map((step, i) => (
                     <div key={`${i}-${step}`} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <div style={{ width: "28px", height: "28px", borderRadius: "50%", backgroundColor: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <span style={{ fontFamily: "Inter, sans-serif", fontSize: "12px", fontWeight: 700, color: "white" }}>
+                        <span style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "12px", fontWeight: 700, color: "white" }}>
                           {i + 1}
                         </span>
                       </div>
-                      <p style={{ fontFamily: "Inter, sans-serif", fontSize: "14px", color: "rgba(255,255,255,0.85)", margin: 0 }}>
+                      <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "14px", color: "rgba(255,255,255,0.85)", margin: 0 }}>
                         {step}
                       </p>
                     </div>
@@ -139,11 +139,11 @@ export default function CollaborationsIntro({
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                  <h3 style={{ fontFamily: "Inter, sans-serif", fontSize: "20px", fontWeight: 700, color: "#0a4379", margin: 0 }}>
+                  <h3 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "20px", fontWeight: 700, color: "#0a4379", margin: 0 }}>
                     {complianceTitle}
                   </h3>
                 </div>
-                <p style={{ fontFamily: "Inter, sans-serif", fontSize: "14px", color: "#4b5563", lineHeight: 1.6, margin: 0 }}>
+                <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "14px", color: "#4b5563", lineHeight: 1.6, margin: 0 }}>
                   {complianceText}
                 </p>
               </div>
