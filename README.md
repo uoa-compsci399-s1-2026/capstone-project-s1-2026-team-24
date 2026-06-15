@@ -4,11 +4,17 @@ The public website and content-management system (CMS) for the University of Auc
 
 Highlights: a block-based page builder with draft/publish and EN/中文 translation, a media library, **site-wide search** (navbar → pages, studies, team, publications, and page content), and an ORCID/OpenAlex **publications sync** with admin-configurable **auto-sorting** (Approved/Pending/Rejected routing) and durable **tombstone deletes** that survive re-sync.
 
+## Links
+
+- **Live site:** <https://hnu-auckland.onrender.com> — the admin console is at [`/admin`](https://hnu-auckland.onrender.com/admin).
+- **Project management:** [GitHub Project board #42](https://github.com/orgs/uoa-compsci399-s1-2026/projects/42) (issues, milestones, and the team backlog).
+- **Final report:** the *HNU Auckland — Final Group Report (Team 24)* is submitted alongside this project on Canvas.
+
 ## Tech stack
 
 | Layer | Choice |
 |-------|--------|
-| Framework | Next.js **16.2.2** (App Router) |
+| Framework | Next.js **16.2.7** (App Router) |
 | UI | React **19.2.4** |
 | Styling | Tailwind CSS **v4** — config lives in `@theme` in `src/app/globals.css` (**no `tailwind.config.js`**) |
 | Database | SQLite via Prisma **7.7.0** (`better-sqlite3` adapter) |
@@ -20,7 +26,7 @@ Highlights: a block-based page builder with draft/publish and EN/中文 translat
 
 ## Prerequisites
 
-- **Node.js ≥ 20** (the toolchain targets `@types/node` v20)
+- **Node.js ≥ 22.17.1** (declared in `package.json` `engines`; the toolchain targets `@types/node` v22). The pinned version is in `.nvmrc` — run `nvm use` if you use nvm.
 - npm (ships with Node)
 
 ## Quickstart
@@ -94,3 +100,23 @@ Project docs live in [`docs/`](./docs) — start with the [docs index](./docs/RE
 | [Troubleshooting](./docs/troubleshooting.md) | FAQ for common onboarding issues |
 | [Deployment](./docs/deployment.md) | Building and hosting (file-SQLite considerations) |
 | [Contributing](./docs/contributing.md) | Conventions, tests, PR workflow |
+
+## Future plans
+
+Ideas and known limitations we'd tackle in a future release:
+
+- **Move off file-based SQLite.** The app currently runs on a single SQLite file on a persistent volume, which ties it to one instance. Migrating to managed Postgres (or libSQL/Turso) would let it scale horizontally and fit serverless hosting. See [`docs/deployment.md`](./docs/deployment.md).
+- **Re-enable image optimization.** Next's image optimizer is turned off (`images.unoptimized`) because `sharp` OOMs on the 512&nbsp;MB Render Starter plan. A larger plan or an external image CDN would let us turn it back on.
+- **Finish retiring the legacy `/studies` overview.** The index page was removed in favour of the navbar Studies dropdown, but a deprecated route is still reachable and should be cleaned up with proper redirects.
+- **Broaden machine translation.** Extend 中文 coverage and add an in-admin translation review/QA workflow so editors can proof machine output before publish.
+- **Continuous integration.** Re-introduce automated CI (the existing `npm run verify` + test suite) once GitHub Actions is available for the org.
+- **Ongoing accessibility & SEO polish.**
+
+## Acknowledgements
+
+- **Human Nutrition Unit, University of Auckland** — our client, for the brief, content, and feedback throughout the project.
+- **COMPSCI 399 (Capstone)** teaching team and our project mentor.
+- Built by **Team 24** — see the repository's contributor history for the development team.
+- Open-source projects this is built on: [Next.js](https://nextjs.org), [React](https://react.dev), [Prisma](https://www.prisma.io), [Tiptap](https://tiptap.dev), [dnd-kit](https://dndkit.com), [Tailwind CSS](https://tailwindcss.com), [Fuse.js](https://fusejs.io), [jose](https://github.com/panva/jose), [Resend](https://resend.com), [better-sqlite3](https://github.com/WiseLibs/better-sqlite3), and [sanitize-html](https://github.com/apostrophecms/sanitize-html).
+- Public data APIs: **ORCID** and **OpenAlex**, which power the publications sync.
+- Photography: stock images courtesy of the respective photographers on [Unsplash](https://unsplash.com) (credited in the filenames under `public/`).

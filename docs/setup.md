@@ -4,7 +4,7 @@ Local onboarding for the HNU Auckland website + CMS. The flow below is **idempot
 
 ## Prerequisites
 
-- **Node.js ≥ 20** (the toolchain targets `@types/node` v20)
+- **Node.js ≥ 22.17.1** (declared in `package.json` `engines`; the toolchain targets `@types/node` v22). The version is pinned in `.nvmrc` — run `nvm use` if you use nvm.
 - npm (bundled with Node)
 - A POSIX-ish shell. Windows users: use PowerShell and substitute `copy` for `cp`.
 

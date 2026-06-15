@@ -14,6 +14,7 @@ Documentation for the University of Auckland Human Nutrition Unit website + CMS.
 | [environment.md](./environment.md) | Every environment variable, what reads it, and `.env` vs `.env.local`. |
 | [content-editing.md](./content-editing.md) | Which file/block renders which section, and how page content is stored. |
 | [styling.md](./styling.md) | Tailwind v4 `@theme` config and UoA brand colours. |
+| [icons.md](./icons.md) | Favicon, app-icon, and logo assets (and how to regenerate them). |
 | [admin-cms.md](./admin-cms.md) | Using the admin console: pages, studies, team, partners, publications. |
 | [troubleshooting.md](./troubleshooting.md) | FAQ for the common onboarding and runtime issues. |
 | [deployment.md](./deployment.md) | Building and hosting, including file-SQLite considerations. |

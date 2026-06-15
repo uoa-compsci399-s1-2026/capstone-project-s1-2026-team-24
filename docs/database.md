@@ -58,6 +58,10 @@ One-off backfills / migrations (rarely needed after a fresh seed):
 | `npm run migrate:richtext` | Migrate block content to the rich-text format. |
 | `npm run backfill:media-dims` | Fill in width/height on existing media assets. |
 | `npm run backfill:published` | Backfill the published flag on pages. |
+| `npm run backfill:inquiry-labels` | Backfill labels on existing contact inquiries. |
+| `npm run backfill:studies-links` | Re-point legacy study links to their current routes. |
+| `npm run cleanup:studies-contact-card` | Remove the deprecated contact card from study layouts. |
+| `npm run reset:study-template` | Reset the default study-layout template blocks. |
 
 ## How scripts load env vars
 
