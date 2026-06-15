@@ -1,3 +1,12 @@
+// Admin API for the partner-logo collection backing the public "Our Partners"
+// section. GET lists every logo grouped/ordered for the admin console; POST
+// creates one from a multipart form, optionally persisting an uploaded image to
+// public/uploads/partner-logos and recording its served path.
+// Node runtime: needs fs access to write/clean up logo files on disk.
+// On any create failure the just-saved file is removed so disk never drifts
+// from the DB, and the auto-increment order fallback is clamped to dodge the
+// Prisma Int-overflow read crash (see src/lib/order.ts).
+
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";

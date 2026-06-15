@@ -1,3 +1,8 @@
+// Admin publications list endpoint backing the review console's library table.
+// GET → paginated, filtered (status/search) publications plus the status-chip
+// counts shown above the table. The chip counts are computed in one cheap
+// groupBy and deliberately ignore the status filter (so chips stay library-wide)
+// while still honouring search, so a single request feeds the whole view.
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";

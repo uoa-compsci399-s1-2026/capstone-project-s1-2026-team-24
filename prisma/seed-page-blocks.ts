@@ -406,6 +406,13 @@ const PAGE_SEEDS: PageSeed[] = [
   },
 ];
 
+/**
+ * Seeds every page in PAGE_SEEDS: upserts the Page, backfills an "Original"
+ * revision (so the as-designed layout is always revertable from History), then
+ * creates its PageBlocks and publishes them. Idempotent — pages that already
+ * have blocks are skipped to preserve admin edits unless `force` is set, which
+ * deletes and recreates them. Also pre-seeds the manual ZH translation cache.
+ */
 export async function seedPageBlocks(prisma: PrismaClient, force = false) {
   for (const pageSeed of PAGE_SEEDS) {
     const page = await prisma.page.upsert({

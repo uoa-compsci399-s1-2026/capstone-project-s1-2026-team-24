@@ -1,3 +1,7 @@
+// Shared PrismaClient singleton — the single DB entry point for the whole app.
+// Cached on globalThis so dev hot-reload reuses one connection instead of
+// leaking a new client per reload. Configures the SQLite adapter (Prisma 7
+// requirement) and a global omit so heavy StudyPdf blobs never load implicitly.
 import { PrismaClient } from "@prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 

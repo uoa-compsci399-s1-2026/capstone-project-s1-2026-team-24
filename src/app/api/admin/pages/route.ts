@@ -1,3 +1,9 @@
+// Admin API for the page-editor index: GET returns every editable page (slug,
+// metadata, block count) for the admin pages list. Non-public pages — the
+// retired "studies" overview and internal study-layout pages — are excluded so
+// content editors can't reach routes that have no public-site presence. The
+// excluded-slug rules live in lib/blocks/page-paths so they stay in sync with
+// site search rather than drifting per call site.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {

@@ -1,3 +1,6 @@
+// Server-only data accessor for partner logos: the single DB read shared by the
+// `/api/partner-logos` route and the OurPartners server component, so both agree
+// on which fields are public and how the list is ordered.
 import "server-only";
 import { prisma } from "@/lib/prisma";
 

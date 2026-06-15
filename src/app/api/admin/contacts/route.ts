@@ -1,3 +1,6 @@
+// Admin API for reading public contact-form submissions.
+// GET → newest-first list of submissions, optionally filtered by ?category;
+// powers the admin inbox view. Read-only; submissions are created elsewhere.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 

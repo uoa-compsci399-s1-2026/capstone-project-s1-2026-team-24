@@ -1,3 +1,7 @@
+// In-process, fixed-window rate limiter shared by API routes (contact, login,
+// search) to throttle abuse. Deliberately in-memory rather than SQLite/Redis:
+// a single Render instance with no Redis, where a per-request DB write would
+// block the event loop. Counters reset on restart, which is fine for throttling.
 import { NextResponse } from "next/server";
 
 type RateLimitEntry = {

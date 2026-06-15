@@ -1,3 +1,8 @@
+// Admin API route: POST restores a stored page revision back into the live
+// (draft) blocks for the page identified by [slug]. The revision is scoped to
+// its page so it can't be applied to the wrong one, and restoring only stages
+// the content as a draft — it never publishes, leaving the admin to review and
+// publish from the editor.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parsePublishedSnapshot } from "@/lib/page-publish";

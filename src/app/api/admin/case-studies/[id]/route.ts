@@ -1,3 +1,8 @@
+// Admin API route for a single case study by id.
+// DELETE removes the CaseStudy row, then best-effort unlinks its backing PDF
+// from public/ so deleted studies don't leave orphaned files on disk. The file
+// removal is non-fatal: a missing/locked PDF is logged but still reports success
+// since the canonical record (the DB row) is already gone.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { unlink } from "fs/promises";

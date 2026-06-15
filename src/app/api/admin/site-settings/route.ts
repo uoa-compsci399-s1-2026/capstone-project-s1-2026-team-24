@@ -1,3 +1,10 @@
+// Admin API for site-wide branding (favicon + light/dark logos). GET returns the
+// raw stored override values for the admin UI; POST uploads a replacement image
+// or resets a target back to its built-in default. Uploads are validated by MIME
+// and extension (SVG banned, stored-XSS stance), saved under /public/uploads/branding
+// with a timestamped name, and the previous file is cleaned up; the DB swap is
+// transactional and the site-settings cache tag is purged so renders pick up the
+// change immediately.
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";

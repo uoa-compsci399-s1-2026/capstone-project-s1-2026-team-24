@@ -1,3 +1,9 @@
+// Admin login endpoint. POST { password } verifies the configured admin
+// password and, on success, sets a signed, httpOnly session cookie that
+// middleware checks to gate the admin console. Hardened against brute-force
+// (per-IP rate limit) and timing attacks (constant-time compare), and fails
+// closed with a 500 when ADMIN_PASSWORD / ADMIN_SESSION_SECRET are missing or
+// too weak rather than leaking the cause to the client.
 import { createHash, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import {

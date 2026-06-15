@@ -1,3 +1,8 @@
+// Public read-only API for a single study, keyed by slug.
+// GET /api/studies/[slug] → 200 with the study's display fields (bilingual EN/ZH
+// copy, eligibility, compensation, REDCap link and contact details), 404 when no
+// study matches the slug, 500 on unexpected failure. No auth: only presentation
+// fields are selected, so internal columns never leak to public clients.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 

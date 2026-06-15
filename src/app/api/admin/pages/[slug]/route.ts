@@ -1,3 +1,6 @@
+// Admin API for a single editable Page, keyed by slug.
+// GET → the page plus its blocks ordered for display, used by the page editor to
+// load existing content. Returns 404 when the slug is unknown, 500 on DB errors.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 

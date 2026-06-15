@@ -1,3 +1,7 @@
+// Server-only data accessor for the visible team roster, grouped into the three
+// display sections. Single source of truth shared by the `/api/team` route and
+// the TeamSectionsBlock server component, so both agree on shape and ordering
+// without one HTTP-fetching the other during render.
 import "server-only";
 import { TeamSection } from "@prisma/client";
 import { prisma } from "@/lib/prisma";

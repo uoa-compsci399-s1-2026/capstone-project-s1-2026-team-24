@@ -1,3 +1,7 @@
+// Admin recovery route for study layouts: restores a study's page (or the shared
+// template) to the original code-defined default blocks. The default lives in
+// source control, so this is the guaranteed escape hatch when an edited layout
+// has been broken from the admin panel.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { studyOverrideSlug } from "@/components/blocks/study/resolve-study-layout";

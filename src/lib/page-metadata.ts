@@ -1,3 +1,7 @@
+// Shared helper that assembles Next.js per-page Metadata (title, description,
+// canonical, Open Graph / Twitter cards) from localized strings, resolving the
+// visitor's language server-side. Centralised here so every route brands and
+// localises its <head> consistently rather than hand-rolling Metadata objects.
 import type { Metadata } from "next";
 import { getServerLang } from "@/lib/lang";
 import { SITE_NAME } from "@/lib/constants";

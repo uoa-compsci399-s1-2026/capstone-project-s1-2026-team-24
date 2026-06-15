@@ -1,3 +1,8 @@
+// Edge middleware gating the admin surface (/admin pages + /api/admin routes):
+// it rejects cross-origin state-changing requests (defence-in-depth CSRF) and
+// requires a valid admin session, redirecting page traffic to /admin/login and
+// returning 401 JSON for API traffic. The login page and auth endpoints are the
+// only authenticated-exempt paths. All other traffic passes straight through.
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import {

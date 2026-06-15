@@ -1,3 +1,11 @@
+// Admin CRUD for a single partner logo by id. GET reads one record; PATCH
+// updates fields and (for multipart requests) optionally swaps the logo image;
+// DELETE removes the record and its on-disk file. Runs on the Node runtime
+// because logo files are written to / removed from public/uploads/partner-logos.
+// PATCH accepts either JSON (placeholder/order/group only) or multipart form
+// data (full edit incl. file upload); a newly saved upload is rolled back from
+// disk if the write fails, and the previous file is deleted only after a
+// successful swap so a logo is never lost on a failed update.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";

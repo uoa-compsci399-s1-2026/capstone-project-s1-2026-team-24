@@ -1,3 +1,7 @@
+// Admin API route for publication categories.
+// GET → returns all PublicationCategory rows ordered by `order` (asc) for the
+// admin console's category management UI. Read-only; failures are logged and
+// surfaced as a 500 with a generic message.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 

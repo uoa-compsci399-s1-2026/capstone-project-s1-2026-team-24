@@ -1,3 +1,7 @@
+// Public, unauthenticated download endpoint for study PDFs. Streams the file
+// bytes straight from the database because Render's filesystem is ephemeral, so
+// uploaded files can't be served from disk. Runs on the Node runtime and is
+// force-dynamic so the bytes are read per request, never prerendered/cached.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -10,6 +14,12 @@ function parseId(rawId: string) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
+/**
+ * GET /api/studies/pdf/[pdfId] — serves a study PDF inline by numeric id.
+ * Responds 400 for a non-positive-integer id, 404 when the row or its bytes are
+ * missing, and 500 on unexpected errors. The filename is sanitised before being
+ * placed in the Content-Disposition header.
+ */
 // Public download for a study PDF. The bytes live in the database (Render's
 // filesystem is ephemeral), so this streams them with a sensible filename. The
 // `data` column is normally omitted from queries (see src/lib/prisma.ts), so it

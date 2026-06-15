@@ -1,3 +1,9 @@
+// Admin CRUD for a single Study by numeric id (GET read, PATCH update, DELETE
+// remove). Backs the admin study editor; mutating routes whitelist the writable
+// fields, validate status, and clamp order before touching the DB. PATCH also
+// re-warms the ZH translation cache for the listing fields, and DELETE sweeps
+// the study's on-disk PDF upload dir that the DB cascade can't reach. Node
+// runtime because DELETE does filesystem cleanup.
 import { NextResponse } from "next/server";
 import { rm } from "fs/promises";
 import path from "path";

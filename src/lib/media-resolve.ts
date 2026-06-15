@@ -1,3 +1,9 @@
+// Server-side bridge between the MediaAsset library and the page-builder blocks
+// (plus the DB-field image consumers). It resolves "media:{id}" references to
+// real file paths at read time, surfaces a referenced asset's altText as an
+// imageAlt fallback, finds everywhere an asset is used (for the "where is this
+// used" view / delete guard), and migrates raw-path references when an asset is
+// repointed. server-only so the Prisma access never leaks into a client bundle.
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { parseBlockContent, serializeBlockContent } from "@/lib/blocks/validate";

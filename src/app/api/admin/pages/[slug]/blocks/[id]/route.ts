@@ -1,3 +1,8 @@
+// Admin API for a single page block: PATCH updates its content/visibility,
+// DELETE removes it and reflows the remaining blocks' positions. Every block is
+// looked up scoped to the page slug in the URL so a block can't be touched via
+// the wrong page. PATCH runs content through validateBlockForWrite (type-aware
+// normalisation) before persisting; a no-op PATCH returns the existing row.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateBlockForWrite } from "@/lib/blocks/validate";

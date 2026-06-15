@@ -1,3 +1,6 @@
+// Server-only write helpers that mutate a page's live (draft) blocks. Kept
+// separate from page-publish so revision-restore and discard-changes flows share
+// one transactional snapshot-replace path.
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { PublishedBlock } from "@/lib/page-publish";

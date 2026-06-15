@@ -1,3 +1,13 @@
+// URL-sanitising helpers shared by the homepage and research index. Centralises
+// the rule that only http(s) links may be rendered, so user-supplied publication
+// urls can't smuggle in javascript:/data: schemes via outbound anchors.
+
+/**
+ * Normalises an untrusted value into a safe absolute http(s) url, or null.
+ * Returns null for empty/whitespace-only input, unparseable urls, and any
+ * non-http(s) scheme (e.g. javascript:, data:, mailto:), making it safe to feed
+ * straight into an anchor href.
+ */
 export function getSafeHttpUrl(value: string | null | undefined) {
   if (!value) {
     return null;

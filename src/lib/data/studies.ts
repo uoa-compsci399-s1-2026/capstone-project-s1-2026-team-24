@@ -1,3 +1,7 @@
+// Server-only data accessor for the public studies listing. Lets server
+// components read studies straight from the DB instead of HTTP-fetching
+// /api/studies during render, while keeping the same 中文 cached-translation
+// behaviour so both code paths stay in sync.
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { localizeStrings } from "@/lib/translate/blocks";

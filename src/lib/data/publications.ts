@@ -1,3 +1,7 @@
+// Server-only Prisma read helpers for approved/visible publications, narrow-
+// selected per view. Lets server components (homepage cards, /research index)
+// read straight from the DB instead of HTTP-fetching the whole publications
+// table and slicing it client-side — fewer rows and columns leave SQLite.
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { clampPositiveInt } from "@/lib/clamp";

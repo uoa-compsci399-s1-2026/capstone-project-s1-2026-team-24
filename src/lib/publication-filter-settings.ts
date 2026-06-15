@@ -1,3 +1,7 @@
+// Persistence layer for the single, admin-editable publication-filter
+// configuration. Bridges the DB-backed settings row to the pure relevance
+// classifier in publication-filter.ts, lazily seeding defaults so the admin UI
+// and the publication sync always have a config to read.
 import { prisma } from "@/lib/prisma";
 import {
   DEFAULT_AFFILIATION_PHRASES,

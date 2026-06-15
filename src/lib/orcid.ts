@@ -1,3 +1,8 @@
+// ORCID public-API client: validates ORCID iDs, fetches a member's works
+// (summary + per-work detail), and normalises them into the shape the
+// publication sync consumes. Talks to the unauthenticated public API, so all
+// fields are optional/best-effort and parsing is defensive throughout.
+
 // Default to the PRODUCTION public ORCID API (no auth required for public
 // records). Override with ORCID_API_BASE_URL (e.g. the sandbox) for testing.
 const ORCID_API_BASE_URL =
@@ -204,6 +209,11 @@ async function fetchOrcidJson<T>(
     : new Error("ORCID request failed after retries");
 }
 
+/**
+ * Fetches the flattened list of public work summaries for an ORCID member. The
+ * upstream response groups duplicate works; this flattens every group's
+ * summaries and drops any entry without a put-code (no stable identifier).
+ */
 export async function fetchOrcidWorksSummary(
   orcidId: string,
 ): Promise<OrcidWorkSummaryItem[]> {
@@ -244,6 +254,11 @@ export async function fetchOrcidWorksSummary(
   );
 }
 
+/**
+ * Fetches a single work's full record (abstract, external IDs, DOI) by put-code.
+ * Unlike the summary fetch this does not retry: callers run these in parallel
+ * and degrade to summary data on failure.
+ */
 export async function fetchOrcidWorkDetail(
   orcidId: string,
   putCode: number,
@@ -283,6 +298,11 @@ export async function fetchOrcidWorkDetail(
   };
 }
 
+/**
+ * Fetches and normalises every public work for a member into the shape the
+ * publication sync consumes. Detail fetches run in parallel; any that fail fall
+ * back to the summary data (no abstract/DOI) rather than aborting the batch.
+ */
 export async function fetchNormalizedOrcidWorks(
   orcidId: string,
 ): Promise<NormalizedOrcidWork[]> {

@@ -1,3 +1,8 @@
+// Admin API for the team-members collection: GET lists every member (visible or
+// not) grouped by section, POST creates one from a multipart form. Runs on the
+// Node runtime so it can write uploaded photos to public/uploads/team. Photo
+// uploads are validated for type/size; missing photos fall back to a placeholder.
+
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TeamSection } from "@prisma/client";
@@ -54,6 +59,10 @@ async function saveTeamPhoto(file: File) {
   return `/uploads/team/${safeFileName}`;
 }
 
+/**
+ * Returns all team members (including hidden ones), ordered by section then by
+ * order, for the admin console. No filtering — admins see the full roster.
+ */
 export async function GET() {
   try {
     const members = await prisma.teamMember.findMany({
@@ -69,6 +78,12 @@ export async function GET() {
   }
 }
 
+/**
+ * Creates a team member from a multipart form. Requires name, title, and a valid
+ * section; orcidId (when supplied) must pass ORCID-format validation. An invalid
+ * photo upload yields 400; absent photos default to the placeholder image. The
+ * client-supplied order is clamped to a safe range.
+ */
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();

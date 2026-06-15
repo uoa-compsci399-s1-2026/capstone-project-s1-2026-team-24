@@ -1,3 +1,6 @@
+// Derives a trustworthy client IP from request headers for use as a rate-limit
+// key. Centralises the spoof-resistant proxy handling so every API route keys
+// off the same validated value rather than reinventing header parsing.
 import { isIP } from "node:net";
 
 // Number of trusted reverse proxies in front of the app. On Render the platform

@@ -1,3 +1,11 @@
+// Admin API for the case-studies collection.
+//   GET  -> list every case study, newest upload first.
+//   POST -> accept a multipart form (title, description, PDF), validate it,
+//           persist the file under public/uploads/case-studies, and record the
+//           row in the DB.
+// Uploads are constrained to PDFs <= 20MB; the stored filename is timestamp-
+// prefixed and sanitised so it can't escape the upload dir or clash with
+// existing files. Runs on the Node runtime because it touches the filesystem.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { mkdir, writeFile } from "fs/promises";

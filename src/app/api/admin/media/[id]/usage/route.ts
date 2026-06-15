@@ -1,3 +1,6 @@
+// Admin API route reporting where a single MediaAsset is referenced across page
+// blocks. Backs the admin media library's "where used" panel and the safety
+// guard that blocks deleting an asset that is still in use.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { findAssetUsage } from "@/lib/media-resolve";

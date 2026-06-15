@@ -1,3 +1,7 @@
+// Reads pixel dimensions from raw image bytes during media uploads, so assets
+// can be stored with their intrinsic width/height. Wraps the pure-JS image-size
+// parser in a forgiving never-throws contract: unknown/corrupt formats yield
+// null rather than failing the upload.
 import { imageSize } from "image-size";
 
 /**
