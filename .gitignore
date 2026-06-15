@@ -29,8 +29,24 @@ CLAUDE.md
 AGENTS.md
 .claude/
 
+# IDE / editor state
+.idea/
+.vscode/
+
+# Local AI / dev tooling configs
+.air/
+.gemini/
+/settings.json
+.github/workflows/claude.yml
+
+# Stale / AI-generated dev docs (regenerable; keep off the repo)
+/BRAND.md
+/LOCAL_RUN_LOG.md
+
 # Local planning / context — never push
 keep-local-claude-made-for-personal-planning-and-context/
+# Local final-report build assets (HTML/Paged.js → PDF) — not part of the source
+/report-final/
 
 # debug
 npm-debug.log*
