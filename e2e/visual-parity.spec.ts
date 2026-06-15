@@ -9,7 +9,6 @@ const PUBLIC_ROUTES = [
   { name: "home", path: "/" },
   { name: "about", path: "/about" },
   { name: "research", path: "/research" },
-  { name: "studies", path: "/studies" },
   { name: "team", path: "/team" },
   { name: "contact", path: "/contact" },
   { name: "collaborations", path: "/collaborations" },
