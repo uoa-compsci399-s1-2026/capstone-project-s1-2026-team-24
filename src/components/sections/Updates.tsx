@@ -205,7 +205,7 @@ export default function Updates({
                 opacity: isHovered ? 1 : 0,
                 transition: "opacity 0.2s ease",
                 zIndex: 2,
-                display: "var(--arrow-display, block)" as any,
+                display: "var(--arrow-display, block)" as React.CSSProperties["display"],
               }}
             >
               ←
