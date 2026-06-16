@@ -1,3 +1,9 @@
+// Public read-only API for the studies listing. GET returns active, publicly
+// visible studies (PUBLIC_STUDY_WHERE) in display order, projected to the
+// fields the listing needs. With ?lang=zh (or a ZH cookie) the title and short
+// description are auto-translated via a read-only cache lookup; a miss falls
+// back to the English source rather than a live API call. No auth — only the
+// public subset is ever exposed.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerLang } from "@/lib/lang";

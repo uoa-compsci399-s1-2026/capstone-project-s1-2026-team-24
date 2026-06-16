@@ -1,3 +1,7 @@
+// Admin API route for the page editor: POST appends (or inserts) a block onto
+// a page identified by its slug. Block type/content are validated server-side
+// before persistence, and sibling positions are shifted to keep the ordering
+// contiguous. Runs on the Node runtime because it touches Prisma directly.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { validateBlockForWrite } from "@/lib/blocks/validate";

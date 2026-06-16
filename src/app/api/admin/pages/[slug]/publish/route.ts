@@ -1,3 +1,7 @@
+// Admin API route that publishes a page editor's draft: it freezes the page's
+// currently-visible blocks into the published copy the public site reads, and
+// records a bounded revision history so prior layouts stay recoverable. Lives
+// behind the admin console; the public site never writes here.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { snapshotBlocks, parsePublishedSnapshot } from "@/lib/page-publish";
@@ -11,6 +15,14 @@ const MAX_REVISIONS = 20;
 
 // Publish a page: snapshot its current visible (draft) blocks into
 // Page.publishedContent — what the public site renders — and record a revision.
+/**
+ * POST /api/admin/pages/[slug]/publish — promotes the page's draft to live.
+ * Snapshots the page's visible blocks, updates the published copy, and appends a
+ * "Published" revision atomically, pruning to the most recent MAX_REVISIONS while
+ * always keeping the "Original" baseline. Returns 404 if the slug is unknown.
+ * Translation pre-warming runs after commit and is best-effort: its failure does
+ * not fail the publish.
+ */
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ slug: string }> },

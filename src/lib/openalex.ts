@@ -1,3 +1,8 @@
+// Fetches per-work institutional affiliation data (ROR ids + raw affiliation
+// strings) from OpenAlex, keyed so the ORCID sync route can attach an
+// affiliation signal to each publication. Best-effort by design: any network or
+// parse failure degrades to an empty map rather than failing the sync, letting
+// the caller fall back to keyword-only classification.
 import {
   buildPublicationDedupKey,
   normalizePublicationTitle,

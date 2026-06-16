@@ -1,3 +1,6 @@
+// Server-only i18n entry point: lazily loads the active language's message
+// dictionary so only that language's strings reach the RSC payload. Sits
+// between the per-language sources in @/messages and the client LanguageProvider.
 import "server-only";
 
 // The active-language dictionary shape, derived from the English source of

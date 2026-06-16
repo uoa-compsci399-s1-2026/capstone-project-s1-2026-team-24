@@ -1,3 +1,9 @@
+// Admin API for a page's revision history, keyed by slug.
+//   GET    → lightweight list of revisions (newest first, with block counts)
+//   DELETE → clears saved history, keeping only the "Original" baseline
+// Read paths are unauthenticated here — access is gated by the admin layout/
+// middleware that fronts /api/admin. The heavy snapshot payload is left to the
+// restore endpoint; this route returns metadata only.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parsePublishedSnapshot } from "@/lib/page-publish";

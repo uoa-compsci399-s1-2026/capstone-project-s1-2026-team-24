@@ -1,3 +1,6 @@
+// Public read-only API route for partner logos.
+// GET → 200 with the full partner-logo list (via getPartnerLogos), or 500 on
+// failure. No auth: this backs publicly rendered partner sections.
 import { NextResponse } from "next/server";
 import { getPartnerLogos } from "@/lib/data/partner-logos";
 

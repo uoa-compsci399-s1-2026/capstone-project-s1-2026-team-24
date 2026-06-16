@@ -1,3 +1,10 @@
+// Admin route that refreshes the publication library from each visible team
+// member's ORCID profile. POST → fetches ORCID works + OpenAlex affiliations,
+// classifies relevance against the saved filter config, then creates/updates
+// rows in place (preserving manual review) while honouring hard-delete
+// tombstones. Off-topic works are stored only up to a per-member cap. Returns a
+// reconciled per-member summary; an in-process flag rejects overlapping runs
+// with 409. No surrounding transaction by design — see the snapshot note below.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchNormalizedOrcidWorks, UNTITLED_WORK_TITLE } from "@/lib/orcid";

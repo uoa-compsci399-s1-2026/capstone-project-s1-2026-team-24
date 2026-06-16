@@ -2,7 +2,7 @@
 
 Stack-specific facts for building and hosting this app, plus a readiness checklist. The constraints here come from the storage layer, not Next.js per se.
 
-> **Is the site even deployed for the course?** That's an **open question** — this doc is factual and optional. It describes *what a real deployment would require* so the decision is informed; it does not assume you must deploy. Reference for the framework side: `node_modules/next/dist/docs/01-app/01-getting-started/17-deploying.md`.
+> **Current deployment.** The site is live on **Render** at <https://hnu-auckland.onrender.com> (a Node server with file-SQLite on a persistent disk), hosted under the team's account for the course. The third-party services it depends on are currently provisioned under the team's personal accounts — moving them to the client is covered in [Production handover](#production-handover) below. Reference for the framework side: `node_modules/next/dist/docs/01-app/01-getting-started/17-deploying.md`.
 
 ## The stack determines the host
 
@@ -71,6 +71,20 @@ Serving:
 
 - [ ] **HTTPS** in front of the app (the `admin_session` cookie is `secure` in production).
 - [ ] Node **20+** runtime.
+
+## Production handover
+
+The live deployment runs on **the team's own third-party accounts**, set up for the course. To hand the site over to the Human Nutrition Unit, each of these needs to move to an account the client controls. None of it is hard-coded — it's all environment configuration (see [environment.md](./environment.md#reference)) — but the underlying accounts must be transferred or re-provisioned.
+
+| Service | Current state | Handover action |
+|---------|---------------|-----------------|
+| **Hosting (Render)** | Deployed at `hnu-auckland.onrender.com` on a team member's Render account, with a persistent disk holding the SQLite DB and `public/uploads/`. | Recreate the service under the client's own host account (Render or any persistent-disk Node host — see [Hosting options](#hosting-options-that-work)). Copy the SQLite file + uploads across, set the env vars below, and keep the disk backed up. |
+| **Custom domain** | None attached; the site serves on the temporary `*.onrender.com` host, and `NEXT_PUBLIC_SITE_URL` is unset. | Attach the client's domain (e.g. an `hnu.auckland.ac.nz` subdomain) at the host, then set `NEXT_PUBLIC_SITE_URL` to it. `next.config.ts` already 301-redirects the `*.onrender.com` host to the canonical domain once that's set. |
+| **Email (Resend)** | A **personal Resend account** on the shared **test sender** (`onboarding@resend.dev`), which delivers only to the account owner — no domain is verified, so any other recipient gets a `403`. | Move to the client's Resend account, **verify a domain they control** (add the DNS records), set `EMAIL_FROM` to an address on it, and keep `RESEND_API_KEY` set. Then set the recipient per enquiry category in the admin console. See [environment.md](./environment.md#contact-form-email-resend). |
+| **Machine translation (Azure)** | `TRANSLATE_API_KEY` is an **Azure Translator resource under a personal Azure account** created for the project (Azure is the default provider; ~2M chars/month free tier). | Provision an Azure Translator resource under the client's Azure account, set `TRANSLATE_API_KEY` (+ `TRANSLATE_REGION`), then run `npm run warm:translations`. Or switch `TRANSLATE_PROVIDER` to `google`/`deepl` with their key. See [environment.md](./environment.md#machine-translation). |
+| **Admin credentials** | `ADMIN_PASSWORD` / `ADMIN_SESSION_SECRET` are set per-deployment. | Set fresh, strong values in the client's environment (don't reuse the course values). |
+| **Database (content)** | The SQLite file on the host's disk is the **source of truth** for live content — studies, team, publications, pages, and uploaded media. | Copy the live DB file **and** `public/uploads/` to the new host. **Do not** re-run `npm run seed` against it — that wipes and reseeds, clobbering real content. Keep scheduled backups. |
+| **OpenAlex / ORCID** | Public APIs, no account or key required. `OPENALEX_MAILTO`, if set, may be a developer's email (only opts into OpenAlex's faster "polite pool"). | Optionally set `OPENALEX_MAILTO` to a client/team address. Nothing to transfer. |
 
 ## Related docs
 

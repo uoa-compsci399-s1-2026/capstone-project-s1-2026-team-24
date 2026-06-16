@@ -1,3 +1,8 @@
+// Single source of truth for the admin auth session: the HS256-signed JWT
+// contract (cookie name, issuer/audience claims) plus the production secret-
+// strength guards. Shared by the login/logout API routes and middleware, so all
+// of them sign and verify against identical metadata. Uses only `jose` (no Node
+// APIs), keeping every helper here Edge-runtime safe for middleware.
 import { jwtVerify, SignJWT } from "jose";
 
 // Cookie and JWT metadata are kept in one place
@@ -84,6 +89,11 @@ export function getAdminPassword(): string {
   );
 }
 
+/**
+ * Mints a signed admin session JWT carrying only `{ role: "admin" }`, stamped
+ * with the shared issuer/audience and a 7-day expiry. Throws if the configured
+ * session secret fails the production strength guard.
+ */
 export async function createAdminSessionToken() {
   const secret = getSecret();
   // Keep payload intentionally minimal; role is enough for this prototype.
@@ -96,6 +106,12 @@ export async function createAdminSessionToken() {
     .sign(secret);
 }
 
+/**
+ * Returns `true` only when `token` is a valid, unexpired session JWT signed
+ * with the configured secret and matching the expected issuer/audience/alg. Any
+ * failure (bad signature, wrong claims, expiry, missing secret) resolves to
+ * `false` rather than throwing, so callers can treat it as a simple gate.
+ */
 export async function verifyAdminSessionToken(token: string) {
   try {
     const secret = getSecret();

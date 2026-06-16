@@ -66,6 +66,8 @@ npm run warm:translations         # translate + cache the whole site once
 
 > Only **Azure** (the default, ~2M chars/month free) is exercised in this project. Google and DeepL implement the same interface and are ready, but are unverified until their key is supplied. Switching providers is a one-line change to `TRANSLATE_PROVIDER`.
 
+> **Handover:** the `TRANSLATE_API_KEY` currently in use is an Azure Translator resource under a **personal Azure account** set up for the course. For production, provision the resource under the client's own Azure account — see [Production handover](./deployment.md#production-handover).
+
 ## Contact-form email (Resend)
 
 The public contact form always **saves** the submission. The email notification is best-effort:

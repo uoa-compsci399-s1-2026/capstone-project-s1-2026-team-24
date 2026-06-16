@@ -1,3 +1,9 @@
+// Admin media-library API. GET lists every MediaAsset newest-first; POST accepts
+// a multipart image upload, writes it to public/<MEDIA_UPLOAD_PREFIX>/ under a
+// timestamped sanitised name, records a MediaAsset row, and returns it (201).
+// Runs on the Node runtime for fs access. POST rejects non-images / oversized
+// files (4xx) and, on any later failure, deletes the just-written file so disk
+// and DB don't drift.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { mkdir, writeFile } from "fs/promises";

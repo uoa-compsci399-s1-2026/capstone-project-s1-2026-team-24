@@ -1,3 +1,10 @@
+// Pure, dependency-free relevance engine for ORCID/OpenAlex-synced publications:
+// decides whether a work belongs on the HNU research page and routes it to
+// Approved / Pending / Rejected. Kept free of Prisma/IO so the sync pipeline,
+// the seed (prisma/seed.ts), the admin settings API and the tests all share one
+// classification source of truth; the DB-backed config is layered on top via
+// configFromRow.
+
 // Stable, structured decision code so callers can branch on the reason without
 // string-matching the human-readable `reason` text (which is free to change).
 export type RelevanceReasonCode =

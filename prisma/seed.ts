@@ -1,3 +1,7 @@
+// Resets and re-populates the local development database with the baseline
+// content the app expects (studies, team, publications, partners, inquiry
+// types, filter config, page blocks). Destructive: deleteMany() wipes the
+// seeded tables first, so this is for local/dev only — never run against prod.
 import "dotenv/config";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient, TeamSection } from "@prisma/client";

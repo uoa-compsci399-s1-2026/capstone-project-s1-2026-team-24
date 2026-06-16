@@ -1,3 +1,11 @@
+// Admin REST collection for clinical/research studies.
+//   GET  → all studies ordered by `order` (admin listing; no filtering).
+//   POST → create a study from a JSON body, coercing/validating every field.
+// Inputs are normalised defensively (untrusted admin JSON): strings trimmed,
+// status constrained to ALLOWED_STATUSES (defaults to "Recruiting"), order
+// clamped to a safe Int range, and a required-field check rejects with 400.
+// On create, ZH translations of the title/short description are pre-warmed
+// best-effort so the public listing renders without a first-hit translate delay.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";

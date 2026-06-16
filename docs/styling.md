@@ -65,7 +65,7 @@ Because these are **not** in `@theme`, there are no auto-generated `bg-uoa-azure
 - **Hex literal** (common in this codebase): `className="text-[#0c0c48]"`, `bg-[#0c0c48]` — the navy `#0c0c48` appears throughout the admin UI and section components.
 - **From TS:** `BRAND_COLORS` in `src/lib/constants.ts` exposes the same hexes (`uoaWaitemata`, `uoaAzure`, `uoaMahina`) for inline styles or computed values.
 
-The full brand reference (logos, usage rules, the source palette) is in [`../BRAND.md`](../BRAND.md).
+The brand palette is defined as `:root` CSS variables in `src/app/globals.css` (mirrored by `BRAND_COLORS` in `src/lib/constants.ts`) — those two files are the source of truth. Logo and icon assets are covered in [icons.md](./icons.md).
 
 ### Changing or adding a theme token
 
@@ -97,5 +97,5 @@ Components are also developed in isolation with **Storybook** (`npm run storyboo
 ## Related docs
 
 - [content-editing.md](./content-editing.md) — finding the component that renders a section.
-- [`../BRAND.md`](../BRAND.md) — the full UoA brand guidelines.
+- [icons.md](./icons.md) — favicon, app-icon, and logo assets.
 - [architecture.md](./architecture.md) — where component files live.

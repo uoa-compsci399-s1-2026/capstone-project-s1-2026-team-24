@@ -1,3 +1,7 @@
+// Admin API for managing a single study's page-editor layout (keyed by [slug]).
+// POST promotes that study's override into the shared study template (the
+// fallback layout for every study without its own override); DELETE drops the
+// study's override so it falls back to that template / default rendering.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {

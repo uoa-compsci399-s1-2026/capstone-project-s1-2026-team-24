@@ -1,3 +1,9 @@
+// Admin API for a single team member by id (Node runtime — needs the fs disk
+// for photo writes). GET reads the record; PATCH applies a partial update from
+// either JSON or multipart/form-data; DELETE removes the record. PATCH and
+// DELETE also reap the old uploaded photo from /public/uploads/team, but only
+// for files we own (path prefix check) so seeded/external image paths are kept.
+// Failed photo deletes are logged, not fatal — the DB write is the source of truth.
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { TeamSection } from "@prisma/client";
@@ -94,6 +100,14 @@ export async function GET(
   }
 }
 
+/**
+ * Partial update of a team member. Accepts JSON (toggle/reorder/edit text) or
+ * multipart/form-data (full edit incl. a replacement photo). Only the fields
+ * actually present in the body are written, so absent fields are left untouched;
+ * orcidId is format-validated and order is clamped to Prisma's Int range. A new
+ * photo is persisted before the old owned file is removed. Returns 400 when the
+ * body carries no recognised fields.
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },

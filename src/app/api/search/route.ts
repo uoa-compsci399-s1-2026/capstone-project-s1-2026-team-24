@@ -1,3 +1,10 @@
+// Public global type-ahead search. GET /api/search?q=... returns a capped,
+// de-duplicated union of matching static pages, studies, team members,
+// publications, and published page-content, shaped as SearchResult rows for the
+// navbar dropdown. No auth (public endpoint) but per-IP rate limited; only
+// public/visible/approved records are searched so it can never leak drafts.
+// An exact `contains` pass runs first; a fuzzy (typo-tolerant) pass runs only
+// when the exact pass found nothing, to keep the hot path cheap.
 import { NextRequest, NextResponse } from "next/server";
 import Fuse, { type FuseResultMatch, type IFuseOptions } from "fuse.js";
 import { prisma } from "@/lib/prisma";

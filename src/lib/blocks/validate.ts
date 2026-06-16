@@ -76,6 +76,7 @@ export function parseBlockContent(raw: string | null | undefined): BlockContent 
   }
 }
 
+/** Serializes block content for the JSON string column, coercing null/undefined to "{}". */
 export function serializeBlockContent(value: unknown): string {
   return JSON.stringify(value ?? {});
 }

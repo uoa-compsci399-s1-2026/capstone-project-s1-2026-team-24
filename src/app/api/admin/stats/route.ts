@@ -1,3 +1,7 @@
+// Admin dashboard summary endpoint: GET returns aggregate record counts
+// (studies, team members, partners, publications, pending publications, contact
+// submissions) for the admin overview cards. Counts run in a single Promise.all
+// batch; on any DB failure it responds 500 with a generic error message.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 

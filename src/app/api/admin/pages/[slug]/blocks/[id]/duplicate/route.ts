@@ -1,3 +1,7 @@
+// Admin API route: POST duplicates one page block in place. Used by the page
+// editor's "duplicate" action so editors can clone an existing block (type,
+// content, visibility) without re-authoring it. The insert + position shift run
+// in a transaction to keep block ordering contiguous.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 

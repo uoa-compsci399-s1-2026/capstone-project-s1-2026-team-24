@@ -1,3 +1,11 @@
+// Admin API for the singleton PublicationFilterSetting that drives the ORCID
+// relevance filter (settings UI embedded in /admin/publications).
+//   GET → returns the current setting, creating defaults if none exists.
+//   PUT → partial update; only keys present in the body are touched, the rest
+//         keep their current values. List fields are normalised to newline text
+//         and routing rules are validated against their allowed buckets (400 on
+//         an out-of-set value — no silent fallback). Off-topic/no-signal rules
+//         can never route to Approved.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {

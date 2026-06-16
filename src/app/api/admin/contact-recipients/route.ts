@@ -18,6 +18,7 @@ function normalizeLabel(value: unknown) {
   return asTrimmedString(value).replace(/\s+/g, " ");
 }
 
+/** List every inquiry type, active first then by display order, for the admin UI. */
 export async function GET() {
   try {
     const recipients = await prisma.contactRecipient.findMany({

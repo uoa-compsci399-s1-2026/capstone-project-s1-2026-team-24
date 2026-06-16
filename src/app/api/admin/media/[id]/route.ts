@@ -1,3 +1,7 @@
+// Admin API for a single media asset by id: PATCH edits its alt text / caption,
+// DELETE removes the record and its underlying file. DELETE refuses (409, with a
+// usage list) when the asset is still referenced unless ?force=1 is passed.
+// Runs on the Node runtime because deletion touches the filesystem.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { findAssetUsage } from "@/lib/media-resolve";

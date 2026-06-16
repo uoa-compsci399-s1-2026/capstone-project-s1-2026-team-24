@@ -1,3 +1,7 @@
+// Admin API route for the page editor's "discard draft changes" action.
+// POST /api/admin/pages/[slug]/discard reverts a page's draft blocks back to
+// the last published snapshot. 404 when the page is missing; a no-op (never
+// published yet) returns { ok, noop }; success returns { ok }.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { parsePublishedSnapshot } from "@/lib/page-publish";

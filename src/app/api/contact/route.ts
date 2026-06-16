@@ -1,3 +1,10 @@
+// Public contact-form endpoint: POST validates and persists an enquiry, then
+// best-effort emails the admin-configured recipient for its inquiry type.
+// Unauthenticated, so it carries its own defences — silent bot traps (honeypot +
+// time-trap), two rate limiters (by IP and by contact handle), strict input
+// validation, and category validation against the ContactRecipient table.
+// Returns 201 on success/bot, 400 on bad input, 500 on unexpected failure;
+// email-delivery failures are logged but never fail the request.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";

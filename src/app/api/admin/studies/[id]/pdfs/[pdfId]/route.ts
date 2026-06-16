@@ -1,3 +1,10 @@
+// Admin API for a single PDF attached to a study, keyed by both the study id
+// and the PDF id so a PDF can only be touched through its owning study.
+//   PATCH  — rename (title) and/or reorder (order) the PDF; ignores unknown
+//            fields and rejects when nothing valid is supplied.
+//   DELETE — remove the PDF (and its stored bytes, which live in the row).
+// Both verbs 404 unless the PDF exists AND belongs to the given study.
+
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";

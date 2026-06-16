@@ -1,3 +1,9 @@
+// Admin API for a study's attached PDFs. GET lists a study's PDFs (metadata
+// only, ordered for display); POST accepts a multipart upload and stores the
+// file bytes in the database. Bytes live in the DB rather than public/ because
+// Render's filesystem is ephemeral — see the POST handler. The route runs on
+// the Node.js runtime (Buffer / large form bodies) and enforces a 20MB cap,
+// PDF-only MIME + extension, and integer order.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clampOrder } from "@/lib/order";

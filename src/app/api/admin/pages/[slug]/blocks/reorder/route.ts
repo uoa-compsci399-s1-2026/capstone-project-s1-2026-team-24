@@ -1,3 +1,8 @@
+// Admin API route for persisting the page-editor's drag-to-reorder of blocks.
+// PATCH /api/admin/pages/[slug]/blocks/reorder rewrites each block's `position`
+// to match the supplied id order, atomically in one transaction. Validates that
+// the order lists exactly — and only — the page's own block ids before writing,
+// so a stale or tampered client can't reorder partially or touch other pages.
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 

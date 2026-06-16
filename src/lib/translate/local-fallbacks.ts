@@ -1,3 +1,10 @@
+// Hand-curated English -> Simplified-Chinese translations for the site's fixed
+// chrome (hero copy, section headings, study blurbs). Consulted before the
+// translation provider so this static, frequently-shown copy renders instantly
+// and stays correct even when the provider is unavailable or rate-limited.
+// Keys are normalised (see normalizeTranslationKey) so whitespace differences
+// between the stored source and the runtime string don't cause misses.
+
 import type { TranslateFormat } from "./provider";
 
 const normalizeTranslationKey = (value: string) =>
@@ -145,6 +152,12 @@ const htmlFallbacks = new Map<string, string>(
   }).map(([source, translated]) => [normalizeTranslationKey(source), translated]),
 );
 
+/**
+ * Returns the curated Simplified-Chinese translation for a known English
+ * string, or undefined when there is no local entry (callers then fall back to
+ * the live translation provider). The format selects which table to consult so
+ * HTML and plain-text variants of the same copy can differ.
+ */
 export function getLocalZhFallback(
   source: string,
   format: TranslateFormat,

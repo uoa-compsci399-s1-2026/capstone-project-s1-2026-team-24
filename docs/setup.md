@@ -4,7 +4,7 @@ Local onboarding for the HNU Auckland website + CMS. The flow below is **idempot
 
 ## Prerequisites
 
-- **Node.js ≥ 20** (the toolchain targets `@types/node` v20)
+- **Node.js ≥ 22.17.1** (declared in `package.json` `engines`; the toolchain targets `@types/node` v22). The version is pinned in `.nvmrc` — run `nvm use` if you use nvm.
 - npm (bundled with Node)
 - A POSIX-ish shell. Windows users: use PowerShell and substitute `copy` for `cp`.
 
@@ -36,6 +36,8 @@ npx prisma generate           # generates the Prisma client
 ```
 
 > **Use `db push`, not `prisma migrate dev`.** The committed migration history has drifted from the live schema, so `migrate dev` prints a destructive-reset prompt. `db push` syncs the SQLite file to `prisma/schema.prisma` without touching migration history. See [database.md](./database.md).
+
+> **If `db push` errors out with an empty schema-engine message** on a fresh clone, the SQLite file may not exist yet. Create it first with `touch prisma/dev.db`, then re-run `npx prisma db push`. See [troubleshooting.md](./troubleshooting.md).
 
 ### 4. Seed content
 

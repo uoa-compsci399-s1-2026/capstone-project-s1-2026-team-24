@@ -1,3 +1,7 @@
+// Public, read-only API for the publications listing. GET returns Approved +
+// visible publications (newest year first), each with its category and ordered
+// authors. No auth: this is the data the public site renders. ?take= bounds the
+// row count so the endpoint can never page the whole table into memory.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { clampPositiveInt } from "@/lib/clamp";

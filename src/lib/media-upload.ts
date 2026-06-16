@@ -1,3 +1,7 @@
+// Filesystem-level primitives for the media upload pipeline: a single source of
+// truth for size/format limits, filename sanitisation, and safe deletion of
+// managed upload files. Security-critical (path-traversal + stored-XSS guards),
+// so kept dependency-free and shared by every upload/replace route.
 import { unlink } from "fs/promises";
 import path from "path";
 

@@ -1,3 +1,11 @@
+// Admin CRUD for a single publication by id.
+//   GET    → full publication with category + ordered authors (and team-member refs)
+//   PATCH  → partial update; only whitelisted fields are written, all trimmed/normalised
+//   DELETE → hard delete, but writes a tombstone first so the ORCID/OpenAlex sync
+//            won't re-create the work on its next run
+// Two manual-decision invariants the importer must respect: approving/rejecting a
+// publication sets reviewedManually so the sync won't overwrite the status, and
+// deletion is recorded as a DeletedPublication tombstone in the same transaction.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buildPublicationDedupKey } from "@/lib/publication-filter";

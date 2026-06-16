@@ -7,7 +7,8 @@ export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000";
 
 
-// UoA brand colours (source: BRAND.md)
+// UoA brand colours. Source of truth is the `:root` brand variables in
+// `src/app/globals.css` (see docs/styling.md); keep these hexes in sync with them.
 export const BRAND_COLORS = {
   /** Waitematā – Deep Blue. Primary background for navbars, headers, and key UI elements. */
   uoaWaitemata: "#0c0c48",
