@@ -37,137 +37,58 @@ export default function CalloutBannerRight({
           src={backgroundImage}
           alt=""
           aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: 1,
-            zIndex: 5,
-          }}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 1, zIndex: 5 }}
         />
       )}
 
-      {/* ── Narrow layout (also used inside narrow row columns via @container) ── */}
-      <div className="@5xl:hidden relative z-10 flex flex-col gap-8 px-6 py-12">
+      {/* ── Mobile: stacked ── */}
+      <div className="lg:hidden relative z-10 flex flex-col gap-6 px-5 py-10">
         {(leftTitle || leftDescription) && (
           <div>
             {leftTitle && (
-              <h2
-                style={{
-                  fontFamily: "var(--font-inter), sans-serif",
-                  fontSize: "32px",
-                  fontWeight: 800,
-                  color: "white",
-                  marginBottom: "12px",
-                  lineHeight: 1.2,
-                }}
-              >
+              <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(24px, 6vw, 32px)", fontWeight: 800, color: "white", marginBottom: "10px", lineHeight: 1.2 }}>
                 {leftTitle}
               </h2>
             )}
             {leftDescription && (
-              <p
-                style={{
-                  fontFamily: "var(--font-inter), sans-serif",
-                  fontSize: "16px",
-                  color: "rgba(255,255,255,0.8)",
-                  lineHeight: 1.6,
-                }}
-              >
+              <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(14px, 3vw, 16px)", color: "rgba(255,255,255,0.8)", lineHeight: 1.6 }}>
                 {leftDescription}
               </p>
             )}
           </div>
         )}
-
-        {/* White card */}
-        <div
-          style={{
-            backgroundColor: "white",
-            borderRadius: "0 40px",
-            padding: "36px 32px",
-            boxShadow: "0 0px 20px 20px rgba(0,0,0,0.15)",
-          }}
-        >
-          <h2
-            style={{
-              fontFamily: "var(--font-inter), sans-serif",
-              fontSize: "22px",
-              fontWeight: 800,
-              color: "#0c0c48",
-              marginBottom: "12px",
-              lineHeight: 1.2,
-            }}
-          >
+        <div style={{ backgroundColor: "white", borderRadius: "0 40px", padding: "28px 24px", boxShadow: "0 0px 20px 20px rgba(0,0,0,0.15)" }}>
+          <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(18px, 4vw, 22px)", fontWeight: 800, color: "#0c0c48", marginBottom: "10px", lineHeight: 1.2 }}>
             {title}
           </h2>
-
           <RichText
             html={description}
             className="[&_p]:mb-4 [&_p:last-child]:mb-0 [&_a]:text-[#0c0c48] [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-            style={{
-              fontFamily: "var(--font-inter), sans-serif",
-              fontSize: "15px",
-              color: "#4b5563",
-              lineHeight: 1.6,
-              marginBottom: "24px",
-            }}
+            style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(13px, 3vw, 15px)", color: "#4b5563", lineHeight: 1.6, marginBottom: "20px" }}
           />
-
-          {showButton && (
-            <Button href={buttonHref} variant="blue">
-              {buttonLabel}
-            </Button>
-          )}
+          {showButton && <Button href={buttonHref} variant="blue">{buttonLabel}</Button>}
         </div>
       </div>
 
-      {/* ── Wide layout ── */}
+      {/* ── Desktop/tablet: side by side, everything scales with clamp ── */}
       <div
-        className="hidden @5xl:flex relative z-10 py-16 px-6 sm:px-12 @5xl:px-45"
-        style={{
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: "40px",
-        }}
+        className="hidden lg:flex relative z-10 py-16 px-12 xl:px-45"
+        style={{ alignItems: "center", justifyContent: "space-between", gap: "clamp(24px, 4vw, 40px)" }}
       >
         <div
           className="max-w-[1100px] mx-auto w-full"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "40px",
-          }}
+          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "clamp(24px, 4vw, 40px)" }}
         >
           {/* Left text */}
           {(leftTitle || leftDescription) && (
-            <div style={{ flex: 1, maxWidth: "500px" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               {leftTitle && (
-                <h2
-                  style={{
-                    fontFamily: "var(--font-inter), sans-serif",
-                    fontSize: "42px",
-                    fontWeight: 800,
-                    color: "white",
-                    marginBottom: "16px",
-                    lineHeight: 1.2,
-                  }}
-                >
+                <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(26px, 3.5vw, 42px)", fontWeight: 800, color: "white", marginBottom: "clamp(10px, 1.5vw, 16px)", lineHeight: 1.2 }}>
                   {leftTitle}
                 </h2>
               )}
               {leftDescription && (
-                <p
-                  style={{
-                    fontFamily: "var(--font-inter), sans-serif",
-                    fontSize: "18px",
-                    color: "rgba(255,255,255,0.8)",
-                    lineHeight: 1.6,
-                  }}
-                >
+                <p style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(14px, 1.4vw, 18px)", color: "rgba(255,255,255,0.8)", lineHeight: 1.6 }}>
                   {leftDescription}
                 </p>
               )}
@@ -179,44 +100,21 @@ export default function CalloutBannerRight({
             style={{
               backgroundColor: "white",
               borderRadius: "0 80px",
-              padding: "50px",
-              paddingRight: "80px",
-              maxWidth: "550px",
-              width: "100%",
-              boxShadow: "0 0px 20px 20px rgba(0,0,0,0.15)",
+              padding: "clamp(28px, 4vw, 50px) clamp(28px, 5vw, 80px) clamp(28px, 4vw, 50px) clamp(28px, 4vw, 50px)",
+              width: "clamp(280px, 42vw, 550px)",
               flexShrink: 0,
+              boxShadow: "0 0px 20px 20px rgba(0,0,0,0.15)",
             }}
           >
-            <h2
-              style={{
-                fontFamily: "var(--font-inter), sans-serif",
-                fontSize: "28px",
-                fontWeight: 800,
-                color: "#0c0c48",
-                marginBottom: "16px",
-                lineHeight: 1.2,
-              }}
-            >
+            <h2 style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(18px, 2vw, 28px)", fontWeight: 800, color: "#0c0c48", marginBottom: "clamp(10px, 1.5vw, 16px)", lineHeight: 1.2 }}>
               {title}
             </h2>
-
             <RichText
               html={description}
               className="[&_p]:mb-4 [&_p:last-child]:mb-0 [&_a]:text-[#0c0c48] [&_a]:underline [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
-              style={{
-                fontFamily: "var(--font-inter), sans-serif",
-                fontSize: "16px",
-                color: "#4b5563",
-                lineHeight: 1.6,
-                marginBottom: "28px",
-              }}
+              style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(13px, 1.2vw, 16px)", color: "#4b5563", lineHeight: 1.6, marginBottom: "clamp(16px, 2vw, 28px)" }}
             />
-
-            {showButton && (
-              <Button href={buttonHref} variant="blue">
-                {buttonLabel}
-              </Button>
-            )}
+            {showButton && <Button href={buttonHref} variant="blue">{buttonLabel}</Button>}
           </div>
         </div>
       </div>

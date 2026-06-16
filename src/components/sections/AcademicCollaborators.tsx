@@ -57,14 +57,14 @@ export default function AcademicCollaborators({
 
   return (
     <section className="relative w-full bg-white py-16 overflow-hidden">
-      <div className="flex justify-center items-center px-6 sm:px-12 lg:px-45">
+      <div className="flex justify-center items-center px-6 sm:px-12 xl:px-45">
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0c0c48] pb-15 text-center">
           {heading}
         </h2>
       </div>
 
-      {/* Mobile: horizontal scroll */}
-      <div className="md:hidden">
+      {/* Mobile + tablet: horizontal scroll */}
+      <div className="lg:hidden">
         <div
           ref={scrollRef}
           role="group"
@@ -99,9 +99,7 @@ export default function AcademicCollaborators({
             <button
               key={i}
               onClick={() => scrollTo(i)}
-              aria-label={
-                lang === "EN" ? `Go to card ${i + 1}` : `跳转到第 ${i + 1} 张`
-              }
+              aria-label={lang === "EN" ? `Go to card ${i + 1}` : `跳转到第 ${i + 1} 张`}
               className="focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c0c48]"
               style={{
                 width: i === activeIndex ? "24px" : "8px",
@@ -119,10 +117,10 @@ export default function AcademicCollaborators({
       </div>
 
       {/* Desktop: two-column grid layout */}
-      <div className="hidden md:block px-6 sm:px-12 lg:px-45">
+      <div className="hidden lg:block px-6 sm:px-12 xl:px-45">
         {rows.map((row, rowIndex) => (
           <div key={rowIndex}>
-            {rowIndex > 0 && <div className="max-w-[1400px] mx-auto h-16" />}
+            {rowIndex > 0 && <div className="h-10" />}
             <div className="grid grid-cols-2 gap-8 max-w-[1100px] mx-auto">
               {row.map((card, i) => (
                 <StudyCard
@@ -141,7 +139,7 @@ export default function AcademicCollaborators({
       </div>
 
       {buttonHref ? (
-        <div className="flex justify-center mt-10 px-6 sm:px-12 lg:px-45">
+        <div className="flex justify-center mt-10 px-6 sm:px-12 xl:px-45">
           <Button href={buttonHref} color="dark">
             {buttonLabel}
           </Button>

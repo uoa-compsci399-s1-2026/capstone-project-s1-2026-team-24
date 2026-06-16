@@ -5,6 +5,7 @@ import {
   DEFAULT_FAVICON,
   DEFAULT_LOGO_LIGHT,
   DEFAULT_LOGO_DARK,
+  DEFAULT_DONATE_URL,
   type SiteBranding,
 } from "@/lib/branding";
 
@@ -18,6 +19,7 @@ const SiteSettingsContext = createContext<SiteBranding>({
   faviconPath: DEFAULT_FAVICON,
   logoLightPath: DEFAULT_LOGO_LIGHT,
   logoDarkPath: DEFAULT_LOGO_DARK,
+  donateUrl: DEFAULT_DONATE_URL,
 });
 
 export function SiteSettingsProvider({

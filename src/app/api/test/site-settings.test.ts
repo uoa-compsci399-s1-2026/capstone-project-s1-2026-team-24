@@ -42,6 +42,7 @@ import {
   DEFAULT_FAVICON,
   DEFAULT_LOGO_LIGHT,
   DEFAULT_LOGO_DARK,
+  DEFAULT_DONATE_URL,
 } from "@/lib/branding";
 
 function postRequest(fields: Record<string, string | File>) {
@@ -64,6 +65,7 @@ describe("site settings", () => {
       faviconPath: DEFAULT_FAVICON,
       logoLightPath: DEFAULT_LOGO_LIGHT,
       logoDarkPath: DEFAULT_LOGO_DARK,
+      donateUrl: DEFAULT_DONATE_URL,
     });
   });
 
@@ -80,6 +82,7 @@ describe("site settings", () => {
       faviconPath: "/uploads/branding/123-icon.png",
       logoLightPath: "",
       logoDarkPath: "",
+      donateUrl: "",
     });
   });
 
@@ -259,5 +262,95 @@ describe("site settings", () => {
     // The orphaned upload is cleaned up.
     expect(mockFs.unlink).toHaveBeenCalledTimes(1);
     expect(String(mockFs.unlink.mock.calls[0][0])).toMatch(/\d+-logo\.png$/);
+  });
+
+  it("POST saves a valid donation link (https) and revalidates", async () => {
+    mockPrisma.siteSettings.upsert.mockResolvedValueOnce({
+      id: 1,
+      faviconPath: "",
+      logoLightPath: "",
+      logoDarkPath: "",
+      donateUrl: "https://example.org/give",
+    });
+    const response = await POST(
+      postRequest({
+        target: "donateUrl",
+        value: "https://example.org/give",
+      }) as never,
+    );
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { donateUrl: string };
+    expect(body.donateUrl).toBe("https://example.org/give");
+    expect(mockPrisma.siteSettings.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        update: { donateUrl: "https://example.org/give" },
+      }),
+    );
+    expect(mockRevalidateTag).toHaveBeenCalledWith("site-settings", {
+      expire: 0,
+    });
+  });
+
+  it("POST treats saving the built-in default link as a reset (stores empty)", async () => {
+    mockPrisma.siteSettings.upsert.mockResolvedValueOnce({
+      id: 1,
+      faviconPath: "",
+      logoLightPath: "",
+      logoDarkPath: "",
+      donateUrl: "",
+    });
+    const response = await POST(
+      postRequest({ target: "donateUrl", value: DEFAULT_DONATE_URL }) as never,
+    );
+    expect(response.status).toBe(200);
+    expect(mockPrisma.siteSettings.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ update: { donateUrl: "" } }),
+    );
+  });
+
+  it("POST rejects a donation link with a non-http(s) scheme (no javascript: in an href)", async () => {
+    const response = await POST(
+      postRequest({ target: "donateUrl", value: "javascript:alert(1)" }) as never,
+    );
+    expect(response.status).toBe(400);
+    expect(mockPrisma.siteSettings.upsert).not.toHaveBeenCalled();
+  });
+
+  it("POST rejects a donation link that is not a valid URL", async () => {
+    const response = await POST(
+      postRequest({ target: "donateUrl", value: "not a url" }) as never,
+    );
+    expect(response.status).toBe(400);
+    expect(mockPrisma.siteSettings.upsert).not.toHaveBeenCalled();
+  });
+
+  it("POST reset clears the donation link back to the built-in default", async () => {
+    mockPrisma.siteSettings.upsert.mockResolvedValueOnce({
+      id: 1,
+      faviconPath: "",
+      logoLightPath: "",
+      logoDarkPath: "",
+      donateUrl: "",
+    });
+    const response = await POST(
+      postRequest({ target: "donateUrl", reset: "true" }) as never,
+    );
+    expect(response.status).toBe(200);
+    expect(mockPrisma.siteSettings.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({ update: { donateUrl: "" } }),
+    );
+  });
+
+  it("getSiteSettings returns a stored donation link verbatim", async () => {
+    mockPrisma.siteSettings.findUnique.mockResolvedValueOnce({
+      id: 1,
+      faviconPath: "",
+      logoLightPath: "",
+      logoDarkPath: "",
+      donateUrl: "https://give.example.org",
+    });
+    await expect(getSiteSettings()).resolves.toMatchObject({
+      donateUrl: "https://give.example.org",
+    });
   });
 });

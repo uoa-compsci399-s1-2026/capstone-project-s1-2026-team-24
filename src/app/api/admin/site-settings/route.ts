@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { sanitizeFileName, tryRemoveFile } from "@/lib/media-upload";
+import { DEFAULT_DONATE_URL } from "@/lib/branding";
 import {
   getRawSiteSettings,
   SITE_SETTINGS_CACHE_TAG,
@@ -108,6 +109,58 @@ async function saveBrandingFile(file: File, ext: string): Promise<string> {
   return `/${BRANDING_UPLOAD_DIR}/${safeFileName}`;
 }
 
+// The navbar "Donations" link is a text setting (not a file). Validate it as an
+// http(s) URL so a stored value can't smuggle a javascript:/data: scheme into an
+// href; empty (reset) restores the built-in default at read time.
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+async function saveDonateUrl(formData: FormData) {
+  const reset = formData.get("reset") === "true";
+  let donateUrl = "";
+  if (!reset) {
+    const raw = formData.get("value");
+    const trimmed = typeof raw === "string" ? raw.trim() : "";
+    if (!trimmed) {
+      return NextResponse.json(
+        { error: "Enter a donation link (or reset to default)." },
+        { status: 400 },
+      );
+    }
+    if (trimmed.length > 2048 || !isHttpUrl(trimmed)) {
+      return NextResponse.json(
+        { error: "Donation link must be a valid http(s) URL." },
+        { status: 400 },
+      );
+    }
+    // Saving the current built-in default is the same as resetting — store ""
+    // so the UI keeps showing it as the default (and Reset stays meaningful).
+    donateUrl = trimmed === DEFAULT_DONATE_URL ? "" : trimmed;
+  }
+
+  const updated = await prisma.siteSettings.upsert({
+    where: { id: 1 },
+    create: { id: 1, donateUrl },
+    update: { donateUrl },
+  });
+  revalidateTag(SITE_SETTINGS_CACHE_TAG, { expire: 0 });
+  return NextResponse.json(
+    {
+      faviconPath: updated.faviconPath,
+      logoLightPath: updated.logoLightPath,
+      logoDarkPath: updated.logoDarkPath,
+      donateUrl: updated.donateUrl,
+    },
+    { status: 200 },
+  );
+}
+
 /** Raw stored values ("" = built-in default) for the admin UI. */
 export async function GET() {
   try {
@@ -131,6 +184,13 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
+
+    // The donation link is a text field, not a file upload — handle it before
+    // the image-target logic.
+    if (formData.get("target") === "donateUrl") {
+      return await saveDonateUrl(formData);
+    }
+
     const target = parseTarget(formData.get("target"));
     if (!target) {
       return NextResponse.json(
@@ -198,6 +258,7 @@ export async function POST(request: NextRequest) {
         faviconPath: updated.faviconPath,
         logoLightPath: updated.logoLightPath,
         logoDarkPath: updated.logoDarkPath,
+        donateUrl: updated.donateUrl,
       },
       { status: 200 },
     );

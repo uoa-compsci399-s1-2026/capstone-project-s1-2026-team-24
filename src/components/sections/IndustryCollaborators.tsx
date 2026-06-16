@@ -64,7 +64,7 @@ export default function IndustryCollaborators({
       </div>
 
       {/* Mobile: horizontal scroll */}
-      <div className="md:hidden">
+      <div className="lg:hidden">
         <div
           ref={scrollRef}
           role="group"
@@ -118,27 +118,27 @@ export default function IndustryCollaborators({
         </div>
       </div>
 
-      {/* Desktop: original two-column grid layout */}
-      <div className="hidden md:block px-6 sm:px-12 lg:px-45">
-        {rows.map((row, rowIndex) => (
-          <div key={rowIndex}>
-            {rowIndex > 0 && <div className="max-w-[1400px] mx-auto h-16" />}
-            <div className="grid grid-cols-2 gap-8 max-w-[1100px] mx-auto">
-              {row.map((card, i) => (
-                <StudyCard
-                  key={`${rowIndex}-${i}-${card.title}`}
-                  title={card.title}
-                  description={card.description}
-                  imageSrc={card.imageSrc}
-                  imageAlt={card.imageAlt}
-                  imagePosition={card.imagePosition ?? "center"}
-                  buttonHref={card.buttonHref || undefined}
-                />
+      {/* Desktop: two-column grid layout */}
+            <div className="hidden lg:block px-6 sm:px-12 xl:px-45">
+              {rows.map((row, rowIndex) => (
+                <div key={rowIndex}>
+                  {rowIndex > 0 && <div className="h-10" />}
+                  <div className="grid grid-cols-2 gap-8 max-w-[1100px] mx-auto">
+                    {row.map((card, i) => (
+                      <StudyCard
+                        key={`${rowIndex}-${i}-${card.title}`}
+                        title={card.title}
+                        description={card.description}
+                        imageSrc={card.imageSrc}
+                        imageAlt={card.imageAlt}
+                        imagePosition={card.imagePosition ?? "center"}
+                        buttonHref={card.buttonHref || undefined}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
-        ))}
-      </div>
 
       {buttonHref ? (
         <div className="flex justify-center mt-10 px-6 sm:px-12 lg:px-45">

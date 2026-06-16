@@ -94,6 +94,7 @@ export default function Updates({
   const { lang } = useLanguage();
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState<"left" | "right">("left");
+  const [animating, setAnimating] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   // True while keyboard focus is within the carousel: reveals the prev/next
   // arrows and pauses autoplay so a keyboard user can read and navigate without
@@ -102,40 +103,26 @@ export default function Updates({
   const [reducedMotion, setReducedMotion] = useState(false);
   const touchStartX = useRef<number | null>(null);
 
-  // Modulo wrap so the index self-heals even if `updates` shrinks at
-  // runtime and `current` points past the end.
-  const prev = () => {
-    setDirection("right");
-    setCurrent((i) => (i - 1 + updates.length) % updates.length);
+  const go = (index: number, dir: "left" | "right") => {
+    if (animating) return;
+    setDirection(dir);
+    setAnimating(true);
+    setTimeout(() => {
+      setCurrent(index);
+      setAnimating(false);
+    }, 300);
   };
 
-  const next = () => {
-    setDirection("left");
-    setCurrent((i) => (i + 1) % updates.length);
-  };
+  const prev = () =>
+    go(current === 0 ? updates.length - 1 : current - 1, "right");
+  const next = () =>
+    go(current === updates.length - 1 ? 0 : current + 1, "left");
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => setReducedMotion(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, []);
-
-  // Autoplay pauses on hover, while keyboard focus is within the carousel, and
-  // under the OS reduced-motion preference (which fully stops the rotation).
-  // Hover and focus give mouse and keyboard users a way to halt the motion
-  // (WCAG 2.2.2) without a dedicated pause control.
-  const autoplayPaused = isHovered || isFocused || reducedMotion;
-
-  useEffect(() => {
-    if (autoplayPaused) return;
-    const timer = setInterval(() => {
-      setDirection("left");
-      setCurrent((i) => (i + 1) % updates.length);
-    }, 5000);
+    if (isHovered) return;
+    const timer = setInterval(() => next(), 5000);
     return () => clearInterval(timer);
-  }, [updates.length, current, autoplayPaused]);
+  }, [updates.length, current, isHovered]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -158,13 +145,10 @@ export default function Updates({
   if (!activeUpdate) return null;
 
   return (
-    <section className="w-full bg-white pt-10 pb-2 px-6 sm:px-12">
-      <div className="max-w-[1200px] mx-auto sm:px-12 flex justify-end">
+    <section className="w-full bg-white py-10 sm:py-16 overflow-hidden">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-12 flex justify-center sm:justify-end">
         <div
-          className="w-full max-w-[750px]"
-          role="group"
-          aria-roledescription="carousel"
-          aria-label={lang === "EN" ? ariaLabelEn : ariaLabelZh}
+          className="w-full sm:max-w-[750px]"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           onFocus={() => setIsFocused(true)}
@@ -201,8 +185,7 @@ export default function Updates({
               userSelect: "none",
             }}
           >
-            {/* Prev button — kept focusable (pointerEvents always on) and made
-                visible on hover OR keyboard focus, with a visible focus ring. */}
+            {/* Prev button — desktop only */}
             <button
               onClick={prev}
               aria-label={lang === "EN" ? "Previous update" : "上一条"}
@@ -219,19 +202,16 @@ export default function Updates({
                 fontWeight: 300,
                 cursor: "pointer",
                 lineHeight: 1,
-                opacity: isHovered || isFocused ? 1 : 0,
-                // Not clickable while invisible (avoids accidental clicks on an
-                // unseen control); keyboard Tab still reaches it, which flips
-                // isFocused and makes it visible + interactive.
-                pointerEvents: isHovered || isFocused ? "auto" : "none",
+                opacity: isHovered ? 1 : 0,
                 transition: "opacity 0.2s ease",
                 zIndex: 2,
+                display: "var(--arrow-display, block)" as React.CSSProperties["display"],
               }}
             >
               ←
             </button>
 
-            {/* Next button */}
+            {/* Next button — desktop only */}
             <button
               onClick={next}
               aria-label={lang === "EN" ? "Next update" : "下一条"}
@@ -248,11 +228,7 @@ export default function Updates({
                 fontWeight: 300,
                 cursor: "pointer",
                 lineHeight: 1,
-                opacity: isHovered || isFocused ? 1 : 0,
-                // Not clickable while invisible (avoids accidental clicks on an
-                // unseen control); keyboard Tab still reaches it, which flips
-                // isFocused and makes it visible + interactive.
-                pointerEvents: isHovered || isFocused ? "auto" : "none",
+                opacity: isHovered ? 1 : 0,
                 transition: "opacity 0.2s ease",
                 zIndex: 2,
               }}
@@ -302,11 +278,8 @@ export default function Updates({
             {updates.map((_, i) => (
               <button
                 key={i}
-                onClick={() => setCurrent(i)}
-                aria-label={
-                  lang === "EN" ? `Go to update ${i + 1}` : `跳转到第 ${i + 1} 条`
-                }
-                className="focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c0c48]"
+                onClick={() => go(i, i > current ? "left" : "right")}
+                aria-label={`Go to update ${i + 1}`}
                 style={{
                   width: i === current ? "24px" : "8px",
                   height: "8px",
@@ -325,12 +298,12 @@ export default function Updates({
 
       <style>{`
         @keyframes slideInLeft {
-          from { opacity: 0; transform: translateX(30px); }
-          to { opacity: 1; transform: translateX(0); }
+          from { opacity: 0; transform: translateX(60px); }
+          to   { opacity: 1; transform: translateX(0); }
         }
         @keyframes slideInRight {
-          from { opacity: 0; transform: translateX(-30px); }
-          to { opacity: 1; transform: translateX(0); }
+          from { opacity: 0; transform: translateX(-60px); }
+          to   { opacity: 1; transform: translateX(0); }
         }
         @media (max-width: 640px) {
           /* Hide the arrows on small screens via a stable class (not the now
