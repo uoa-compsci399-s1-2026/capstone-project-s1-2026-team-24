@@ -7,7 +7,7 @@ Highlights: a block-based page builder with draft/publish and EN/中文 translat
 ## Links
 
 - **Live site:** <https://hnu-auckland.onrender.com> — the admin console is at [`/admin`](https://hnu-auckland.onrender.com/admin).
-- **Project management:** [GitHub Project board #42](https://github.com/orgs/uoa-compsci399-s1-2026/projects/42) (issues, milestones, and the team backlog).
+- **Project management:** [GitHub Project board #42](https://github.com/orgs/uoa-compsci399-s1-2026/projects/42) and the repo's [GitHub Issues](https://github.com/uoa-compsci399-s1-2026/capstone-project-s1-2026-team-24/issues).
 - **Final report:** the *HNU Auckland — Final Group Report (Team 24)* is submitted alongside this project on Canvas.
 
 ## Tech stack
