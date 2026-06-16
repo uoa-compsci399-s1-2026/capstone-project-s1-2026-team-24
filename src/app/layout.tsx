@@ -6,6 +6,7 @@ import { SiteSettingsProvider } from "@/contexts/SiteSettingsContext";
 import { NavStudiesProvider } from "@/contexts/NavStudiesContext";
 import { getServerLang } from "@/lib/lang";
 import { getSiteSettings } from "@/lib/site-settings";
+import { DEFAULT_FAVICON } from "@/lib/branding";
 import { getNavStudies } from "@/lib/nav-studies";
 import { getDictionary } from "@/lib/dictionaries";
 import { SITE_NAME, SITE_URL, BRAND_COLORS } from "@/lib/constants";
@@ -30,6 +31,16 @@ const geistMono = Geist_Mono({
 // branding (SiteSettings); the read is cached across requests.
 export async function generateMetadata(): Promise<Metadata> {
   const { faviconPath } = await getSiteSettings();
+  // When an admin uploads a custom favicon, point *every* icon link at it. The
+  // built-in /favicon.ico (a real static file in public/) is otherwise still
+  // emitted as `shortcut icon` and competes with the upload in the browser's
+  // icon picker — the tab keeps showing the old icon even though the upload
+  // succeeded and is served. Only with the default favicon do we keep the .ico,
+  // where it's a useful fallback for the default SVG icon.
+  const hasCustomFavicon = faviconPath !== DEFAULT_FAVICON;
+  const icons: Metadata["icons"] = hasCustomFavicon
+    ? { icon: faviconPath, shortcut: faviconPath, apple: "/apple-icon.png" }
+    : { icon: faviconPath, shortcut: "/favicon.ico", apple: "/apple-icon.png" };
   return {
     // metadataBase lets Next resolve canonical/OG URLs to absolute. It is the
     // build-time NEXT_PUBLIC_SITE_URL (the custom domain in the prod build);
@@ -41,12 +52,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: "University of Auckland Research",
     applicationName: SITE_NAME,
-    icons: {
-      // Admin-overridable favicon (SiteSettings); default is the HNU SVG logo.
-      icon: faviconPath,
-      apple: "/apple-icon.png",
-      shortcut: "/favicon.ico",
-    },
+    icons,
     openGraph: {
       type: "website",
       siteName: SITE_NAME,

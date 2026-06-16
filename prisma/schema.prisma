@@ -358,5 +358,6 @@ model SiteSettings {
   faviconPath   String   @default("")
   logoLightPath String   @default("") // white-on-dark (desktop navbar)
   logoDarkPath  String   @default("") // blue-on-light (mobile bar)
+  donateUrl     String   @default("") // navbar "Donations" link; "" = built-in default
   updatedAt     DateTime @updatedAt
 }

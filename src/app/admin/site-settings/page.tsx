@@ -5,6 +5,7 @@ import {
   DEFAULT_FAVICON,
   DEFAULT_LOGO_LIGHT,
   DEFAULT_LOGO_DARK,
+  DEFAULT_DONATE_URL,
   type SiteBranding,
 } from "@/lib/branding";
 
@@ -68,10 +69,18 @@ export default function AdminSiteSettings() {
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileInputRefs = useRef<Partial<Record<Target, HTMLInputElement | null>>>({});
 
+  // The donation link is a text setting (not a file), so it has its own small
+  // bit of state alongside the image cards.
+  const [donateInput, setDonateInput] = useState("");
+  const [donateBusy, setDonateBusy] = useState(false);
+  const [donateSaved, setDonateSaved] = useState(false);
+  const donateTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     fetchSettings();
     return () => {
       if (savedTimerRef.current !== null) clearTimeout(savedTimerRef.current);
+      if (donateTimerRef.current !== null) clearTimeout(donateTimerRef.current);
     };
   }, []);
 
@@ -79,7 +88,12 @@ export default function AdminSiteSettings() {
     try {
       const res = await fetch("/api/admin/site-settings");
       if (!res.ok) throw new Error("Failed to load site settings");
-      setSettings(await res.json());
+      const data = await res.json();
+      setSettings(data);
+      // Show the *effective* link in the field (the custom one, or the built-in
+      // default) so the admin can always see and edit the current value rather
+      // than an empty box.
+      setDonateInput(data.donateUrl || DEFAULT_DONATE_URL);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -130,6 +144,45 @@ export default function AdminSiteSettings() {
     body.set("target", target);
     body.set("reset", "true");
     void submit(target, body);
+  }
+
+  async function submitDonate(body: FormData) {
+    setDonateBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/site-settings", {
+        method: "POST",
+        body,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to update donation link");
+      }
+      const data = await res.json();
+      setSettings(data);
+      setDonateInput(data.donateUrl || DEFAULT_DONATE_URL);
+      if (donateTimerRef.current !== null) clearTimeout(donateTimerRef.current);
+      setDonateSaved(true);
+      donateTimerRef.current = setTimeout(() => setDonateSaved(false), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setDonateBusy(false);
+    }
+  }
+
+  function saveDonate() {
+    const body = new FormData();
+    body.set("target", "donateUrl");
+    body.set("value", donateInput);
+    void submitDonate(body);
+  }
+
+  function resetDonate() {
+    const body = new FormData();
+    body.set("target", "donateUrl");
+    body.set("reset", "true");
+    void submitDonate(body);
   }
 
   return (
@@ -240,6 +293,51 @@ export default function AdminSiteSettings() {
             );
           })}
         </div>
+      )}
+
+      {settings && (
+        <section className="bg-white rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.06)] p-6 mt-6 flex flex-col gap-4 max-w-2xl">
+          <div>
+            <h2 className="text-lg font-bold text-[#0c0c48]">Donation link</h2>
+            <p className="text-sm text-[#0a4479]/80 mt-1">
+              The web address the Donations button in the navbar opens (desktop
+              top bar and mobile menu). Update it any time. No developer needed.
+            </p>
+          </div>
+
+          <input
+            type="url"
+            inputMode="url"
+            value={donateInput}
+            onChange={(e) => setDonateInput(e.target.value)}
+            placeholder={DEFAULT_DONATE_URL}
+            disabled={donateBusy}
+            className="w-full rounded-xl border-2 border-[#cac7c7] px-4 py-2.5 text-sm text-[#0c0c48] focus:border-[#0a4479] focus:outline-none disabled:opacity-60"
+          />
+
+          <p className="text-xs text-[#0a4479]/70">
+            {settings.donateUrl === ""
+              ? "This is the built-in default (the University of Auckland giving page). Edit it above to point the button somewhere else."
+              : "Using a custom link. Reset to restore the University of Auckland giving page."}
+          </p>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={saveDonate}
+              disabled={donateBusy}
+              className="inline-flex items-center justify-center bg-[#0a4479] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#083559] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {donateBusy ? "Saving..." : donateSaved ? "Saved" : "Save link"}
+            </button>
+            <button
+              onClick={resetDonate}
+              disabled={donateBusy || settings.donateUrl === ""}
+              className="text-sm font-semibold text-[#0a4479] underline underline-offset-2 hover:text-[#083559] disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+            >
+              Reset to default
+            </button>
+          </div>
+        </section>
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import {
   DEFAULT_FAVICON,
   DEFAULT_LOGO_LIGHT,
   DEFAULT_LOGO_DARK,
+  DEFAULT_DONATE_URL,
   type SiteBranding,
 } from "@/lib/branding";
 
@@ -25,6 +26,7 @@ export async function getRawSiteSettings(): Promise<SiteBranding> {
     faviconPath: row?.faviconPath ?? "",
     logoLightPath: row?.logoLightPath ?? "",
     logoDarkPath: row?.logoDarkPath ?? "",
+    donateUrl: row?.donateUrl ?? "",
   };
 }
 
@@ -41,6 +43,7 @@ const cachedSiteSettings = unstable_cache(
       faviconPath: raw.faviconPath || DEFAULT_FAVICON,
       logoLightPath: raw.logoLightPath || DEFAULT_LOGO_LIGHT,
       logoDarkPath: raw.logoDarkPath || DEFAULT_LOGO_DARK,
+      donateUrl: raw.donateUrl || DEFAULT_DONATE_URL,
     };
   },
   ["site-settings"],
