@@ -2,8 +2,6 @@
 
 Documentation for the University of Auckland Human Nutrition Unit website + CMS. New here? Read the [project README](../README.md) for the Quickstart, then [Setup](./setup.md).
 
-> **This is not the Next.js you know.** The repo runs Next.js 16, React 19, Prisma 7, and Tailwind v4, whose APIs differ from older versions. Read the bundled guides in `node_modules/next/dist/docs/` before writing Next.js code, and see [architecture.md](./architecture.md).
-
 ## Docs in this set
 
 | Doc | One-liner |

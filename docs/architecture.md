@@ -2,8 +2,6 @@
 
 How the HNU Auckland site fits together: the rendering model, the page-block content system, and where everything lives. New here? Read the [project README](../README.md) and [setup.md](./setup.md) first, then come back.
 
-> **This is not the Next.js you know.** Next.js 16, React 19, Prisma 7, Tailwind v4 — APIs differ from older versions. Read the bundled guides in `node_modules/next/dist/docs/` before writing code.
-
 ## The big picture
 
 The app is one Next.js 16 App Router project that serves two things from the same codebase:
