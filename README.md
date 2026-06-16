@@ -47,6 +47,8 @@ npm run dev                   # http://localhost:3000
 
 > **Use `npx prisma db push`, not `prisma migrate dev`.** The committed migration history has drifted from the live schema, so `migrate dev` prints a scary destructive-reset prompt. `db push` syncs the schema safely. See [`docs/database.md`](./docs/database.md).
 
+> **If `db push` errors with an empty schema-engine message on a fresh clone**, the SQLite file may not exist yet — run `touch prisma/dev.db` first, then re-run `db push`. See [`docs/troubleshooting.md`](./docs/troubleshooting.md).
+
 > **Keep `DATABASE_URL` as `file:./prisma/dev.db`.** The old default `file:./dev.db` creates a *second*, empty database at the repo root, making the site and media library look empty even after seeding. This is the #1 onboarding bug — see [`docs/troubleshooting.md`](./docs/troubleshooting.md).
 
 The admin console lives at [http://localhost:3000/admin](http://localhost:3000/admin) (log in with the `ADMIN_PASSWORD` you set in `.env`).
