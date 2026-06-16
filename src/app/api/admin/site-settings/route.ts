@@ -1,6 +1,7 @@
-// Admin API for site-wide branding (favicon + light/dark logos). GET returns the
-// raw stored override values for the admin UI; POST uploads a replacement image
-// or resets a target back to its built-in default. Uploads are validated by MIME
+// Admin API for site-wide branding (favicon + light/dark logos) and the navbar
+// donation link. GET returns the raw stored override values for the admin UI;
+// POST uploads a replacement image, updates the donation URL, or resets a target
+// back to its built-in default. Uploads are validated by MIME
 // and extension (SVG banned, stored-XSS stance), saved under /public/uploads/branding
 // with a timestamped name, and the previous file is cleaned up; the DB swap is
 // transactional and the site-settings cache tag is purged so renders pick up the
