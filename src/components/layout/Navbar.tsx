@@ -404,7 +404,7 @@ export default function Navbar() {
               }}
             >
               {/* Logo */}
-              <div className="hidden lg:block flex items-center">
+              <div className="hidden lg:block flex items-center z-70">
                 <Link href="/" aria-label="HNU — Home">
                   <Image
                     src={logoLightPath}
