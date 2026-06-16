@@ -26,8 +26,6 @@ Highlights: a block-based page builder with draft/publish and EN/中文 translat
 | Email | Resend **6.12.4** — contact-form notifications |
 | Tests | Vitest **4.1.4** + Playwright **1.59.1**; Storybook **10.3.5** for components |
 
-> **This is not the Next.js you know.** These are bleeding-edge versions whose APIs and conventions differ from older releases. Before writing code, read the bundled guides in `node_modules/next/dist/docs/` (installed with the project), and see [`docs/`](./docs) for project-specific guidance.
-
 ## Prerequisites
 
 - **Node.js ≥ 22.17.1** (declared in `package.json` `engines`; the toolchain targets `@types/node` v22). The pinned version is in `.nvmrc` — run `nvm use` if you use nvm.
