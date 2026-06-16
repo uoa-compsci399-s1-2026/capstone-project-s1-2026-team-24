@@ -51,7 +51,7 @@ npm run dev                   # http://localhost:3000
 
 > **Keep `DATABASE_URL` as `file:./prisma/dev.db`.** The old default `file:./dev.db` creates a *second*, empty database at the repo root, making the site and media library look empty even after seeding. This is the #1 onboarding bug — see [`docs/troubleshooting.md`](./docs/troubleshooting.md).
 
-The admin console lives at [http://localhost:3000/admin](http://localhost:3000/admin) (log in with the `ADMIN_PASSWORD` you set in `.env`).
+The admin console lives at [http://localhost:3000/admin](http://localhost:3000/admin). Log in with the `ADMIN_PASSWORD` you set in `.env`. **Set real values first:** `ADMIN_PASSWORD` must be ≥ 12 characters and `ADMIN_SESSION_SECRET` ≥ 32 characters — the `.env.example` placeholders are deliberately rejected as too weak, so the login returns *"Server auth config is missing or too weak"* until you replace them.
 
 ## Usage examples
 

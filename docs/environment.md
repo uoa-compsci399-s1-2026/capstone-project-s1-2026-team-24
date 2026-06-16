@@ -22,8 +22,8 @@ In practice: put `DATABASE_URL`, `ADMIN_PASSWORD`, and `ADMIN_SESSION_SECRET` in
 | Variable | Required | Default | Read by | Purpose |
 |----------|----------|---------|---------|---------|
 | `DATABASE_URL` | **Yes** | `file:./prisma/dev.db` (in `.env.example`) | `src/lib/prisma.ts`, all scripts, Prisma CLI | SQLite path. **Must** be `file:./prisma/dev.db` — see warning below. |
-| `ADMIN_PASSWORD` | **Yes (for admin)** | — | `src/app/api/admin/auth/login/route.ts` | Plain-string password for the admin console login. |
-| `ADMIN_SESSION_SECRET` | **Yes (for admin)** | — | `src/lib/admin-session.ts` | Secret used to sign the admin session cookie (JWT). Use a long random string. |
+| `ADMIN_PASSWORD` | **Yes (for admin)** | — | `src/app/api/admin/auth/login/route.ts` | Plain-string password for the admin console login. **Must be ≥ 12 chars; the `change-me` placeholder is rejected as too weak.** |
+| `ADMIN_SESSION_SECRET` | **Yes (for admin)** | — | `src/lib/admin-session.ts` | Secret that signs the admin session cookie (JWT). **Must be ≥ 32 chars** (e.g. `openssl rand -hex 32`); the `replace-with-…` placeholder is rejected. |
 | `NEXT_PUBLIC_SITE_URL` | No | `http://localhost:3000` | `src/lib/constants.ts` (metadata/SEO) | Canonical public site URL. Leave blank locally. |
 | `ALLOW_INDEXING` | No | unset | `src/app/robots.ts`, `src/app/layout.tsx` | **Unset → deny-all `robots.txt` + site-wide `noindex`** so test/staging deploys stay out of Google. Set to `1` only at the official public launch. |
 | `ORCID_API_BASE_URL` | No | `https://pub.orcid.org/v3.0` (production) | `src/lib/orcid.ts` | Public ORCID API base — **no auth required**. Override to the sandbox for testing. |

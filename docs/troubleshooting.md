@@ -16,6 +16,7 @@ Common onboarding and runtime issues, with the fix and where to read more.
 | **Port 3000 already in use** | Another process is using the port. | Next.js automatically picks the next free port and prints it. To free 3000: `lsof -ti:3000 \| xargs kill`. |
 | **`Missing DATABASE_URL`** thrown at startup | No `.env` file (a fresh clone ships only `.env.example`), or `DATABASE_URL` is blank. | `cp .env.example .env`. See [setup.md](./setup.md#2-create-your-env-file). |
 | **`Missing ADMIN_SESSION_SECRET`** when hitting the admin console | `ADMIN_SESSION_SECRET` is unset. | Set it to a long random string in `.env`. See [environment.md](./environment.md#reference). |
+| **Admin login returns "Server auth config is missing or too weak"** | `ADMIN_PASSWORD` / `ADMIN_SESSION_SECRET` are unset, too short, or still the `.env.example` placeholders. | Set `ADMIN_PASSWORD` (≥ 12 chars) and `ADMIN_SESSION_SECRET` (≥ 32 chars) to real values — not `change-me` / `replace-with-…`. See [setup.md](./setup.md#2-create-your-env-file). |
 | **Schema changes don't show up** (or Prisma types are stale) | The Prisma client wasn't regenerated after editing `schema.prisma`. | Run `npx prisma db push` then `npx prisma generate`. See [database.md](./database.md#create-and-sync-the-schema). |
 
 ## Still stuck?

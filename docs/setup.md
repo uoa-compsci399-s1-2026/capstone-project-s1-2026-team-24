@@ -24,7 +24,7 @@ npm install
 cp .env.example .env          # Windows PowerShell: copy .env.example .env
 ```
 
-The defaults in `.env.example` work out of the box for local development — notably `DATABASE_URL="file:./prisma/dev.db"`, which is already correct (see the warning below). Set `ADMIN_PASSWORD` to anything you'll use to log in to the admin console, and `ADMIN_SESSION_SECRET` to a long random string. Full reference: [environment.md](./environment.md).
+The defaults in `.env.example` work out of the box for local development — notably `DATABASE_URL="file:./prisma/dev.db"`, which is already correct (see the warning below). **Before the admin console will let you in, replace the two admin placeholders:** set `ADMIN_PASSWORD` to a password of **at least 12 characters** and `ADMIN_SESSION_SECRET` to a random string of **at least 32 characters** (e.g. `openssl rand -hex 32`). The shipped placeholders (`change-me`, `replace-with-a-long-random-string`) are deliberately rejected as too weak, so leaving them gives a *"Server auth config is missing or too weak"* error at login. Full reference: [environment.md](./environment.md).
 
 > **Do not change `DATABASE_URL` to `file:./dev.db`.** That points at a *second*, empty database at the repo root, so the site and media library look empty even after seeding. Keep it as `file:./prisma/dev.db`. This is the most common onboarding bug — [troubleshooting.md](./troubleshooting.md).
 
