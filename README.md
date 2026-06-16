@@ -14,13 +14,17 @@ Highlights: a block-based page builder with draft/publish and EN/中文 translat
 
 | Layer | Choice |
 |-------|--------|
+| Languages | TypeScript, JavaScript, CSS |
 | Framework | Next.js **16.2.7** (App Router) |
 | UI | React **19.2.4** |
 | Styling | Tailwind CSS **v4** — config lives in `@theme` in `src/app/globals.css` (**no `tailwind.config.js`**) |
-| Database | SQLite via Prisma **7.7.0** (`better-sqlite3` adapter) |
-| Rich text | Tiptap 3 |
-| Email | Resend (contact form) |
-| Tests | Vitest + Playwright; Storybook for components |
+| Database | SQLite via Prisma **7.7.0** with the `@prisma/adapter-better-sqlite3` **7.7.0** driver adapter |
+| Rich text | Tiptap **3.23.6** |
+| Search | Fuse.js **7.4.1** |
+| Auth | `jose` **6.2.2** — signed admin-session cookies |
+| Drag & drop | dnd-kit — page-editor block reordering |
+| Email | Resend **6.12.4** — contact-form notifications |
+| Tests | Vitest **4.1.4** + Playwright **1.59.1**; Storybook **10.3.5** for components |
 
 > **This is not the Next.js you know.** These are bleeding-edge versions whose APIs and conventions differ from older releases. Before writing code, read the bundled guides in `node_modules/next/dist/docs/` (installed with the project), and see [`docs/`](./docs) for project-specific guidance.
 
@@ -48,6 +52,17 @@ npm run dev                   # http://localhost:3000
 > **Keep `DATABASE_URL` as `file:./prisma/dev.db`.** The old default `file:./dev.db` creates a *second*, empty database at the repo root, making the site and media library look empty even after seeding. This is the #1 onboarding bug — see [`docs/troubleshooting.md`](./docs/troubleshooting.md).
 
 The admin console lives at [http://localhost:3000/admin](http://localhost:3000/admin) (log in with the `ADMIN_PASSWORD` you set in `.env`).
+
+## Usage examples
+
+**Public visitors** can browse the HNU information pages, search across pages, studies, team, and publications from the navbar, switch between English and 中文, view current studies and download their PDFs, and submit a contact enquiry.
+
+**Admins** (at `/admin`) can:
+
+- edit page content with reusable blocks, using draft preview, publish, discard, and revision-restore;
+- manage studies, study PDFs and per-study layouts, team members, partner logos, media assets, and contact submissions;
+- sync publications from ORCID, enrich them with OpenAlex affiliation data, and triage the Approved/Pending/Rejected buckets;
+- warm cached 中文 translations for admin-authored copy when a translation key is configured.
 
 ## npm scripts
 
