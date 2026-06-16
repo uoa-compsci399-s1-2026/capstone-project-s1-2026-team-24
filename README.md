@@ -40,6 +40,7 @@ A fresh clone has **no `.env*` file** (they are gitignored; only `.env.example` 
 ```bash
 npm install
 cp .env.example .env          # DATABASE_URL is already correct in the example
+touch prisma/dev.db           # Prisma 7 needs the SQLite file to exist before db push
 npx prisma db push            # create/sync the SQLite schema at prisma/dev.db
 npx prisma generate           # generate the Prisma client
 npm run seed                  # seed studies/team/partners/publications + page blocks
@@ -48,6 +49,8 @@ npm run dev                   # http://localhost:3000
 ```
 
 > **Use `npx prisma db push`, not `prisma migrate dev`.** The committed migration history has drifted from the live schema, so `migrate dev` prints a scary destructive-reset prompt. `db push` syncs the schema safely. See [`docs/database.md`](./docs/database.md).
+
+> **If `db push` fails on a missing SQLite file, run `touch prisma/dev.db` first.** On the current Prisma 7 toolchain, the CLI reliably syncs an existing empty SQLite file but can return an empty schema-engine error when the target file does not exist yet.
 
 > **Keep `DATABASE_URL` as `file:./prisma/dev.db`.** The old default `file:./dev.db` creates a *second*, empty database at the repo root, making the site and media library look empty even after seeding. This is the #1 onboarding bug — see [`docs/troubleshooting.md`](./docs/troubleshooting.md).
 

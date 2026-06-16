@@ -4,7 +4,7 @@ Local onboarding for the HNU Auckland website + CMS. The flow below is **idempot
 
 ## Prerequisites
 
-- **Node.js ≥ 20** (the toolchain targets `@types/node` v20)
+- **Node.js >= 22.17.1** (see `package.json` `engines`)
 - npm (bundled with Node)
 - A POSIX-ish shell. Windows users: use PowerShell and substitute `copy` for `cp`.
 
@@ -31,11 +31,14 @@ The defaults in `.env.example` work out of the box for local development — not
 ### 3. Create and sync the database schema
 
 ```bash
+touch prisma/dev.db           # Prisma 7 needs the SQLite file to exist before db push
 npx prisma db push            # creates/syncs prisma/dev.db from the schema
 npx prisma generate           # generates the Prisma client
 ```
 
 > **Use `db push`, not `prisma migrate dev`.** The committed migration history has drifted from the live schema, so `migrate dev` prints a destructive-reset prompt. `db push` syncs the SQLite file to `prisma/schema.prisma` without touching migration history. See [database.md](./database.md).
+
+> If `db push` returns an empty schema-engine error on a fresh checkout, confirm `prisma/dev.db` exists (`touch prisma/dev.db`) and run `npx prisma db push` again.
 
 ### 4. Seed content
 
@@ -61,6 +64,7 @@ Open [http://localhost:3000](http://localhost:3000) for the public site, and [ht
 ```bash
 npm install
 cp .env.example .env
+touch prisma/dev.db
 npx prisma db push
 npx prisma generate
 npm run seed
@@ -83,6 +87,7 @@ To start completely fresh, delete the SQLite file and re-run the schema + seed s
 
 ```bash
 rm prisma/dev.db
+touch prisma/dev.db
 npx prisma db push
 npm run seed
 npm run catalog:media
