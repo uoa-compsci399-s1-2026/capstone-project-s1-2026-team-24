@@ -27,8 +27,9 @@ export default function Navbar() {
   const [searchStudiesOpen, setSearchStudiesOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const { lang, setLang, t } = useLanguage();
-  // Admin-set logos (defaults when unset), seeded server-side by the layout.
-  const { logoLightPath, logoDarkPath } = useSiteSettings();
+  // Admin-set logos + donation link (defaults when unset), seeded server-side
+  // by the layout.
+  const { logoLightPath, logoDarkPath, donateUrl } = useSiteSettings();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileStudiesOpen, setMobileStudiesOpen] = useState(false);
@@ -77,7 +78,7 @@ export default function Navbar() {
   const TOP_BAR_LINKS: readonly TopBarLink[] = [
     {
       label: t.navbar.donations,
-      href: "https://www.auckland.ac.nz/en/giving/donate.html",
+      href: donateUrl,
       target: "_blank",
     },
     { label: t.navbar.contact, href: "/contact" },
@@ -798,7 +799,7 @@ export default function Navbar() {
 
               {/* Donations */}
               <li>
-                <Link href="https://www.auckland.ac.nz/en/giving/donate.html" target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
+                <Link href={donateUrl} target="_blank" rel="noopener noreferrer" onClick={() => setMobileOpen(false)} className="flex items-center justify-between py-3.5 text-white text-[20px] font-bold">
                   {lang === "EN" ? "Donations" : "捐赠"}
                   <NewTabHint />
                 </Link>
