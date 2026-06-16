@@ -72,7 +72,7 @@ export default function CalloutBannerRight({
 
       {/* ── Desktop/tablet: side by side, everything scales with clamp ── */}
       <div
-        className="hidden lg:flex relative z-10 py-16 px-8 xl:px-45"
+        className="hidden lg:flex relative z-10 py-16 px-12 xl:px-45"
         style={{ alignItems: "center", justifyContent: "space-between", gap: "clamp(24px, 4vw, 40px)" }}
       >
         <div

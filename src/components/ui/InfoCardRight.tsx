@@ -94,8 +94,8 @@ export default function InfoCardRight({
 
             {/* Image */}
             <div
-              className="relative rounded-[28px] overflow-hidden flex-1"
-              style={{ height: "clamp(380px, 40vw, 550px)", marginRight: "clamp(-120px, -10vw, -260px)", zIndex: 9 }}
+              className="relative rounded-[30px] overflow-hidden flex-1"
+              style={{ height: "clamp(380px, 40vw, 550px)", marginRight: "clamp(-260px, -10vw, -260px)", zIndex: 9 }}
             >
               {imageEl("70vw")}
             </div>

@@ -732,7 +732,7 @@ export default function Navbar() {
           aria-modal="true"
           aria-label={lang === "EN" ? "Main menu" : "主菜单"}
         >
-          <div className="flex-1 overflow-y-auto px-6 py-5">
+          <div className="flex-1 overflow-y-auto px-14 py-5">
             <ul className="space-y-0 mb-10">
               {/* Home */}
               <li>
