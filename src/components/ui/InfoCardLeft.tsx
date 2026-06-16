@@ -124,8 +124,9 @@ export default function InfoCard({
       <div className="hidden @5xl:block py-10 px-12 @5xl:px-45">
         <div className="max-w-[1100px] mx-auto">
           <div className="relative flex flex-row items-center gap-0">
+            {/* Text card */}
             <div
-              className="relative z-10 flex-shrink-0 w-[550px] p-15 pr-20 flex flex-col gap-6"
+              className="relative z-10 flex-shrink-0 flex flex-col gap-6"
               style={{
                 backgroundColor: bgColors[cardBg],
                 borderRadius: "0 80px 0 80px",
@@ -178,6 +179,7 @@ export default function InfoCard({
               )}
             </div>
 
+            {/* Image */}
             <div
               className="relative rounded-[28px] overflow-hidden flex-1 -ml-65"
               style={{ height: "550px", zIndex: 9 }}

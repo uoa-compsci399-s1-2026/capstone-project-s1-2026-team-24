@@ -45,53 +45,39 @@ export default function InfoCardRight({
     ) : (
       <div className={`flex flex-col ${gap}`}>
         {paragraphs.map((para, i) => (
-          <p
-            key={i}
-            className="text-white/85"
-            style={{ fontFamily: "var(--font-inter), sans-serif", fontSize, lineHeight: 1.6 }}
-          >
+          <p key={i} className="text-white/85" style={{ fontFamily: "var(--font-inter), sans-serif", fontSize, lineHeight: 1.6 }}>
             {para}
           </p>
         ))}
       </div>
     );
 
+  const imageEl = (sizes: string) =>
+    imageSrc ? (
+      <Image src={imageSrc} alt={imageAlt} fill className={`object-cover object-${imagePosition}`} sizes={sizes} />
+    ) : (
+      <div className="flex h-full w-full items-center justify-center bg-[#0c0c48]/5 text-sm text-[#0c0c48]/40" aria-hidden="true">
+        No image selected
+      </div>
+    );
+
   return (
-    <section className="@container relative w-full bg-white overflow-hidden py-10">
+    <section className="relative w-full bg-white overflow-hidden py-6 lg:py-0">
 
-      {/* ── Narrow layout (also used inside narrow row columns via @container) ── */}
-      <div className="@5xl:hidden flex flex-col">
-        <div className="relative w-full h-[280px] sm:h-[340px]">
-          {imageSrc ? (
-            <Image
-              src={imageSrc}
-              alt={imageAlt}
-              fill
-              className={`object-cover object-${imagePosition}`}
-              sizes="100vw"
-            />
-          ) : (
-            <div
-              className="flex h-full w-full items-center justify-center bg-[#0c0c48]/5 text-xs text-[#0c0c48]/40"
-              aria-hidden="true"
-            >
-              No image selected
-            </div>
-          )}
+      {/* ── Mobile / small tablet: stacked image + overlapping card ── */}
+      <div className="lg:hidden flex flex-col">
+        <div className="relative w-full h-[240px] sm:h-[320px]">
+          {imageEl("100vw")}
         </div>
-
-        <div className="relative -mt-15 px-6">
+        <div className="relative -mt-12 px-4 sm:px-8">
           <div
-            className="flex flex-col gap-5  p-6"
+            className="flex flex-col gap-4 p-6 sm:p-8"
             style={{ backgroundColor: bgColors[cardBg], borderRadius: "40px 0" }}
           >
-            <h2
-              className="text-white font-bold"
-              style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "28px", lineHeight: 1.2 }}
-            >
+            <h2 className="text-white font-bold" style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(20px, 4vw, 28px)", lineHeight: 1.2 }}>
               {title}
             </h2>
-            {textContent("15px", "gap-3")}
+            {textContent("clamp(13px, 2vw, 15px)", "gap-3")}
             {showButton && (
               <div className="mt-2">
                 <Button href={buttonHref} variant="white">{buttonLabel}</Button>
@@ -101,66 +87,51 @@ export default function InfoCardRight({
         </div>
       </div>
 
-      {/* ── Wide layout: two-column design ── */}
-      <div className="hidden @5xl:block py-16 px-12 @5xl:px-45">
+      {/* ── Desktop: overlapping two-column design (image left, card right) ── */}
+      <div className="hidden lg:block py-16 px-12 xl:px-45">
         <div className="max-w-[1100px] mx-auto">
           <div className="relative flex flex-row items-center gap-0">
+
+            {/* Image */}
             <div
-              className="relative rounded-[28px] overflow-hidden flex-1 -mr-65"
-              style={{ height: "550px", zIndex: 9 }}
+              className="relative rounded-[28px] overflow-hidden flex-1"
+              style={{ height: "clamp(380px, 40vw, 550px)", marginRight: "clamp(-120px, -10vw, -260px)", zIndex: 9 }}
             >
-              {imageSrc ? (
-                <Image
-                  src={imageSrc}
-                  alt={imageAlt}
-                  fill
-                  className={`object-cover object-${imagePosition}`}
-                  sizes="70vw"
-                />
-              ) : (
-                <div
-                  className="flex h-full w-full items-center justify-center bg-[#0c0c48]/5 text-sm text-[#0c0c48]/40"
-                  aria-hidden="true"
-                >
-                  No image selected
-                </div>
-              )}
+              {imageEl("70vw")}
             </div>
 
+            {/* Text card */}
             <div
-              className="relative z-10 flex-shrink-0 w-[550px] p-15 pl-20 flex flex-col gap-6"
-              style={{ backgroundColor: bgColors[cardBg], borderRadius: "80px 0 80px 0" }}
+              className="relative z-10 flex-shrink-0 flex flex-col gap-6"
+              style={{
+                backgroundColor: bgColors[cardBg],
+                borderRadius: "80px 0 80px 0",
+                width: "clamp(340px, 45vw, 550px)",
+                padding: "clamp(32px, 4vw, 60px) clamp(24px, 3vw, 60px) clamp(32px, 4vw, 60px) clamp(32px, 5vw, 80px)",
+              }}
             >
-              <h2
-                className="text-white font-bold"
-                style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "32px", lineHeight: 1.2 }}
-              >
+              <h2 className="text-white font-bold" style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(22px, 2.5vw, 32px)", lineHeight: 1.2 }}>
                 {title}
               </h2>
-              {textContent("16px", "gap-4")}
-              {showButton && (
-                <Button href={buttonHref} variant="white">{buttonLabel}</Button>
-              )}
+              {textContent("clamp(14px, 1.2vw, 16px)", "gap-4")}
+              {showButton && <Button href={buttonHref} variant="white">{buttonLabel}</Button>}
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Background pattern */}
-      <div
-        className="hidden @5xl:flex absolute inset-0 overflow-hidden pointer-events-none items-center"
-        aria-hidden="true"
-      >
-        <div
-          className="w-full h-[200px]"
-          style={{
-            backgroundImage: "url(/maori-pattern.svg)",
-            backgroundRepeat: "repeat-x",
-            backgroundSize: "auto 100%",
-            filter: "brightness(3) invert(0)",
-            opacity: 0.25,
-          }}
-        />
+        {/* Background pattern */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-center" aria-hidden="true">
+          <div
+            className="w-full h-[200px]"
+            style={{
+              backgroundImage: "url(/maori-pattern.svg)",
+              backgroundRepeat: "repeat-x",
+              backgroundSize: "auto 100%",
+              filter: "brightness(3) invert(0)",
+              opacity: 0.25,
+            }}
+          />
+        </div>
       </div>
 
     </section>

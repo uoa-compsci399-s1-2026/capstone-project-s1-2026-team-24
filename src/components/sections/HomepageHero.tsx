@@ -46,23 +46,25 @@ export default function HomepageHero({
             />
           </div>
 
+          {/* Title + button */}
           <div
-            className="max-w-[1400px] mx-auto"
+            className="max-w-[1400px] mx-auto lg:px-0"
             style={{
               position: "relative",
               zIndex: 10,
               display: "flex",
               alignItems: "center",
               justifyContent: "flex-end",
-              minHeight: "350px",
+              minHeight: "clamp(200px, 28vw, 350px)",
+              marginTop: "clamp(-80px, 2vw, 0px)",
             }}
           >
-            <div className="max-w-6xl text-center text-white lg:text-right">
+            <div className="w-full text-center text-white lg:text-right">
               <h1
                 className="leading-[1.05]"
                 style={{
                   fontFamily: "var(--font-inter), sans-serif",
-                  fontSize: "72px",
+                  fontSize: "clamp(42px, 5vw, 72px)",
                   fontWeight: 800,
                   opacity: 0.75,
                 }}
@@ -96,12 +98,12 @@ export default function HomepageHero({
             </div>
           </div>
 
+          {/* Partner logos */}
           <div
-            className="max-w-[1400px] mx-auto"
+            className="hidden lg:flex max-w-[1400px] mx-auto"
             style={{
               position: "relative",
               zIndex: 10,
-              display: "flex",
               alignItems: "end",
               justifyContent: "flex-end",
               minHeight: "150px",
@@ -133,6 +135,9 @@ export default function HomepageHero({
               />
             </div>
           </div>
+          
+          {/* Spacer at md when logos are hidden */}
+          <div className="lg:hidden" style={{ minHeight: "60px" }} />
         </div>
       </section>
 
@@ -142,11 +147,9 @@ export default function HomepageHero({
         aria-label="Human Nutrition Unit hero section"
         style={{
           background: backgroundGradient,
-          height: "500px",
+          height: "65svh",
         }}
       >
-        {/* Top label — the page <h1> on mobile (the desktop hero's <h1> is
-            display:none here, so exactly one h1 is exposed per breakpoint). */}
         <h1
           className="absolute text-white text-center w-full"
           style={{
@@ -160,7 +163,6 @@ export default function HomepageHero({
           Human Nutrition Unit
         </h1>
 
-        {/* Text — sits just above the bowl */}
         <div
           className="absolute inset-x-0 flex flex-col items-center"
           style={{
@@ -177,8 +179,7 @@ export default function HomepageHero({
               style={{
                 fontSize: "20px",
                 fontWeight: 600,
-                transition:
-                  "opacity 0.45s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                transition: "opacity 0.45s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)",
               }}
             >
               Unlock the power of food.
@@ -191,8 +192,7 @@ export default function HomepageHero({
               style={{
                 fontSize: "12px",
                 fontWeight: 500,
-                transition:
-                  "opacity 0.45s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                transition: "opacity 0.45s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)",
               }}
             >
               World-class nutrition science at the University of Auckland.
@@ -200,7 +200,6 @@ export default function HomepageHero({
           </div>
         </div>
 
-        {/* Bowl */}
         <div
           id="bowl-spinner"
           className="absolute left-1/2 pointer-events-none"
@@ -222,59 +221,67 @@ export default function HomepageHero({
           />
         </div>
 
+        {/* JOIN A STUDY button — bottom center */}
+        <div className="absolute inset-x-0 flex justify-center" style={{ bottom: "100px", zIndex: 10 }}>
+          <Link
+            href={buttonHref}
+            className="inline-flex justify-center rounded-full px-8 py-3 font-bold tracking-wide text-white backdrop-blur-[15px] transition-all duration-300 hover:bg-white/30"
+            style={{
+              fontSize: "20px",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.3), 0 8px 32px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.04)",
+            }}
+          >
+            {buttonLabel}
+          </Link>
+        </div>
+
+
         <script
           dangerouslySetInnerHTML={{
             __html: `
-    (function() {
-      var slides = [
-        { headline: "Unlock the power of food", sub: "World-class nutrition science at the University of Auckland." },
-        { headline: "Clinical trials", sub: "Participating in gold-standard human intervention studies." },
-        { headline: "Dietary research", sub: "Understanding how what we eat shapes long-term health." },
-        { headline: "Gut microbiome.", sub: "Exploring the link between diet, gut bacteria and wellbeing." },
-        { headline: "Metabolic health", sub: "Investigating blood sugar, insulin and cardiovascular risk." },
-        { headline: "Infant nutrition", sub: "Supporting healthy development from the very first days." },
-        { headline: "Sports performance", sub: "Fuelling athletes with evidence-based nutritional strategies." },
-        { headline: "Join a study", sub: "Volunteers welcome — help us advance the science of food." },
-      ];
-      var deg = 0;
-      var idx = 0;
-
-      setInterval(function() {
-        deg += 45;
-        idx = (idx + 1) % slides.length;
-
-        var bowl = document.getElementById('bowl-spinner');
-        var hl   = document.getElementById('hnu-headline');
-        var sub  = document.getElementById('hnu-sub');
-
-        if (bowl) bowl.style.transform = 'translateX(-50%) rotate(' + deg + 'deg)';
-
-        if (hl && sub) {
-          /* swap content and snap to left instantly */
-          hl.textContent      = slides[idx].headline;
-          sub.textContent     = slides[idx].sub;
-          hl.style.transition  = 'none';
-          sub.style.transition = 'none';
-          hl.style.transform  = 'translateX(-100%)';
-          hl.style.opacity    = '0';
-          sub.style.transform = 'translateX(-100%)';
-          sub.style.opacity   = '0';
-
-          requestAnimationFrame(function() {
-            requestAnimationFrame(function() {
-              /* slide in from left — same moment as bowl rotates */
-              hl.style.transition  = 'opacity 0.25s ease, transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-              sub.style.transition = 'opacity 0.25s ease, transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-              hl.style.transform  = 'translateX(0)';
-              hl.style.opacity    = '1';
-              sub.style.transform = 'translateX(0)';
-              sub.style.opacity   = '1';
-            });
-          });
-        }
-      }, 3000);
-    })();
-  `,
+(function() {
+  var slides = [
+    { headline: "Unlock the power of food", sub: "World-class nutrition science at the University of Auckland." },
+    { headline: "Clinical trials", sub: "Participating in gold-standard human intervention studies." },
+    { headline: "Dietary research", sub: "Understanding how what we eat shapes long-term health." },
+    { headline: "Gut microbiome.", sub: "Exploring the link between diet, gut bacteria and wellbeing." },
+    { headline: "Metabolic health", sub: "Investigating blood sugar, insulin and cardiovascular risk." },
+    { headline: "Infant nutrition", sub: "Supporting healthy development from the very first days." },
+    { headline: "Sports performance", sub: "Fuelling athletes with evidence-based nutritional strategies." },
+    { headline: "Join a study", sub: "Volunteers welcome — help us advance the science of food." },
+  ];
+  var deg = 0;
+  var idx = 0;
+  setInterval(function() {
+    deg += 45;
+    idx = (idx + 1) % slides.length;
+    var bowl = document.getElementById('bowl-spinner');
+    var hl   = document.getElementById('hnu-headline');
+    var sub  = document.getElementById('hnu-sub');
+    if (bowl) bowl.style.transform = 'translateX(-50%) rotate(' + deg + 'deg)';
+    if (hl && sub) {
+      hl.textContent = slides[idx].headline;
+      sub.textContent = slides[idx].sub;
+      hl.style.transition = 'none';
+      sub.style.transition = 'none';
+      hl.style.transform = 'translateX(-100%)';
+      hl.style.opacity = '0';
+      sub.style.transform = 'translateX(-100%)';
+      sub.style.opacity = '0';
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          hl.style.transition = 'opacity 0.25s ease, transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          sub.style.transition = 'opacity 0.25s ease, transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          hl.style.transform = 'translateX(0)';
+          hl.style.opacity = '1';
+          sub.style.transform = 'translateX(0)';
+          sub.style.opacity = '1';
+        });
+      });
+    }
+  }, 3000);
+})();
+`,
           }}
         />
       </section>
