@@ -99,6 +99,18 @@ The navbar has a language toggle that switches between English and Simplified Ch
 
 By default no translation key is set, so switching to 中文 shows Chinese for the fixed UI and English for admin-authored page copy until you add a key and warm the cache. To enable it, set `TRANSLATE_API_KEY` (and for Azure, `TRANSLATE_REGION`) then run `npm run warm:translations`. Full details, providers, and the caching model: [`docs/environment.md`](./docs/environment.md) and [`docs/content-editing.md`](./docs/content-editing.md).
 
+## Contact-form email (Resend)
+
+The public contact form sends notifications through [Resend](https://resend.com). **It currently runs on Resend's shared test sender** (`onboarding@resend.dev`, the default when `EMAIL_FROM` is unset), which can only deliver to the address that owns the Resend account. Sending to any other recipient returns a `403` *"testing domain restriction"* error, because no custom domain is verified yet (the site is self-hosted for now).
+
+**To enable delivery to real recipients — a handover step:**
+
+1. Verify a domain you control in Resend by adding the DNS records it provides (see <https://resend.com/domains>). For a University address, that means a domain the HNU/UoA team controls.
+2. Set `EMAIL_FROM` to an address on that verified domain (e.g. `HNU Website <noreply@your-domain>`).
+3. Keep `RESEND_API_KEY` set, then set the recipient address per enquiry category in the admin console.
+
+Either way, **every submission is saved** to the admin console (`/admin/contacts`) regardless of email delivery, so no enquiry is lost even when sending is restricted or disabled. Full env reference: [`docs/environment.md`](./docs/environment.md#contact-form-email-resend).
+
 ## Documentation
 
 Project docs live in [`docs/`](./docs) — start with the [docs index](./docs/README.md).
